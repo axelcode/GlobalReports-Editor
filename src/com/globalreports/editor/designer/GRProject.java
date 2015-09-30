@@ -125,7 +125,7 @@ public class GRProject extends JPanel implements TreeSelectionListener, ActionLi
 	}
 	public void addPage(GRDocument doc) {
 		GRTreeNode page = new GRTreeNode(doc);
-		doc.setNameDocument("Pagina "+autoCounter);
+		doc.setNameDocument("Pagina"+autoCounter);
 		page.setName(doc.getNameDocument());
 		autoCounter++;
 		

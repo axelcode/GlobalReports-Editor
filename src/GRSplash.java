@@ -120,7 +120,6 @@ public class GRSplash extends JFrame {
             file = elementi[i];
             if (file.isDirectory()) {
             	// Directory contenente il template
-                System.out.println(file.getName());
                 
                 /* Legge il file e carica le impostazioni */
                 RandomAccessFile raf;
@@ -138,8 +137,10 @@ public class GRSplash extends JFrame {
                 			template.setTitle(chiave[1]);
                 		else if(chiave[0].equals("$description"))
                 			template.setDescription(chiave[1]);
-                		else if(chiave[1].equals("$grs"))
+                		else if(chiave[0].equals("$grs"))
                 			template.setNameTemplate(chiave[1]);
+                		else if(chiave[0].equals("$image"))
+                			template.setImgTemplate(chiave[1]);
                 		
                 		result = raf.readLine();
                 	}
@@ -148,7 +149,7 @@ public class GRSplash extends JFrame {
                 	
                 	raf.close();
                 } catch(Exception e) {
-                	System.out.println("EXT");
+                	
                 }
                 
             } else {

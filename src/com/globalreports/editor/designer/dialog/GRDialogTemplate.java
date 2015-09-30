@@ -172,6 +172,9 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 		panelLayout.add(lblDescrizioneModello);
 			
 		imgTemplate = new GRImageTemplate();
+		for(int i = 0;i < grtemplate.size();i++) {
+			imgTemplate.addImage(grtemplate.get(i).getImgTemplate());
+		}
 		imgTemplate.setLocation(237,38);
 		panelLayout.add(imgTemplate);
 		
@@ -182,17 +185,15 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 		setBounds(100, 100, 620, 400);
 		setVisible(true);
 		
-		for(int i = 0;i < grtemplate.size();i++)
-			System.out.println(grtemplate.get(i).getTitle());
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == okButton) {
-			if(imgTemplate.getIndexTemplate() == 0) 
+			if(imgTemplate.getIndexTemplate() == -1) 
 				grfather.newDocument((int)GRLibrary.fromPixelsToMillimeters(GRSetting.WIDTHPAGE),(int)GRLibrary.fromPixelsToMillimeters(GRSetting.HEIGHTPAGE));
 			else {
-				//File f = new File(GRSetting.PATHTEMPLATE+fileTemplate[imgTemplate.getIndexTemplate()]);
-				//grfather.openDoc(f);
+				File f = new File(grtemplate.get(imgTemplate.getIndexTemplate()).getNameTemplate());
+				grfather.openDoc(f);
 				
 			}
 			this.dispose();
@@ -208,15 +209,14 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 			// Modello vuoto predefinito e sempre presente
 			lblNomeModello.setText(nameTemplate);
 			lblDescrizioneModello.setText(descriptionTemplate);
+			imgTemplate.setTemplate(-1);
 		} else {
 			index--;
 			lblNomeModello.setText(grtemplate.get(index).getTitle());
 			lblDescrizioneModello.setText(grtemplate.get(index).getDescription());
+			imgTemplate.setTemplate(index);
 		}
 		
-		//lblNomeModello.setText(nameTemplate[index]);
-		//lblDescrizioneModello.setText(descriptionTemplate[index]);
-		imgTemplate.setTemplate(index);
 	}
 	
 }
