@@ -112,6 +112,11 @@ public class GRTableList extends GRObject {
 			height = yStart - yEnd;
 		}
 		
+		x1Original = x1;
+		y1Original = y1;
+		widthOriginal = width;
+		heightOriginal = height;
+		
 		bordoEsterno = new BasicStroke(2.0f);
 		cBordoEsterno = new Color(57,105,138);
 		
@@ -217,6 +222,8 @@ public class GRTableList extends GRObject {
 		
 		/* Aggiorna il width totale */
 		width = width + gap;
+		
+		this.refresh();
 	}
 	public int getColDimension(int i) {
 		if(i < 0 || i >= grtablelistColumns.size())
@@ -444,6 +451,9 @@ public class GRTableList extends GRObject {
 		
 		return grtablelistFooter.getMinHeight();
 	}
+	public GRTableList clone(long id) {
+		return null;
+	}
 		
 	public String createCodeGRS() {
 		StringBuffer buff = new StringBuffer();
@@ -458,9 +468,9 @@ public class GRTableList extends GRObject {
 		buff.append("<top>"+GRLibrary.fromPixelsToMillimeters(y1)+"</top>\n");
 		buff.append("<cols>\n");
 		
-		for(int i = 0;i < numColumns;i++) {
+		for(int i = 0;i < grtablelistColumns.size();i++) {
 			buff.append("<cell>\n");
-			buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(dimCell.get(i))+"</width>\n");
+			buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(grtablelistColumns.get(i).getWidth())+"</width>\n");
 			buff.append("</cell>\n");
 		}
 		buff.append("</cols>\n");

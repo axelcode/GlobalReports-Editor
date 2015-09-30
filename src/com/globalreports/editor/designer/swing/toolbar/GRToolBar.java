@@ -122,7 +122,7 @@ public class GRToolBar extends JToolBar implements ActionListener {
 		} else if(e.getSource() == bAddPage) {
 			greditor.addPageDocument();
 		} else if(e.getSource() == bSaveDoc) {
-			greditor.saveDocument();
+			greditor.saveProject(true,false);
 		} else if(e.getSource() == bPDF) {
 			greditor.printPDF(false, "");
 		} 

@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.GRSetting
+ * class name  : com.globalreports.editor.designer.property.GRTableModelList
  * Begin       : 
  * Last Update : 
  *
@@ -49,43 +49,77 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor;
+package com.globalreports.editor.designer.property;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.SystemColor;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
-import com.globalreports.editor.graphics.GRText;
+import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.graphics.GRList;
+import com.globalreports.editor.graphics.GRRectangle;
+import com.globalreports.editor.tools.GRLibrary;
 
+@SuppressWarnings("serial")
+public class GRTableModelList extends GRTableModel implements TableModelListener {
+	private Object[][] element = {{"Type","List"},
+			  {"",""},
+			  {"Relative Height Position",new Boolean(false)},
+			  {"Id",""},
+			  {"Top",""},
+			  {"Height",""}};
+			  
+	private GRList objList;	// Riferimento all'oggetto per poterne modificare le propriet���
 
-public interface GRSetting {
-	// Percorsi
-	public final String PATHIMAGE 		= "resources/images/";
-	public final String PATHTEMP		= "temp/";
-	public final String PATHFONTCONFIG	= "resources/fonts/";
-	public final String PATHTEMPLATE	= "resources/template/";
-	public final String PATHLICENSE		= "resources/license/";
+	public GRTableModelList(GRPage page) {
+		this.pagina = page;
+		eventChangeActive = false;
+		setDataVector(element,header);
+		addTableModelListener(this);
+	}
 	
-	// Dimensioni
-	public final int MIN_DIMENSION_OBJ	= 15;	// Dimensione minima espressa in pixels (5 mm)
-	public final int WIDTHPAGE			= 630;	// 210 mm - A4 Verticale
-	public final int HEIGHTPAGE		= 891;	// 297 mm - A4 Verticale
+	public void tableChanged(TableModelEvent e) {
+		
+		if(eventChangeActive) {
+			switch(e.getFirstRow()) {
+				case 3:
+					objList.setNameXml(getValueAt(3,1).toString());
+					break;
+					
+				case 4:
+					objList.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(4,1).toString())));
+					break;	
+
+				case 5:
+					objList.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(5,1).toString())));
+					break;
+			}
+			
+			eventChangeActive = false;
+			pagina.repaint();
+		}
+	}
+	public boolean isCellEditable(int row, int column) {
+        if (column == 1) {
+			if(row == 0 || row == 1 || row == 2)
+				return false;
+				
+        	return true;
+        }
+        
+        return false;
+    }
 	
-	// Valori di default degli oggetti
-	// FONT
-	public final Font DEFAULTFONT	= new Font("Lucida Grande",Font.PLAIN,10);
-	public final String FONTNAME	= "Verdana";
-	public final int FONTSIZE		= 10;
-	public final int FONTALIGNMENT	= GRText.ALIGNTEXT_LEFT;
-	public final int FONTSTYLE		= GRText.STYLETEXT_NORMAL;
-	public final float LINESPACING	= 2.0f;		// Dimensione espressa in millimetri
-	
-	// Colori
-	public final Color COLORSTROKE			= Color.BLACK;
-	public final Color COLORFILL			= null;
-	public final Color COLORTRANSPARENT		= SystemColor.inactiveCaptionBorder;
-	
-	// Tratto
-	public final double WIDTHSTROKE	= 0.5;
+	public void setGRObject(GRList ref) {
+		this.objList = ref;
+	}
+	public void setNameXml(String value) {
+		this.setValueAt(value, 3, 1);
+	}
+	public void setTop(int value) {
+		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),4,1);
+	}
+	public void setHeight(int value) {
+		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),5,1);
+	}
 	
 }

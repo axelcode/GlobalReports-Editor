@@ -63,6 +63,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.configuration.template.GRTemplate;
 import com.globalreports.editor.designer.GREditor;
 import com.globalreports.editor.designer.swing.GRImageTemplate;
 import com.globalreports.editor.tools.GRLibrary;
@@ -80,6 +81,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Vector;
 
 import javax.swing.border.TitledBorder;
 import javax.swing.border.MatteBorder;
@@ -87,9 +89,16 @@ import javax.swing.UIManager;
 
 @SuppressWarnings("serial")
 public class GRDialogTemplate extends JDialog implements ActionListener,ListSelectionListener {
-	private String[] nameTemplate = {"Modello vuoto","Modello Base CNP Vita"};
-	private String[] descriptionTemplate = {"<html><body>Template bianco da disegnare a piacere</body></html>","<html><body>Template con riferimenti di base per tutte le cover relative alle lettere di CNP Vita</body></html>"};
-	private String[] fileTemplate = {"","ModelloBaseCNP.grs"};
+	public static Vector<GRTemplate> grtemplate = new Vector<GRTemplate>();
+	
+	private String nameTemplate = "Modello vuoto";
+	private String descriptionTemplate = "<html><body>Template bianco da disegnare a piacere</body></html>";
+	private String fileTemplate = "";
+	//private String[] nameTemplate = {"Modello vuoto","Modello Base CNP Vita","Modello Generico CNP Vita"};
+	//private String[] descriptionTemplate = {"<html><body>Template bianco da disegnare a piacere</body></html>",
+	//										"<html><body>Template con riferimenti di base per tutte le cover relative alle lettere di CNP Vita</body></html>",
+	//										"<html><body>Template contenente le informazioni di polizza e prodotto in forma tabellare.<br><br>Utilizzato nella maggior parte delle comunicazioni giornaliere di CNP Vita</body></html>"};
+	//private String[] fileTemplate = {"","ModelloBaseCNP.grs","ModelloPolizzaCNP.grs"};
 	
 	private JList titTemplate;
 	private JButton okButton;
@@ -102,19 +111,7 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 	
 	private GREditor grfather;
 	
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			GRDialogTemplate dialog = new GRDialogTemplate(null);
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
+	
 	/**
 	 * Create the dialog.
 	 */
@@ -128,8 +125,11 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 		c.setLayout(new BorderLayout());
 		
 		DefaultListModel<String> model = new DefaultListModel<String>();
-		for(int i = 0;i < nameTemplate.length;i++)
-			model.addElement(nameTemplate[i]);
+		// Aggiunge il modello vuoto SEMPRE
+		model.addElement("Modello vuoto");
+		for(int i = 0;i < grtemplate.size();i++) {
+			model.addElement(grtemplate.get(i).getTitle());
+		}
 		
 		titTemplate = new JList(model);
 		titTemplate.addListSelectionListener(this);
@@ -181,6 +181,9 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 		
 		setBounds(100, 100, 620, 400);
 		setVisible(true);
+		
+		for(int i = 0;i < grtemplate.size();i++)
+			System.out.println(grtemplate.get(i).getTitle());
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -188,8 +191,8 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 			if(imgTemplate.getIndexTemplate() == 0) 
 				grfather.newDocument((int)GRLibrary.fromPixelsToMillimeters(GRSetting.WIDTHPAGE),(int)GRLibrary.fromPixelsToMillimeters(GRSetting.HEIGHTPAGE));
 			else {
-				File f = new File(GRSetting.PATHTEMPLATE+fileTemplate[imgTemplate.getIndexTemplate()]);
-				grfather.openDoc(f);
+				//File f = new File(GRSetting.PATHTEMPLATE+fileTemplate[imgTemplate.getIndexTemplate()]);
+				//grfather.openDoc(f);
 				
 			}
 			this.dispose();
@@ -201,8 +204,18 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 		changeTemplate(titTemplate.getSelectedIndex());
 	}
 	private void changeTemplate(int index) {
-		lblNomeModello.setText(nameTemplate[index]);
-		lblDescrizioneModello.setText(descriptionTemplate[index]);
+		if(index == 0) {
+			// Modello vuoto predefinito e sempre presente
+			lblNomeModello.setText(nameTemplate);
+			lblDescrizioneModello.setText(descriptionTemplate);
+		} else {
+			index--;
+			lblNomeModello.setText(grtemplate.get(index).getTitle());
+			lblDescrizioneModello.setText(grtemplate.get(index).getDescription());
+		}
+		
+		//lblNomeModello.setText(nameTemplate[index]);
+		//lblDescrizioneModello.setText(descriptionTemplate[index]);
 		imgTemplate.setTemplate(index);
 	}
 	

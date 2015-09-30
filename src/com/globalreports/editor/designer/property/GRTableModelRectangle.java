@@ -56,6 +56,8 @@ import javax.swing.event.*;
 import com.globalreports.editor.tools.GRLibrary;
 import com.globalreports.editor.graphics.GRRectangle;
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.property.combo.GRComboFontName;
+import com.globalreports.editor.designer.property.combo.GRComboListFather;
 
 @SuppressWarnings("serial")
 public class GRTableModelRectangle extends GRTableModel implements TableModelListener {
@@ -69,7 +71,9 @@ public class GRTableModelRectangle extends GRTableModel implements TableModelLis
 								  {"",""},
 								  {"WidthStroke","0.25"},
 								  {"ColorStroke",new GRColorCellEditor(0,0,0)},
-								  {"ColorFill",new GRColorCellEditor(GRColorCellEditor.TRANSPARENT)}};
+								  {"ColorFill",new GRColorCellEditor(GRColorCellEditor.TRANSPARENT)},
+								  {"",""},
+								  {"List Father",new GRComboListFather("--Nothing--")}};
 								  
 	private GRRectangle objRectangle;	// Riferimento all'oggetto per poterne modificare le propriet���
 	
@@ -79,6 +83,7 @@ public class GRTableModelRectangle extends GRTableModel implements TableModelLis
 		setDataVector(element,header);
 		addTableModelListener(this);
 	}
+	
 	
 	public void tableChanged(TableModelEvent e) {
 		
@@ -111,6 +116,10 @@ public class GRTableModelRectangle extends GRTableModel implements TableModelLis
 				case 10:
 					objRectangle.setColorFill(((GRColorCellEditor)getValueAt(10,1)).getColor());
 					break;
+					
+				case 12:
+					objRectangle.setListFather(((GRComboListFather)getValueAt(12,1)).getValueSelected());
+					break;
 			}
 			
 			eventChangeActive = false;
@@ -119,7 +128,7 @@ public class GRTableModelRectangle extends GRTableModel implements TableModelLis
 	}
 	public boolean isCellEditable(int row, int column) {
         if (column == 1) {
-			if(row == 0 || row == 1 || row == 7)
+			if(row == 0 || row == 1 || row == 7 || row == 11)
 				return false;
 				
         	return true;
@@ -151,10 +160,12 @@ public class GRTableModelRectangle extends GRTableModel implements TableModelLis
 	}
 	public void setColorFill(int red, int green, int blue) {
 		if(red == -1 || green == -1 || blue == -1)
-			this.setValueAt(new GRColorCellEditor(red,green,blue),10,1);
+			this.setValueAt(new GRColorCellEditor(red,green,blue,true),10,1);
 		else
-			this.setValueAt(new GRColorCellEditor(red,green,blue),10,1);
+			this.setValueAt(new GRColorCellEditor(red,green,blue,true),10,1);
 	}
-	
+	public void setListFather(String value) {
+		this.setValueAt(new GRComboListFather(value), 12, 1);
+	}
 	
 }

@@ -81,6 +81,10 @@ public class GRTableModelImage extends GRTableModel implements TableModelListene
 		
 		if(eventChangeActive) {
 			switch(e.getFirstRow()) {
+				case 2:		// H Position
+					objImage.setHPosition((Boolean)getValueAt(2,1));
+					break;
+			
 				case 3:
 					objImage.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(3,1).toString())));
 					break;
@@ -116,6 +120,9 @@ public class GRTableModelImage extends GRTableModel implements TableModelListene
 	
 	public void setGRObject(GRImage ref) {
 		this.objImage = ref;
+	}
+	public void setHPosition(boolean value) {
+		this.setValueAt(new Boolean(value),2,1);
 	}
 	public void setLeft(int value) {
 		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),3,1);

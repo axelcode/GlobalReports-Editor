@@ -109,7 +109,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	// Pagina
 	private int width;
 	private int height;
-	private double zoom;
+	private float zoom;
 	
 	private int xStart;
 	private int yStart;
@@ -118,6 +118,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	
 	private int heightHeader;	// Definisce l'altezza dello spazio riservato all'HEAD
 	private int heightFooter;	// Definisce l'altezza dello spazio riservato al FOOT
+	
 	// Azioni
 	private int flagAzione;		
 	
@@ -126,6 +127,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	private int idObjSelected;		// ID oggetto selezionato
 	private Vector<GRObject> grobj;
 	private GRObject refObj;		// Riferimento all'oggetto corrente selezionato
+	private GRObject refObjCopy;	// Riferimento all'oggetto da copiare
 	private GRUndo grUndo;			// Oggetto che viene riempito con l'action da annullare
 	private Vector<GRObject> grobjMultiSelect;
 	
@@ -145,12 +147,16 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	GRTableModelRectangle modelRectangle;
 	GRTableModelText modelText;
 	GRTableModelImage modelImage;
+	GRTableModelList modelList;
 	GRTableModelTableList modelTableList;
 	
 	// Cursori
 	Cursor defaultCursor;
 	Cursor TSXBDXCursor;
 	Cursor TDXBSXCursor;
+	
+	// Tastiera
+	private boolean CTRL_PRESS	= false;
 	
 	// Rendering degli oggetti grafici
 	private AlphaComposite composite;	// Canale Alpha per la trasparenza degli oggetti
@@ -203,6 +209,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		
 		grobj = new Vector<GRObject>();
 		refObj = null;
+		refObjCopy = null;
 		
 		// Istanzio i modelli relativi alle propriet�� di ogni singolo oggetto grafico
 		modelPage = new GRTableModelPage(this);
@@ -210,6 +217,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		modelRectangle = new GRTableModelRectangle(this);
 		modelText = new GRTableModelText(this);
 		modelImage = new GRTableModelImage(this);
+		modelList = new GRTableModelList(this);
 		modelTableList = new GRTableModelTableList(this);
 		
 		// Istanzio i cursori che andrò ad utilizzare
@@ -218,6 +226,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		TDXBSXCursor = new Cursor(Cursor.NE_RESIZE_CURSOR);
 		
 		modelPage.setHeader(heightHeader);
+		modelPage.setFooter(heightFooter);
 		panelProperty.setModelPage(modelPage);
 		
 		hPosition = 0;
@@ -252,6 +261,8 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	public void paint(Graphics g) {
 		super.paint(g);
 		
+		Color oldColor = g.getColor();
+		
 		// Griglia
 		if(viewGrid) {
 			g.setColor(Color.LIGHT_GRAY);
@@ -263,12 +274,22 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			}
 			g.setColor(Color.BLACK);
 		}
+		g.setColor(oldColor);
+		
 		// HEAD
 		if(heightHeader > 0) {
 			g.setColor(Color.BLUE);
-			g.drawLine(0,heightHeader,630,heightHeader);
+			g.drawLine(0,heightHeader,this.getWidth(),heightHeader);
 			g.setColor(Color.BLACK);
 		}
+		g.setColor(oldColor);
+		
+		// FOOT
+		if(heightFooter > 0) {
+			g.setColor(Color.BLUE);
+			g.drawLine(0,(this.getHeight() - heightFooter),this.getWidth(),(this.getHeight() - heightFooter));
+		}
+		g.setColor(oldColor);
 		
 		hPosition = 0;
 		for(int i = 0;i < grobj.size();i++) {
@@ -278,44 +299,99 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				flagAzione != GRPage.ACTION_RESIZE_BDX) || refObj != grobj.get(i)) { 
 				int type = grobj.get(i).getType();
 				
-				switch(type) {
-					case GRObject.TYPEOBJ_TEXT:
-						GRText refText = (GRText)grobj.get(i);
-						refText.draw(g);
+				/* Se un oggetto è associato ad una lista lo disegna in coda.
+				 * Questo perchè altrimenti se l'oggetto nello stack viene prima
+				 * della lista, esso viene visto in trasparenza e non è possibile
+				 * selezionarne la parte interna
+				 */
+				if(grobj.get(i).getListFather() == null) {
+					switch(type) {
+						case GRObject.TYPEOBJ_TEXT:
+							GRText refText = (GRText)grobj.get(i);
+							refText.draw(g);
+							
+							break;
 						
-						break;
-					
-					case GRObject.TYPEOBJ_LINE:
-						GRLine refLine = (GRLine)grobj.get(i);
-						refLine.draw(g);
-						
-						break;
-						 
-					case GRObject.TYPEOBJ_RECTANGLE:
-						GRRectangle refRect = (GRRectangle)grobj.get(i);
-						refRect.draw(g);
-						
-						break;
-						
-					case GRObject.TYPEOBJ_IMAGE:
-						GRImage refImage = (GRImage)grobj.get(i);
-						refImage.draw(g);
-						break;
-						
-					case GRObject.TYPEOBJ_LIST:
-						GRList refList = (GRList)grobj.get(i);
-						refList.draw(g);
-						break;
-						
-					case GRObject.TYPEOBJ_TABLELIST:
-						GRTableList refTableList = (GRTableList)grobj.get(i);
-						refTableList.draw(g);
-						break;
-						
+						case GRObject.TYPEOBJ_LINE:
+							GRLine refLine = (GRLine)grobj.get(i);
+							refLine.draw(g);
+							
+							break;
+							 
+						case GRObject.TYPEOBJ_RECTANGLE:
+							GRRectangle refRect = (GRRectangle)grobj.get(i);
+							if(refRect.getListFather() == null)
+								refRect.draw(g);
+							
+							break;
+							
+						case GRObject.TYPEOBJ_IMAGE:
+							GRImage refImage = (GRImage)grobj.get(i);
+							refImage.draw(g);
+							break;
+							
+						case GRObject.TYPEOBJ_LIST:
+							GRList refList = (GRList)grobj.get(i);
+							refList.draw(g);
+							break;
+							
+						case GRObject.TYPEOBJ_TABLELIST:
+							GRTableList refTableList = (GRTableList)grobj.get(i);
+							refTableList.draw(g);
+							break;
+							
+					}
 				}
 			}			
 		}
 		
+		/* Disegna gli oggetti aderenti alla lista */
+		for(int i = 0;i < grobj.size();i++) {
+			if((flagAzione != GRPage.ACTION_RESIZE_TSX &&
+					flagAzione != GRPage.ACTION_RESIZE_TDX &&
+					flagAzione != GRPage.ACTION_RESIZE_BSX &&
+					flagAzione != GRPage.ACTION_RESIZE_BDX) || refObj != grobj.get(i)) { 
+					int type = grobj.get(i).getType();
+					
+					if(grobj.get(i).getListFather() != null) {
+						switch(type) {
+							case GRObject.TYPEOBJ_TEXT:
+								GRText refText = (GRText)grobj.get(i);
+								refText.draw(g);
+								
+								break;
+							
+							case GRObject.TYPEOBJ_LINE:
+								GRLine refLine = (GRLine)grobj.get(i);
+								refLine.draw(g);
+								
+								break;
+								 
+							case GRObject.TYPEOBJ_RECTANGLE:
+								GRRectangle refRect = (GRRectangle)grobj.get(i);
+								refRect.draw(g);
+								
+								break;
+								
+							case GRObject.TYPEOBJ_IMAGE:
+								GRImage refImage = (GRImage)grobj.get(i);
+								refImage.draw(g);
+								break;
+								
+							case GRObject.TYPEOBJ_LIST:
+								GRList refList = (GRList)grobj.get(i);
+								refList.draw(g);
+								break;
+								
+							case GRObject.TYPEOBJ_TABLELIST:
+								GRTableList refTableList = (GRTableList)grobj.get(i);
+								refTableList.draw(g);
+								break;
+								
+						}
+					}
+				}	
+		}
 		/*
 		if(flagAzione == GRPage.ACTION_SELECT && refObj == null) {
 			drawSelection(g);
@@ -510,6 +586,9 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, false);
 		grtoolbarStrumenti.setBackwardEnabled(false);
 		grtoolbarStrumenti.setForwardEnabled(false);
+		
+		modelPage.setHeader(heightHeader);
+		modelPage.setFooter(heightFooter);
 		panelProperty.setModelPage(modelPage);
 	}
 	
@@ -599,10 +678,19 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		
 		this.releaseHeader();
 	}
+	public void refreshFooter(int value) {
+		grdoc.setFooterPage(value);
+		
+	}
 	public void modifyHeader(int value) {
 		if(value < 0)
 			value = 0;
 		heightHeader = value;
+	}
+	public void modifyFooter(int value) {
+		if(value < 0)
+			value = 0;
+		heightFooter = value;
 	}
 	public int getHeaderSize() {
 		return heightHeader;
@@ -625,46 +713,38 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		if(refObj instanceof GRLine) {
 			GRLine grline = (GRLine)refObj;
 			
-			modelLine.setGRObject(grline);
-			modelLine.setX1(grline.getX());
-			modelLine.setY1(grline.getY());
-			modelLine.setX2(grline.getXEnd());
-			modelLine.setY2(grline.getYEnd());
-			
+			grline.setProperty(modelLine);
 			panelProperty.setModelLine(modelLine);
 			
 			grline.setLocation(grline.getX(),grline.getY());
 		} else if(refObj instanceof GRRectangle) {
 			GRRectangle grrect = (GRRectangle)refObj;
 			
-			modelRectangle.setGRObject(grrect);
-			modelRectangle.setWidthStroke(grrect.getWidthStroke());
-			modelRectangle.setColorStroke(grrect.getColorStroke().getRed(), grrect.getColorStroke().getGreen(), grrect.getColorStroke().getBlue());
-			if(grrect.getColorFill() == null)
-				modelRectangle.setColorFill(-1, -1, -1);
-			else
-				modelRectangle.setColorFill(grrect.getColorFill().getRed(), grrect.getColorFill().getGreen(), grrect.getColorFill().getBlue());
-			modelRectangle.setLeft(grrect.getX());
-			modelRectangle.setTop(grrect.getY());
-			modelRectangle.setWidth(grrect.getWidth());
-			modelRectangle.setHeight(grrect.getHeight());
-			
+			grrect.setProperty(modelRectangle);
 			panelProperty.setModelRectangle(modelRectangle);
 			
 			grrect.setLocation(grrect.getX(),grrect.getY());
 		} else if(refObj instanceof GRText) {
 			GRText grtext = (GRText)refObj;
 			
+			//grtext.setProperty(modelText);
 			modelText.setGRObject(grtext);
-			modelText.setLeft(grtext.getX());
-			modelText.setTop(grtext.getY());
-			modelText.setWidth(grtext.getWidth());
+			
+			modelText.setLeft(grtext.getOriginalX());
+			modelText.setTop(grtext.getOriginalY());
+			modelText.setWidth(grtext.getOriginalWidth());
 			modelText.setHPosition(grtext.getHPosition());
 			modelText.setLineSpacing(grtext.getLineSpacing());
 			modelText.setFont(grtext.getFontFamily());
 			modelText.setFontStyle(grtext.getFontStyleToString());
 			modelText.setFontSize(grtext.getFontSize());
 			modelText.setFontAlignment(grtext.getFontAlignmentToString());
+			
+			if(grtext.hasListFather())
+				modelText.setListFather(grtext.getListFather().getNameXml());
+			else
+				modelText.setListFather("--Nothing--");
+			
 			panelProperty.setModelText(modelText);
 			
 			grtext.setLocation(grtext.getX(),grtext.getY());
@@ -672,14 +752,25 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			GRImage grimage = (GRImage)refObj;
 			
 			modelImage.setGRObject(grimage);
-			modelImage.setLeft(grimage.getX());
-			modelImage.setTop(grimage.getY());
-			modelImage.setWidth(grimage.getWidth());
-			modelImage.setHeight(grimage.getHeight());
+			modelImage.setLeft(grimage.getOriginalX());
+			modelImage.setTop(grimage.getOriginalY());
+			modelImage.setWidth(grimage.getOriginalWidth());
+			modelImage.setHeight(grimage.getOriginalHeight());
+			modelImage.setHPosition(grimage.getHPosition());
 			
 			panelProperty.setModelImage(modelImage);
 			
 			grimage.setLocation(grimage.getX(),grimage.getY());
+		} else if(refObj instanceof GRList) {
+			GRList grlist = (GRList)refObj;
+			
+			modelList.setGRObject(grlist);
+			modelList.setNameXml(grlist.getNameXml());
+			modelList.setTop(grlist.getOriginalY());
+			modelList.setHeight(grlist.getOriginalHeight());
+			panelProperty.setModelList(modelList);
+			
+			grlist.setLocation(grlist.getX(),grlist.getY());			
 		} else if(refObj instanceof GRTableList) {
 			GRTableList grtablelist = (GRTableList)refObj;
 			
@@ -748,6 +839,22 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 					et.showDialog(GREditText.NEWTEXT);
 					
 				}
+			} else {
+				
+				/*
+				GRObject grtemp = grobj.get(0);
+				grobj.remove(0);
+				grobj.insertElementAt(grtemp, 1);
+				*/
+				/*
+				for(int i = 0;i < grobj.size();i++) {
+					GRText t = (GRText)grobj.get(i);
+					
+					System.out.println("OGGETTO "+i+" - "+t.getId()+": "+t.createCodeGRS());
+					System.out.println("\n\n");
+				}
+				*/
+				
 			}
 		}
 		
@@ -780,21 +887,28 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			// Cicla per tutti gli oggetti in memoria.
 			// Il primo oggetto che viene intersecato, lo seleziona. Parte dall'ultimo inserito
 			for(int i = (grobj.size()-1);i >= 0;i--) {
+				
 				if(grobj.get(i).isIntersect(me.getX(),me.getY())) {
+					
 					this.selectObj(grobj.get(i), me.getX(), me.getY());
 					idObjSelected = i;
 					grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, true);
-					
+					grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 3, true);
+					grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 4, true);
 					flagSelected = true;
 					break;
 				}
 			}
 			
 			if(!flagSelected) {
+				grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 3, false);
+				
 				xEnd = xStart;
 				yEnd = yStart;
 			}
+			
 			repaint();
+			
 		} 
 	}
 	public void mouseReleased(MouseEvent me) {
@@ -828,8 +942,9 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				yEnd = yEnd - (yEnd % GAPGRIDY);
 			}
 		}
-		
+				
 		if(flagAzione == GRPage.ACTION_SELECT) {
+			
 			if(refObj == null) {
 				// Verifica se sono stati selezionati degli oggetti
 				/*
@@ -859,14 +974,32 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				
 				repaint();
 				*/
+			} else {
+				//refObj.setX(refObj.getX() / (int)zoom);
+				//refObj.setY(refObj.getY() / (int)zoom);
+				
+				//refObj.setX(refObj.getX());
+				//refObj.setY(refObj.getY());
+				
+				refObj.setOriginalX(refObj.getX());
+				refObj.setOriginalY(refObj.getY());
+				
+				if(refObj instanceof GRLine) {
+					GRLine refLine = (GRLine)refObj;
+					
+					refLine.setOriginalXEnd(refLine.getXEnd());
+					refLine.setOriginalYEnd(refLine.getYEnd());
+				}
 			}
 		} else if(flagAzione == GRPage.ACTION_DRAWLINE) {
 			if(Math.abs(xEnd-xStart) < GRSetting.MIN_DIMENSION_OBJ &&
 					Math.abs(yEnd - yStart) < GRSetting.MIN_DIMENSION_OBJ)
 				return;
 			
-			GRLine refLine = new GRLine(this,idObj,xStart,yStart,xEnd,yEnd,grtoolbarStrumenti.getColorStroke());
-						
+			//GRLine refLine = new GRLine(this,idObj,xStart,yStart,xEnd,yEnd,grtoolbarStrumenti.getColorStroke());
+			GRLine refLine = new GRLine(this,idObj,(int)(xStart / zoom),(int)(yStart / zoom),(int)(xEnd / zoom),(int)(yEnd / zoom),grtoolbarStrumenti.getColorStroke());
+			refLine.setZoom(zoom);		
+			
 			grobj.add(refLine);
 			idObj++;
 			
@@ -877,7 +1010,9 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 					Math.abs(yEnd - yStart) < GRSetting.MIN_DIMENSION_OBJ)
 				return;
 			
-			GRRectangle refRect = new GRRectangle(this,idObj,xStart,yStart,xEnd,yEnd,grtoolbarStrumenti.getColorStroke(),grtoolbarStrumenti.getColorFill());
+			//GRRectangle refRect = new GRRectangle(this,idObj,xStart,yStart,xEnd,yEnd,grtoolbarStrumenti.getColorStroke(),grtoolbarStrumenti.getColorFill());
+			GRRectangle refRect = new GRRectangle(this,idObj,(int)(xStart / zoom),(int)(yStart / zoom),(int)(xEnd / zoom),(int)(yEnd / zoom),grtoolbarStrumenti.getColorStroke(),grtoolbarStrumenti.getColorFill());
+			refRect.setZoom(zoom);
 			
 			grobj.add(refRect);
 			idObj++;
@@ -915,11 +1050,16 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			if(Math.abs(yEnd - yStart) < GRSetting.MIN_DIMENSION_OBJ)
 				return;
 			
-			grobj.add(new GRList(this,idObj,yStart,yEnd));
+			GRList refList = new GRList(this,idObj,yStart,yEnd);
+			//refList.setZoom(zoom);
+			
+			grobj.add(refList);
 			idObj++;
 			
 			restoreToolBar();
 			repaint();
+			
+			panelProperty.addListFather(refList.getNameXml());
 		} else if(flagAzione == GRPage.ACTION_DRAWTABLELIST) {
 			if(Math.abs(xEnd-xStart) < GRSetting.MIN_DIMENSION_OBJ ||
 					Math.abs(yEnd - yStart) < GRSetting.MIN_DIMENSION_OBJ)
@@ -1066,8 +1206,11 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 						yStart = yEnd;
 					}
 					
-				} else				
+				} else {
 					refObj.moveTo(xEnd,yEnd);
+				}
+				
+			
 			}
 			repaint();
 		} else {
@@ -1106,7 +1249,14 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	}
 	public void keyTyped(KeyEvent e) {}
 	public void keyPressed(KeyEvent e) {
+		if(e.getKeyCode() == 17) {
+			CTRL_PRESS = true;
+		} else if(e.getKeyCode() == 86 && CTRL_PRESS) { // "CTRL-V"
+			pasteObject();
+		}
+		
 		if(flagAzione == GRPage.ACTION_SELECT && refObj != null) {
+			
 			if(e.getKeyCode() == 127) {
 				this.clearObject();
 			} else if(e.getKeyCode() >= 37 && e.getKeyCode() <= 40) {
@@ -1149,12 +1299,58 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				}
 				
 				repaint();
-			}
+			} else if(e.getKeyCode() == 67 && CTRL_PRESS) { // "CTRL-C"
+				copyObject();
+			} 
 		}
 		
 	}
-	public void keyReleased(KeyEvent e) {}
+	public void keyReleased(KeyEvent e) {
+		if(e.getKeyCode() == 17) {
+			CTRL_PRESS = false;
+		}
+	}
 	
+	/**
+	 * Restituisce la lista avente id passato come parametro
+	 * 
+	 * @param name Il nome della lista da restituire
+	 * @return La lista ricercata. Se non è presente all'interno della pagina, ritorna <i>null</i>
+	 */
+	public GRList getList(String name) {
+		for(int i = 0;i < grobj.size();i++) {
+			if(grobj.get(i) instanceof GRList) {
+				GRList refList = (GRList)grobj.get(i);
+				
+				if(refList.getNameXml().equals(name))
+					return refList;
+			}
+		}
+		
+		return null;
+	}
+	/**
+	 * Ritorna un Vector di oggetti associati alla lista il cui id è passato come parametro
+	 * 
+	 * @param name L'id della lista da ricercare
+	 * @return Un Vector di oggetti associati alla lista. Se non è presente alcun oggetto ritorna <i>null</i>
+	 */
+	public Vector<GRObject> getListChild(String name) {
+		Vector<GRObject> child = null;
+		
+		for(int i = 0;i < grobj.size();i++) {
+			if(grobj.get(i).hasListFather()) {
+				if(grobj.get(i).getListFather().getNameXml().equals(name)) {
+					if(child == null)
+						child = new Vector<GRObject>();
+					
+					child.add(grobj.get(i));
+				}
+			}
+		}
+		
+		return child;
+	}
 	public void setZoom(float value) {
 		zoom = value;
 		
@@ -1167,23 +1363,64 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		for(int i = 0;i < grobj.size();i++) {
 			grobj.get(i).setZoom(value);
 		}
+		
 	}
 	public void releaseHeader() {
 		/* Cicla per tutti gli oggetti per aggiornare il riferimento */
 		for(int i = 0;i < grobj.size();i++) {
 			grobj.get(i).refreshReferenceSection();
 		}
+			
+	}
+	public void copyObject() {
+		if(idObjSelected == -1)
+			return;
 		
+		refObjCopy = refObj;
+	}
+	public void pasteObject() {
+		if(refObjCopy == null)
+			return;
 		
+		GRObject refCopy = refObjCopy.clone(idObj);
+		
+		if(refCopy == null) {
+			JOptionPane.showMessageDialog(null,"Il copia e incolla di oggetti è supportato solamente per: GRRectangle, GRLine, GRText","GRPage::pasteObject::copia di oggetti non supportata",JOptionPane.WARNING_MESSAGE);
+		} else {
+			grobj.add(refCopy);
+			idObj++;
+			repaint();
+		}
 	}
 	public void clearObject() {
 		if(idObjSelected == -1)
 			return;
 		
+		GRObject refObj = grobj.get(idObjSelected);
+		
 		// Prima di cancellare l'oggetto riempie l'undo
 		grUndo = new GRUndo(grobj.get(idObjSelected),idObjSelected,GRUndo.ACTION_CLEAROBJ);
 		
-		grobj.remove(idObjSelected);
+		if(grobj.get(idObjSelected) instanceof GRImage) {
+			GRImage refImage = (GRImage)grobj.get(idObjSelected);
+			
+			grdoc.removeImgResources(refImage.getIdImage());
+		} else if(grobj.get(idObjSelected) instanceof GRList) {
+			String nameList = ((GRList)grobj.get(idObjSelected)).getNameXml();
+			
+			/* Cancella tutti gli oggetti associati. Parte dall'ultimo */
+			for(int i = grobj.size()-1;i >= 0;i--) {
+				if(grobj.get(i).getListFather() != null) {
+					if(grobj.get(i).getListFather().getNameXml().equals(nameList)) {
+						
+						grobj.remove(i);
+					}
+				}
+			}
+		}
+		
+		grobj.remove(refObj);
+		
 		grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, false);
 		grdoc.manageMenu(GREditor.MENUVOICE_ANNULLA, true, grUndo.getActionUndoToString());
 		flagAzione = GRPage.ACTION_SELECT;
@@ -1331,6 +1568,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			
 		} else if(e.getSource() == menuCellPropertyCell) {
 			new GRDialogPropertyCell(grcellSelected);
+			
 		} else if(e.getSource() == menuCellPropertyTableList) {
 			new GRDialogPropertyTableList(grcellSelected.getFatherSection().getTableList());
 		}
@@ -1576,6 +1814,9 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				refImage.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
 			}
 		} else if(element.getName().equals("hposition")) {
+			if(((Element)element.getParent()).getName().equals("image")) {
+				refImage.setHPosition(element.getValue());
+			}
 			//if(((Element)element.getParent()).getName().equals("text")) {
 			//	refText.setHPosition(element.getValue());
 			//}

@@ -56,6 +56,7 @@ import java.util.Vector;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyleConstants;
@@ -78,7 +79,7 @@ public class GRTextFormatted {
 	boolean fontStyleMultiplo;
 	
 	public GRTextFormatted() {
-		this.dc = null;
+		this.dc = new DefaultStyledDocument();
 		this.textAlignment = GRSetting.FONTALIGNMENT;
 		this.value = "";
 		this.fName = "";
@@ -93,7 +94,7 @@ public class GRTextFormatted {
 		this.dc = dc;
 		this.textAlignment = alignment;
 		this.value = value;
-				
+			
 		this.init();
 	}
 	private void init() {
@@ -118,7 +119,7 @@ public class GRTextFormatted {
 				try {
 					Element et2 = et.getElement(y);
 					AttributeSet att = et2.getAttributes();
-							
+						
 					String fName = (String)att.getAttribute(StyleConstants.FontFamily);
 					if(!this.fName.equals("") && !this.fName.equals(fName))
 						fontNameMultiplo = true;
@@ -231,8 +232,12 @@ public class GRTextFormatted {
 		
 		grelem.add(new GRTextFormattedElement(fName,fSize,fBold,fItalic,fColor,testo));
 		
+		/* Imposta gli attributi al Document */
+		
 	}
-	
+	public Document getDocument() {
+		return dc;
+	}
 	public String getText() {
 		return value;
 	}
@@ -249,7 +254,7 @@ public class GRTextFormatted {
 		return grelem.get(i);
 	}
 	
-	/* Propriet� relative ai singoli token */
+	/* Proprietà relative ai singoli token */
 	public String getFontName() {
 		return fName;
 	}
@@ -260,15 +265,15 @@ public class GRTextFormatted {
 		
 		this.fName = fName;
 	}
-	public int getFontSize() {
-		return fSize;
-	}
 	public void setFontSize(int fSize) {
 		// Assegna la dimensione a tutti i token
 		for(int i = 0;i < grelem.size();i++)
 			grelem.get(i).setFontSize(fSize);
 		
 		this.fSize = fSize;
+	}
+	public int getFontSize() {
+		return fSize;
 	}
 	public int getFontStyle() {
 		return fStyle;

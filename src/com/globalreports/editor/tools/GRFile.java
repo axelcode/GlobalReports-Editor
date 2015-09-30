@@ -89,7 +89,7 @@ public abstract class GRFile {
 	         throw new IllegalArgumentException("UnzipFile: " + directory.getAbsolutePath() + " non è una directory");
 
 	    ZipInputStream zis = null;
-	     
+	     System.out.println(directory+"//"+nameFolderTemp);
 	    try {
 	    	 // Crea la cartella temporanea
 	    	 success = (new File(directory+"//"+nameFolderTemp)).mkdir();

@@ -74,4 +74,9 @@ public class GRTreeNode extends DefaultMutableTreeNode {
 	public String getName() {
 		return grdoc.getNameDocument();
 	}
+	public void setName(String value) {
+		grdoc.setNameDocument(value);
+		this.setUserObject(grdoc.getNameDocument());
+		this.name = value;
+	}
 }

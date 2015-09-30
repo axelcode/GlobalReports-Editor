@@ -77,6 +77,9 @@ public class GRTableModelPage extends GRTableModel implements TableModelListener
 					pagina.refreshHeader(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(2,1).toString())));
 					break;
 				
+				case 3:
+					pagina.refreshFooter(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(3,1).toString())));
+					break;
 				
 			}
 			
@@ -96,5 +99,8 @@ public class GRTableModelPage extends GRTableModel implements TableModelListener
     }
 	public void setHeader(int value) {
 		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),2,1);
+	}
+	public void setFooter(int value) {
+		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value), 3, 1);
 	}
 }

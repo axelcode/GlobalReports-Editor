@@ -156,6 +156,9 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 	public void setHeaderPage(int value) {
 		panelSection.setHeader(value);
 	}
+	public void setFooterPage(int value) {
+		panelSection.setFooter(value);
+	}
 	public int getWidthPage() {
 		return (int)GRLibrary.fromPixelsToMillimeters(widthPage);
 	}
@@ -205,6 +208,9 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 	}
 	public String getImgIdResources(GRImage grimg) {
 		return greditor.getImgIdResources(grimg);
+	}
+	public void removeImgResources(String id) {
+		greditor.removeImgResources(id);
 	}
 	public int getTotaleObject() {
 		return grpage.getTotaleObject();
@@ -266,7 +272,10 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 		grpage.repaint();
 	}
 	
-	// Comandi derivanti dal men�
+	// Comandi derivanti dal menù
+	public void setMenuVoiceEnabled(int typeMenu, int voiceMenu, boolean value) {
+		greditor.setMenuVoiceEnabled(typeMenu, voiceMenu, value);
+	}
 	public void manageMenu(int idVoce, boolean value) {
 		this.manageMenu(idVoce, value, null);
 	}
@@ -285,11 +294,19 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 	public void forwardObject() {
 		grpage.forwardObject();
 	}
+	public void copyObject() {
+		grpage.copyObject();
+	}
+	public void pasteObject() {
+		grpage.pasteObject();
+	}
 	public void setZoom(float value) {
 		panelMaster.setPreferredSize(new Dimension((widthPage * (int)value) + GAP_WIDTH, (heightPage * (int)value) + GAP_HEIGHT));
 		panelPage.setZoom(value);
 		panelSection.setHeight(panelPage.getHeight());
+		
 		grpage.setZoom(value);
+		
 	}
 	public void internalFrameActivated(InternalFrameEvent e) {
 		greditor.setDocumentActive(this);

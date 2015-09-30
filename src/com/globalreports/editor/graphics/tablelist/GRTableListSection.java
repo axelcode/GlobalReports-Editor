@@ -146,6 +146,9 @@ public class GRTableListSection {
 		cellSelected = null;
 		colorSection = null;
 	}
+	public void refresh() {
+		grfather.refresh();
+	}
 	public void addCell(int wCell) {
 		int xLeft = 0;
 		int index = 0;
@@ -266,10 +269,23 @@ public class GRTableListSection {
 		return height;
 	}
 	public void setMinHeight(int value) {
-		if(value > height)
-			height = value;
+		boolean trovato = false;
+		//if(value > height)
+		//	height = value;
 		
 		minHeight = value;
+		
+		/* Cicla per tutte le celle per vedere se è possibile riadattare l'altezza della sezione */
+		for(int i = 0;i < grtablelistcell.size();i++)
+			if( grtablelistcell.get(i).getHeight() > value) {// Se anche solo una cella è più grande del valore non modifica nulla
+				trovato = true;
+				
+				break;
+			}
+		
+		if(!trovato) {
+			height = value;
+		}
 		grfather.refreshSection();
 	}
 	public int getMinHeight() {

@@ -58,12 +58,18 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.property.GRTableModel;
+import com.globalreports.editor.designer.property.GRTableModelLine;
+import com.globalreports.editor.designer.property.GRTableModelRectangle;
 import com.globalreports.editor.tools.GRLibrary;
 
 public class GRLine extends GRShape {
-	
 	private int x2;
 	private int y2;
+	private int x2Original;
+	private int y2Original;
+	
+	private GRTableModelLine modelTable;
 	
 	public GRLine(GRPage grpage, long id) {
 		this(grpage,id,0,0,0,0,Color.BLACK);
@@ -80,6 +86,11 @@ public class GRLine extends GRShape {
 		
 		hPosition = false;
 	
+		x1Original = x1;
+		y1Original = y1;
+		x2Original = x2;
+		y2Original = y2;
+		
 		// Crea le ancore
 		tsx = new Rectangle(x1-4,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		tdx = new Rectangle(x2,y2-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
@@ -107,7 +118,26 @@ public class GRLine extends GRShape {
 		
 		return false;
 	}
-	@Override
+	public GRLine clone(long id) {
+		int newX1 = x1 + 15;
+		int newY1 = y1 + 15;
+		int newX2 = x2 + 15;
+		int newY2 = y2 + 15;
+		
+		GRLine grclone = new GRLine(grpage,id,newX1,newY1,newX2,newY2,cStroke);
+		
+		return grclone;
+	}
+	
+	public void setZoom(float value) {
+		super.setZoom(value);
+		
+		x2 = (int)(x2Original * value);
+		y2 = (int)(y2Original * value);
+		
+		setWidthStroke(widthStrokeOriginal);
+	}
+	
 	public void draw(Graphics g) {
 		Graphics2D g2d = (Graphics2D)g;
 		
@@ -143,20 +173,53 @@ public class GRLine extends GRShape {
 		}
 	}
 
+	public void setProperty(GRTableModel model) {
+		this.modelTable = (GRTableModelLine)model;
+		modelTable.setGRObject(this);
+		
+		this.refreshProperty();
+	}
+	public void refreshProperty() {
+		if(modelTable == null)
+			return;
+		
+		modelTable.setX1(this.getOriginalX());
+		modelTable.setY1(this.getOriginalY());
+		modelTable.setX2(this.getOriginalXEnd());
+		modelTable.setY2(this.getOriginalYEnd());
+		modelTable.setWidthStroke(this.getWidthStroke());
+		modelTable.setColorStroke(this.getColorStroke().getRed(), this.getColorStroke().getGreen(),this.getColorStroke().getBlue());
+		
+	}
 	public void setXEnd(int value) {
-		x2 = value;
+		x2 = (int)(value * zoom);
+		this.setOriginalXEnd(x2);	
+		
 	}
 	public int getXEnd() {
 		return x2;
 	}
+	public void setOriginalXEnd(int x) {
+		x2Original = (int)(x / zoom);
+	}
+	public int getOriginalXEnd() {
+		return x2Original;
+	}
 	public void setYEnd(int value) {
-		y2 = value;
+		y2 = (int)(value * zoom);
+		this.setOriginalYEnd(y2);
+		
 		this.refreshReferenceSection();
 	}
 	public int getYEnd() {
 		return y2;
 	}
-	
+	public void setOriginalYEnd(int y) {
+		y2Original = (int)(y / zoom);
+	}
+	public int getOriginalYEnd() {
+		return y2Original;
+	}
 	public String createCodeGRS() {
 		StringBuffer buff = new StringBuffer();
 		int y1 = this.y1;
@@ -169,12 +232,12 @@ public class GRLine extends GRShape {
 		
 		buff.append("<shape>\n");
 		buff.append("<type>line</type>\n");
-		buff.append("<x1>"+GRLibrary.fromPixelsToMillimeters(x1)+"</x1>\n");
-		buff.append("<y1>"+GRLibrary.fromPixelsToMillimeters(y1)+"</y1>\n");
-		buff.append("<x2>"+GRLibrary.fromPixelsToMillimeters(x2)+"</x2>\n");
-		buff.append("<y2>"+GRLibrary.fromPixelsToMillimeters(y2)+"</y2>\n");
+		buff.append("<x1>"+GRLibrary.fromPixelsToMillimeters(x1Original)+"</x1>\n");
+		buff.append("<y1>"+GRLibrary.fromPixelsToMillimeters(y1Original)+"</y1>\n");
+		buff.append("<x2>"+GRLibrary.fromPixelsToMillimeters(x2Original)+"</x2>\n");
+		buff.append("<y2>"+GRLibrary.fromPixelsToMillimeters(y2Original)+"</y2>\n");
 		buff.append("<colorstroke>"+colorStrokeRED+" "+colorStrokeGREEN+" "+colorStrokeBLUE+"</colorstroke>\n");
-		buff.append("<widthstroke>"+widthStroke+"</widthstroke>\n");
+		buff.append("<widthstroke>"+widthStrokeOriginal+"</widthstroke>\n");
 		buff.append("</shape>");
 		
 		return buff.toString();

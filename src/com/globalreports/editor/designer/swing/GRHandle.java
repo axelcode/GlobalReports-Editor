@@ -63,12 +63,19 @@ import com.globalreports.editor.GRSetting;
 
 @SuppressWarnings("serial")
 public class GRHandle extends JPanel {
+	public static final int	GRHANDLE_HEADER		= 1;
+	public static final int	GRHANDLE_FOOTER		= 2;
+	
 	private MediaTracker tracker;
 	private Image img;
 	
-	public GRHandle() {
+	public GRHandle(int type) {
 		tracker = new MediaTracker(this);
-		img = Toolkit.getDefaultToolkit().getImage(GRSetting.PATHIMAGE+"handle_header.png");
+		
+		if(type == GRHANDLE_HEADER)
+			img = Toolkit.getDefaultToolkit().getImage(GRSetting.PATHIMAGE+"handle_header.png");
+		else if(type == GRHANDLE_FOOTER)
+			img = Toolkit.getDefaultToolkit().getImage(GRSetting.PATHIMAGE+"handle_footer.png");
 		
 		tracker.addImage(img, 0);
 		try {

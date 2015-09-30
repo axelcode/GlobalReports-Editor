@@ -93,8 +93,8 @@ public class GRImageResource {
 	public String getPath() {
 		return pathFile;
 	}
-	public void setPath(String value) {
-		this.pathFile = "images//"+value;
+	public void setPath(String path, String value) {
+		this.pathFile = path + "images//" + value;
 		this.nameFile = value;
 	}
 	public String getNameFile() {

@@ -59,6 +59,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 
+import com.globalreports.editor.designer.resources.GRColor;
+import com.globalreports.editor.graphics.GRRectangle;
 import com.globalreports.editor.graphics.GRText;
 import com.globalreports.editor.tools.GRLibrary;
 
@@ -76,10 +78,12 @@ public class GRTableListCell {
 	private int marginTop;
 	private int marginRight;
 	private int marginBottom;
+	private Color colorStroke;
+	private Color colorFill;
 	
 	private GRTableListSection grsection;
 	private GRTableListText grtext;
-	
+		
 	public GRTableListCell(int index, int x, int y, int width, int height, GRTableListSection grsection) {
 		this.index = index;
 		this.indexColumn = index;
@@ -88,9 +92,12 @@ public class GRTableListCell {
 		this.width = width;
 		this.height = height;
 		
+		this.colorStroke = null;
+		this.colorFill = null;
+		
 		this.grsection = grsection;
 		grtext = null;
-		
+
 		totColumn = 1;
 		
 		marginLeft = 0;
@@ -101,6 +108,9 @@ public class GRTableListCell {
 		selected = false;
 	}
 	
+	public void refresh() {
+		grsection.refresh();
+	}
 	public void setIndex(int value) {
 		index = value;
 	}
@@ -128,7 +138,7 @@ public class GRTableListCell {
 		if(grtext == null)
 			grsection.setHeight(marginTop+marginBottom);
 		else
-			grsection.setHeight(grtext.getHeight()+marginTop+marginBottom);
+			grsection.setHeight(grtext.getHeight()+grtext.getTop()+marginTop+marginBottom);
 	}
 	public int getMarginTop() {
 		return marginTop;
@@ -145,10 +155,16 @@ public class GRTableListCell {
 		if(grtext == null)
 			grsection.setHeight(marginTop+marginBottom);
 		else
-			grsection.setHeight(grtext.getHeight()+marginTop+marginBottom);
+			grsection.setHeight(grtext.getHeight()+grtext.getTop()+marginTop+marginBottom);
 	}
 	public int getMarginBottom() {
 		return marginBottom;
+	}
+	public void refreshHeightSection() {
+		if(grtext == null)
+			grsection.setHeight(marginTop+marginBottom);
+		else
+			grsection.setHeight(grtext.getHeight()+grtext.getTop()+marginTop+marginBottom);
 	}
 	public void setWidth(int value) {
 		width = value;
@@ -160,6 +176,14 @@ public class GRTableListCell {
 	public int getWidth() {
 		return width;
 	}
+	public int getHeight() {
+		if(grtext == null)
+			return marginTop+marginBottom;
+		else
+			return grtext.getHeight()+grtext.getTop()+marginTop+marginBottom;
+		
+	}
+	
 	public void setLeft(int value) {
 		x = value;
 		
@@ -216,6 +240,44 @@ public class GRTableListCell {
 	public int getTopSection() {
 		return grsection.getTop();
 	}
+	public void setColorStroke(Color c) {
+		colorStroke = this.verifyColor(c);
+		
+	}
+	public Color getColorStroke() {
+		if(colorStroke == null)
+			return grsection.getColorStroke();
+		
+		return colorStroke;
+	}
+	public void setColorFill(Color c) {
+		colorFill = this.verifyColor(c);
+		
+	}
+	private Color verifyColor(Color c) {
+		if(c == null)
+			return null;
+		
+		Color section = grsection.getColorStroke();
+		
+		if(section == null)
+			return c;
+		else {
+			if(c.getRed() == section.getRed() &&
+			   c.getGreen() == section.getGreen() &&
+			   c.getBlue() == section.getBlue()) {
+				return null;
+			} else {
+				return c;
+			}
+		}
+	}
+	public Color getColorFill() {
+		if(colorFill == null)
+			return grsection.getColorFill();
+		
+		return colorFill;
+	}
 	public void draw(Graphics2D g2d) {
 		Stroke oldStroke = g2d.getStroke();
 		Color oldColorStroke = g2d.getColor();
@@ -228,14 +290,24 @@ public class GRTableListCell {
 			wColumn = wColumn + grsection.getColumnWidth(indexColumn+i);
 		
 		int lColumn = grsection.getColumnLeft(indexColumn);
-				
+			
 		// Se è presente un riempimento disegna prima quello
-		if(grsection.getColorFill() != null) {
-			g2d.setColor(grsection.getColorFill());
+		if(colorFill != null) {
+			g2d.setColor(colorFill);
 			g2d.fillRect(grsection.getLeft()+lColumn, grsection.getTop()+y, wColumn, grsection.getHeight());
+		} else {
+			// Se è presente un riempimento disegna prima quello
+			if(grsection.getColorFill() != null) {
+				g2d.setColor(grsection.getColorFill());
+				g2d.fillRect(grsection.getLeft()+lColumn, grsection.getTop()+y, wColumn, grsection.getHeight());
+			}
 		}
-		// Disegna il contorno esterno
-		g2d.setColor(grsection.getColorStroke());
+		
+		if(colorStroke != null) {
+			g2d.setColor(colorStroke);
+		} else {
+			g2d.setColor(grsection.getColorStroke());
+		}
 		g2d.drawRect(grsection.getLeft()+lColumn, grsection.getTop()+y, wColumn, grsection.getHeight());
 		
 		if(selected) {
@@ -267,6 +339,40 @@ public class GRTableListCell {
 		
 		if(grtext != null) {
 			buff.append(grtext.createCodeGRS());
+		}
+		
+		if(colorStroke != null || colorFill != null) {
+			int wColumn = 0;
+			Color cStroke = grsection.getColorStroke();
+			Color cFill = grsection.getColorFill();
+			
+			for(int i = 0;i < totColumn;i++)
+				wColumn = wColumn + grsection.getColumnWidth(indexColumn+i);
+			
+			/* Aggiunge un GRRectangle alla cella */
+			buff.append("<shape>\n");
+			buff.append("<type>rectangle</type>\n");
+			buff.append("<left>0.0</left>\n");
+			buff.append("<top>0.0</top>\n");
+			buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(wColumn)+"</width>\n");
+			buff.append("<height>"+GRLibrary.fromPixelsToMillimeters(grsection.getHeight())+"</height>\n");
+			
+			if(colorStroke != null) 
+				cStroke = colorStroke;
+			
+			buff.append("<colorstroke>"+cStroke.getRed()+" "+cStroke.getGreen()+" "+cStroke.getBlue()+"</colorstroke>\n");
+			
+			if(colorFill != null)
+				cFill = colorFill;
+			
+			buff.append("<colorfill>");
+			if(cFill == null)
+				buff.append("transparent");
+			else
+				buff.append(cFill.getRed()+" "+cFill.getGreen()+" "+cFill.getBlue());
+			buff.append("</colorfill>\n");
+			buff.append("<widthstroke>"+grsection.getWidthStroke()+"</widthstroke>\n");
+			buff.append("</shape>");
 		}
 		
 		buff.append("</cell>\n");

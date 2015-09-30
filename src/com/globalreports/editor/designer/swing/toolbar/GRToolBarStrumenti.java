@@ -130,6 +130,8 @@ public class GRToolBarStrumenti extends JToolBar implements ActionListener, Item
 		cZoom = new JComboBox();
 		cZoom.addItem("100%");
 		cZoom.addItem("200%");
+		cZoom.addItem("400%");
+		cZoom.addItem("800%");
 		cZoom.setSelectedItem("100%");
 		cZoom.setEditable(false);
 		cZoom.addItemListener(this);

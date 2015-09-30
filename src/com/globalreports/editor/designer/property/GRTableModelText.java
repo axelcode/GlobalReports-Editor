@@ -72,7 +72,9 @@ public class GRTableModelText extends GRTableModel implements TableModelListener
 			  {"Style",new GRComboFontStyle("Normal")},
 			  {"Size",new GRComboFontSize("10")},
 			  {"Alignment",new GRComboFontAlignment("Left")},
-			  {"Color",new GRColorCellEditor(0,0,0)}};
+			  {"Color",new GRColorCellEditor(0,0,0)},
+			  {"",""},
+			  {"List Father",new GRComboListFather("--Nothing--")}};
 			  
 	private GRText objText;	// Riferimento all'oggetto per poterne modificare le propriet�
 	
@@ -125,6 +127,10 @@ public class GRTableModelText extends GRTableModel implements TableModelListener
 				
 				case 12:	// Font Color
 					break;
+					
+				case 14:	// List Father
+					objText.setListFather(((GRComboListFather)getValueAt(14,1)).getValueSelected());
+					break;
 		}
 		
 		objText.refresh();
@@ -135,7 +141,7 @@ public class GRTableModelText extends GRTableModel implements TableModelListener
 	}
 	public boolean isCellEditable(int row, int column) {
 		if (column == 1) {
-			if(row == 0 || row == 1 || row == 7)
+			if(row == 0 || row == 1 || row == 7 || row == 13)
 				return false;
 			
 			return true;
@@ -146,6 +152,7 @@ public class GRTableModelText extends GRTableModel implements TableModelListener
 	
 	public void setGRObject(GRText ref) {
 		this.objText = ref;
+		
 	}
 	public void setHPosition(boolean value) {
 		this.setValueAt(new Boolean(value),2,1);
@@ -174,5 +181,7 @@ public class GRTableModelText extends GRTableModel implements TableModelListener
 	public void setFontAlignment(String fAlign) {
 		this.setValueAt(new GRComboFontAlignment(fAlign),11,1);
 	}
-	
+	public void setListFather(String value) {
+		this.setValueAt(new GRComboListFather(value), 14, 1);
+	}
 }

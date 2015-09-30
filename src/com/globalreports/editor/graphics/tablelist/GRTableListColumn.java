@@ -31,6 +31,23 @@ public class GRTableListColumn {
 	
 	public void setLeft(int value) {
 		this.left = value;
+		
+		if(grtablelistHeader != null) {
+			/* 
+			 * Cicla fino a che non trova un riferimento ad una cella.
+			 * Se ritorna null è perchè la vecchia cella è stata mergiata a quella precedente
+			 */
+			GRTableListCell refCell = null;
+			int i = index;
+			while((refCell = grtablelistHeader.getCellColumn(i)) == null) {
+				i--;
+			}
+			
+			if(refCell != null) {
+				
+				refCell.setLeft(value);
+			}
+		}	
 	}
 	public int getLeft() {
 		return left;

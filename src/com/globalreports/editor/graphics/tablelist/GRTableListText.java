@@ -82,11 +82,11 @@ public class GRTableListText extends GRObject {
 	private final String REG_TEXT = "\\[([a-zA-Z0-9]+):([0-9]+)\\]([a-zA-Z0-9 ,!$%&;:\\\\\"\'\\?\\^\\.\\{\\}\\-\\/]+)";
 	private final String REG_VARIABLE = "[{]([a-zA-Z0-9_]+)(:{0,1})([a-zA-Z0-9, =!$%&;\\\\\"\'\\?\\^\\.\\-\\/\\(\\)]{0,})[}]";
 	
-	public static final int ALIGNTEXT_LEFT			= 1;
-	public static final int ALIGNTEXT_CENTER		= 2;
-	public static final int ALIGNTEXT_RIGHT			= 3;
-	public static final int ALIGNTEXT_JUSTIFY		= 4;
-	public static final int ALIGNTEXT_SINGLELINE	= 5;
+	public static final int ALIGNTEXT_LEFT			= 0;
+	public static final int ALIGNTEXT_CENTER		= 1;
+	public static final int ALIGNTEXT_RIGHT			= 2;
+	public static final int ALIGNTEXT_JUSTIFY		= 3;
+	public static final int ALIGNTEXT_SINGLELINE	= 4;
 	
 	public static final int STYLETEXT_NONE			= -1;
 	public static final int STYLETEXT_NORMAL		= 0;
@@ -102,6 +102,8 @@ public class GRTableListText extends GRObject {
 	private int fontStyle;
 	private int alignment;
 	private float lineSpacing;
+	private int leftRelative;
+	private int topRelative;
 	
 	private Font font;
 	private FontMetrics metrics;
@@ -122,6 +124,9 @@ public class GRTableListText extends GRObject {
 		value = "";
 		x1 = 0;
 		y1 = 0;
+		leftRelative = 0;
+		topRelative = 0;
+		
 		width = 0;
 		hPosition = false;
 		lineSpacing = GRSetting.LINESPACING;
@@ -146,6 +151,8 @@ public class GRTableListText extends GRObject {
 		
 		x1 = area.x;
 		y1 = area.y;
+		leftRelative = 0;
+		topRelative = 0;
 		
 		width = area.width;
 		hPosition = false;
@@ -154,6 +161,7 @@ public class GRTableListText extends GRObject {
 		
 		insertTextFormatted();
 	}
+	
 	public void setCellFather(GRTableListCell grcell) {
 		this.grcell = grcell;
 	}
@@ -198,8 +206,29 @@ public class GRTableListText extends GRObject {
 	public String getFontid() {
 		return idFont;
 	}
+	public void setLeft(int value) {
+		leftRelative = value;
+		
+		x1 = grcell.getLeft() + value;
+		
+		width = grcell.getWidth() - value;
+		grcell.refresh();
+	}
+	public int getLeft() {
+		return leftRelative;
+	}
+	public void setTop(int value) {
+		topRelative = value;
+		
+		grcell.refreshHeightSection();
+	}
+	public int getTop() {
+		return topRelative;
+	}
 	public void setLineSpacing(float value) {
 		lineSpacing = value;
+		
+		insertTextFormatted();
 	}
 	public float getLineSpacing() {
 		return lineSpacing;
@@ -226,6 +255,7 @@ public class GRTableListText extends GRObject {
 		this.alignment = align;
 		
 		grtextFormatted.setAlignment(alignment);
+		
 	}
 	public void setFontAlignment(String align) {
 		if(align.equals("Left") || align.equals("left"))
@@ -236,8 +266,10 @@ public class GRTableListText extends GRObject {
 			this.alignment = GRText.ALIGNTEXT_RIGHT;
 		else if(align.equals("Justify") || align.equals("justify"))
 			this.alignment = GRText.ALIGNTEXT_JUSTIFY;
-			
+		
 		grtextFormatted.setAlignment(alignment);
+		insertTextFormatted();
+		
 	}
 	public int getFontAlignment() {
 		return alignment;
@@ -304,6 +336,9 @@ public class GRTableListText extends GRObject {
 		this.alignment = align;
 		
 		font = new Font(fontName,fontStyle,fontSize);
+	}
+	public GRTableListText clone(long id) {
+		return null;
 	}
 	public void refresh() {
 		this.insertTextFormatted();
@@ -395,12 +430,14 @@ public class GRTableListText extends GRObject {
 	
 	
 	private void drawParagraph(GRRowParagraph grrow, FontRenderContext frc, Graphics2D g2, float y) {
+		Color oldColor = g2.getColor();
+		
 		int widthToken = 0;
 		int widthRow = grrow.getWidthRow();
 		int widthParziale = 0;
 		
 		int x = 0;
-		y = y + grcell.getTopSection()+grcell.getMarginTop();
+		y = y + grcell.getTopSection()+grcell.getMarginTop()+topRelative;
 		
 		for(int i = 0;i < grrow.getTotaleTextRow();i++) {
 			GRTextRowParagraph grtext = grrow.getTokenTextRow(i);
@@ -464,10 +501,12 @@ public class GRTableListText extends GRObject {
 						break;
 				}
 				
+				g2.setColor(grtext.getFontColor());
 				tl.draw(g2,(float)x,y);
 			}
 		}
 		
+		g2.setColor(oldColor);
 	}
 	public void draw(Graphics g) {
 		if(gpar == null) {
@@ -548,7 +587,10 @@ public class GRTableListText extends GRObject {
 	}
 	public String createCodeGRS() {
 		StringBuffer buff = new StringBuffer();
-		StringBuffer buffText = new StringBuffer();
+		
+		String fontId = "";
+		int fontSize = 0;
+		Color fontColor = Color.black;
 		
 		buff.append("<text>\n");
 		buff.append("<alignment>");
@@ -574,19 +616,24 @@ public class GRTableListText extends GRObject {
 				break;
 		}
 		buff.append("</alignment>\n");
-		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(0)+"</left>\n");
-		buff.append("<top>"+GRLibrary.fromPixelsToMillimeters(y1)+"</top>\n");
+		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(leftRelative)+"</left>\n");
+		buff.append("<top>"+GRLibrary.fromPixelsToMillimeters(topRelative)+"</top>\n");
 		buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(width)+"</width>\n");
+		buff.append("<linespacing>"+lineSpacing+"</linespacing>\n");
 		buff.append("<hposition>absolute</hposition>\n");
 		buff.append("<value>");
 		
 		for(int i = 0;i < grtextFormatted.getTotaleElement();i++) {
-			GRTextFormattedElement token = grtextFormatted.getElement(i);
+			GRTextFormattedElement tfe = grtextFormatted.getElement(i);
 			
-			buffText.append("["+token.getFontId()+":"+token.getFontSize()+"]"+GRLibrary.lineASCIIToOct(token.getValue()));
+			fontId = tfe.getFontId();
+			fontSize = tfe.getFontSize();
+			fontColor = tfe.getFontColor();
+			
+			buff.append("["+fontId+":"+fontSize+":"+fontColor.getRed()+","+fontColor.getGreen()+","+fontColor.getBlue()+"]");
+			buff.append(GRLibrary.lineASCIIToOct(tfe.getValue()));
 			
 		}
-		buff.append(buffText.toString());
 		
 		buff.append("</value>\n");
 		buff.append("</text>\n");

@@ -164,6 +164,8 @@ public abstract class GRLibrary {
 			return new String(Character.toChars(47));
 		else if(value.equals("074"))
 			return new String(Character.toChars(60));
+		else if(value.equals("075"))
+			return new String(Character.toChars(61));
 		else if(value.equals("076"))
 			return new String(Character.toChars(62));
 		else if(value.equals("173"))
@@ -186,6 +188,10 @@ public abstract class GRLibrary {
 			return new String(Character.toChars(233));
 		else if(value.equals("354"))
 			return new String(Character.toChars(236));
+		else if(value.equals("362"))
+			return new String(Character.toChars(242));
+		else if(value.equals("363"))
+			return new String(Character.toChars(243));
 		else if(value.equals("371"))
 			return new String(Character.toChars(249));
 		else if(value.equals("372"))
@@ -226,6 +232,9 @@ public abstract class GRLibrary {
 			case 60:
 				return "\\074";
 				
+			case 61:
+				return "\\075";
+				
 			case 62:
 				return "\\076";
 				
@@ -258,6 +267,9 @@ public abstract class GRLibrary {
 				
 			case 237:
 				return "\\355";
+			
+			case 242:
+				return "\\362";
 				
 			case 243:
 				return "\\363";

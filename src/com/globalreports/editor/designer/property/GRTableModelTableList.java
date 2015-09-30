@@ -173,7 +173,7 @@ public class GRTableModelTableList extends GRTableModel implements TableModelLis
 	}
 	public boolean isCellEditable(int row, int column) {
         if (column == 1) {
-			if(row == 0 || row == 1 || row == 7 || row == 12 || row == 13 || row == 18 || row == 19)
+			if(row == 0 || row == 1 || row == 7 || row == 13 || row == 18 || row == 19)
 				return false;
 				
         	return true;
@@ -209,13 +209,16 @@ public class GRTableModelTableList extends GRTableModel implements TableModelLis
 		this.setValueAt(new GRColorCellEditor(red,green,blue),10,1);
 	}
 	public void setHeaderColorFill(Color c) {
-		this.setValueAt(new GRColorCellEditor(c), 11, 1);
+		if(c == null)
+			this.setValueAt(new GRColorCellEditor(-1,-1,-1,true), 11, 1);
+		else
+			this.setValueAt(new GRColorCellEditor(c.getRed(),c.getGreen(),c.getBlue(),true), 11, 1);
 	}
 	public void setHeaderColorFill(int red, int green, int blue) {
 		if(red == -1 || green == -1 || blue == -1)
-			this.setValueAt(new GRColorCellEditor(red,green,blue),11,1);
+			this.setValueAt(new GRColorCellEditor(red,green,blue,true),11,1);
 		else
-			this.setValueAt(new GRColorCellEditor(red,green,blue),11,1);
+			this.setValueAt(new GRColorCellEditor(red,green,blue,true),11,1);
 	}
 	public void setHeaderMinHeight(int value) {
 		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value), 12, 1);
@@ -232,13 +235,16 @@ public class GRTableModelTableList extends GRTableModel implements TableModelLis
 		this.setValueAt(new GRColorCellEditor(red,green,blue),16,1);
 	}
 	public void setBodyColorFill(Color c) {
-		this.setValueAt(new GRColorCellEditor(c), 17, 1);
+		if(c == null)
+			this.setValueAt(new GRColorCellEditor(-1,-1,-1,true), 17, 1);
+		else
+			this.setValueAt(new GRColorCellEditor(c.getRed(),c.getGreen(),c.getBlue(),true), 17, 1);
 	}
 	public void setBodyColorFill(int red, int green, int blue) {
 		if(red == -1 || green == -1 || blue == -1)
-			this.setValueAt(new GRColorCellEditor(red,green,blue),17,1);
+			this.setValueAt(new GRColorCellEditor(red,green,blue,true),17,1);
 		else
-			this.setValueAt(new GRColorCellEditor(red,green,blue),17,1);
+			this.setValueAt(new GRColorCellEditor(red,green,blue,true),17,1);
 	}
 	public void setBodyMinHeight(int value) {
 		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value), 18, 1);
@@ -255,13 +261,16 @@ public class GRTableModelTableList extends GRTableModel implements TableModelLis
 		this.setValueAt(new GRColorCellEditor(red,green,blue),22,1);
 	}
 	public void setFooterColorFill(Color c) {
-		this.setValueAt(new GRColorCellEditor(c), 23, 1);
+		if(c == null)
+			this.setValueAt(new GRColorCellEditor(-1,-1,-1,true), 23, 1);
+		else
+			this.setValueAt(new GRColorCellEditor(c.getRed(),c.getGreen(),c.getBlue(),true), 23, 1);
 	}
 	public void setFooterColorFill(int red, int green, int blue) {
 		if(red == -1 || green == -1 || blue == -1)
-			this.setValueAt(new GRColorCellEditor(red,green,blue),23,1);
+			this.setValueAt(new GRColorCellEditor(red,green,blue,true),23,1);
 		else
-			this.setValueAt(new GRColorCellEditor(red,green,blue),23,1);
+			this.setValueAt(new GRColorCellEditor(red,green,blue,true),23,1);
 	}
 	public void setFooterMinHeight(int value) {
 		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value), 24, 1);

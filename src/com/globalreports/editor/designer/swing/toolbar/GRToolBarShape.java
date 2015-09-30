@@ -64,6 +64,8 @@ import javax.swing.JToolBar;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.designer.dialog.GRDialogColorChooser;
+import com.globalreports.editor.designer.resources.GRColor;
 
 
 @SuppressWarnings("serial")
@@ -101,22 +103,25 @@ public class GRToolBarShape extends JToolBar implements ActionListener {
 		return panelColor.getColorFill();
 	}
 	public void actionPerformed(ActionEvent e) {
-		Color c;
+		GRColor c;
 		if(e.getSource() == bColorStroke) {
-			
-			c = JColorChooser.showDialog(this, "Color Chooser", panelColor.getColorStroke());
+			c = GRDialogColorChooser.showDialog(panelColor.getColorStroke(),false);
+			//c = JColorChooser.showDialog(this, "Color Chooser", panelColor.getColorStroke());
 			
 			if(c == null) 
 				return;
 				
-			panelColor.setColorStroke(c);
+			panelColor.setColorStroke(c.getColor());
 		} else if(e.getSource() == bColorFill) {
-			c = JColorChooser.showDialog(this, "Color Chooser", panelColor.getColorFill());
+			c = GRDialogColorChooser.showDialog(panelColor.getColorFill(),true);
 			
 			if(c == null) 
 				return;
-				
-			panelColor.setColorFill(c);
+			
+			if(c.isTransparent())
+				panelColor.setColorFill(GRSetting.COLORFILL);
+			else
+				panelColor.setColorFill(c.getColor());
 
 		}
 	}

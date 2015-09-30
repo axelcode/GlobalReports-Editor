@@ -67,6 +67,8 @@ import java.util.zip.ZipOutputStream;
 import org.jdom.*;
 import org.jdom.input.*;
 
+import com.globalreports.compiler.gr.err.GRCompFileCorruptedException;
+import com.globalreports.compiler.gr.err.GRCompIOException;
 import com.globalreports.compiler.gr.manage.GRCompiler;
 import com.globalreports.engine.manage.GRPDF;
 import com.globalreports.engine.manage.err.GRLayoutException;
@@ -89,6 +91,7 @@ import com.globalreports.editor.designer.swing.toolbar.GRToolBar;
 import com.globalreports.editor.designer.swing.toolbar.GRToolBarDesigner;
 import com.globalreports.editor.designer.swing.toolbar.GRToolBarStrumenti;
 import com.globalreports.editor.graphics.GRImage;
+import com.globalreports.editor.graphics.GRList;
 import com.globalreports.editor.graphics.GRObject;
 import com.globalreports.editor.graphics.GRText;
 import com.globalreports.editor.graphics.text.GRTextFormatted;
@@ -98,10 +101,15 @@ import com.globalreports.editor.tools.GRLibrary;
 
 @SuppressWarnings("serial")
 public class GREditor extends JFrame implements ActionListener {
+	public static final int MENUTYPE_FILE				= 1;
+	public static final int MENUTYPE_MODIFICA			= 2;
+	public static final int MENUTYPE_STRUMENTI			= 3;
+	
 	public static final int MENUVOICE_ANNULLA			= 1;
 	public static final int MENUVOICE_CANCELLA			= 2;
 	
 	private final String PATH_TEMP 			= System.getProperty("java.io.tmpdir");
+	private String path_dirTemp;
 	
 	private JMenuBar menuBar;
 	private JMenu menuFile;
@@ -111,7 +119,7 @@ public class GREditor extends JFrame implements ActionListener {
 	private JMenuItem menuFileAdd;
 	private JMenuItem menuFileSave;
 	private JMenuItem menuFileSaveAs;
-	private JMenuItem menuFileSaveAll;
+	private JMenuItem menuFileSaveSingle;
 	private JMenuItem menuFileSaveProject;
 	private JMenuItem menuFileAnteprimaPDF;
 	private JMenuItem menuFileAnteprimaPDFDocument;
@@ -121,6 +129,8 @@ public class GREditor extends JFrame implements ActionListener {
 	private JMenu menuModifica;
 	private JMenuItem menuModificaAnnulla;
 	private JMenuItem menuModificaCancella;
+	private JMenuItem menuModificaCopia;
+	private JMenuItem menuModificaIncolla;
 	private JMenu menuStrumenti;
 	private JMenu menuStrumentiGriglia;
 	private JMenuItem menuStrumentiGrigliaImpostaValori;
@@ -139,6 +149,10 @@ public class GREditor extends JFrame implements ActionListener {
 	private JSplitPane split;
 	private JSplitPane splitProperty;
 	private Font font;
+	
+	/* Informazioni preesistenti relative al documento */
+	private String pathDocumentSaved;
+	private String nameDocumentSaved;
 	
 	// Risorse del documento
 	private GRResFonts resFont;
@@ -182,8 +196,8 @@ public class GREditor extends JFrame implements ActionListener {
 		menuFileAdd.addActionListener(this);
 		menuFileSave = new JMenuItem("Salva");
 		menuFileSaveAs = new JMenuItem("Salva come...");
-		menuFileSaveAll = new JMenuItem("Salva tutti i documenti");
-		menuFileSaveAll.addActionListener(this);
+		menuFileSaveSingle = new JMenuItem("Salva pagina singola...");
+		menuFileSaveSingle.addActionListener(this);
 		menuFileSaveProject = new JMenuItem("Salva intero progetto...");
 		menuFileSaveProject.addActionListener(this);
 		menuFileAnteprimaPDF = new JMenuItem("Anteprima pagina corrente");
@@ -194,6 +208,7 @@ public class GREditor extends JFrame implements ActionListener {
 		menuFileAnteprimaPDFXml.addActionListener(this);
 		menuFileExportXml = new JMenuItem("Esporta xml dati...");
 		menuFileExportXml.addActionListener(this);
+		menuFileExportXml.setEnabled(false);
 		menuFileDebug = new JMenuItem("Debug...");
 		menuFileDebug.addActionListener(this);
 		
@@ -204,7 +219,7 @@ public class GREditor extends JFrame implements ActionListener {
 		menuFile.addSeparator();
 		menuFile.add(menuFileSave);
 		menuFile.add(menuFileSaveAs);
-		menuFile.add(menuFileSaveAll);
+		menuFile.add(menuFileSaveSingle);
 		menuFile.add(menuFileSaveProject);
 		menuFile.addSeparator();
 		menuFile.add(menuFileAnteprimaPDF);
@@ -212,7 +227,7 @@ public class GREditor extends JFrame implements ActionListener {
 		menuFile.add(menuFileAnteprimaPDFXml);
 		menuFile.addSeparator();
 		menuFile.add(menuFileExportXml);
-		menuFile.add(menuFileDebug);
+		//menuFile.add(menuFileDebug);
 		
 		// MENU MODIFICA
 		menuModifica = new JMenu("Modifica");
@@ -224,9 +239,18 @@ public class GREditor extends JFrame implements ActionListener {
 		menuModificaCancella = new JMenuItem("Cancella");
 		menuModificaCancella.setEnabled(false);
 		menuModificaCancella.addActionListener(this);
+		menuModificaCopia = new JMenuItem("Copia");
+		menuModificaCopia.setEnabled(false);
+		menuModificaCopia.addActionListener(this);
+		menuModificaIncolla = new JMenuItem("Incolla");
+		menuModificaIncolla.setEnabled(false);
+		menuModificaIncolla.addActionListener(this);
 		
 		menuModifica.add(menuModificaAnnulla);
 		menuModifica.add(menuModificaCancella);
+		menuModifica.addSeparator();
+		menuModifica.add(menuModificaCopia);
+		menuModifica.add(menuModificaIncolla);
 		
 		// MENU STRUMENTI
 		menuStrumenti = new JMenu("Strumenti");
@@ -241,6 +265,7 @@ public class GREditor extends JFrame implements ActionListener {
 		menuStrumenti.addSeparator();
 		menuArchivioImmagini = new JMenuItem("Archivio immagini...");
 		menuArchivioImmagini.addActionListener(this);
+		menuArchivioImmagini.setEnabled(false);
 		menuStrumenti.add(menuArchivioImmagini);
 		
 		setJMenuBar(menuBar);
@@ -270,6 +295,13 @@ public class GREditor extends JFrame implements ActionListener {
 		split.setDividerLocation(200);
 		c.add(split,BorderLayout.CENTER);
 		
+		/* Footer
+		 * Contiene le info relative all'oogetto selezionato
+		 */
+		JPanel grfoot = new JPanel();
+		grfoot.setPreferredSize(new Dimension(0,40));
+		c.add(grfoot,BorderLayout.SOUTH);
+		
 		setSize(800,600);
 		setExtendedState(Frame.MAXIMIZED_BOTH);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -286,6 +318,29 @@ public class GREditor extends JFrame implements ActionListener {
 		this.newEnvironment();
 	}
 		
+	public void setMenuVoiceEnabled(int typeMenu, int voiceMenu, boolean value) {
+		switch(typeMenu) {
+		case MENUTYPE_FILE:
+			break;
+			
+		case MENUTYPE_MODIFICA:
+			if(voiceMenu == 1) {
+				
+			} else if(voiceMenu == 2) {
+				
+			} else if(voiceMenu == 3) {
+				// Copia
+				menuModificaCopia.setEnabled(value);
+			} else if(voiceMenu == 4) {
+				// Incolla
+				menuModificaIncolla.setEnabled(value);
+			}
+			break;
+			
+		case MENUTYPE_STRUMENTI:
+			break;
+		}
+	}
 	public void newEnvironment() {
 		// Operazioni di pulizia dell'ambiente. Lo prepara per un nuovo lavoro
 		grproject.clear();	// Svuota i progetti
@@ -333,24 +388,37 @@ public class GREditor extends JFrame implements ActionListener {
 		return grtoolbarStrumenti;
 	}
 	
+	private void clearSession() {
+		pathDocumentSaved = null;
+		nameDocumentSaved = null;
+		this.setTitle("GlobalReports Editor");
+		
+		desk.removeAll();
+		
+					
+	}
 	public void newDocumentDialog() {
 		new GRDialogNewDocument(this);
 	}
 	public void newDocument(int width, int height) {
+		
 		if(doc != null) {
 			int i = JOptionPane.showConfirmDialog(this, "Desideri salvare il documento attualmente aperto?","Nuovo documento",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
 			
 			if(i == JOptionPane.CANCEL_OPTION)
 				return;
 			if(i == JOptionPane.OK_OPTION)
-				saveDocument();
+				saveProject(true,true);
 			
 			grproject.clear();
 		}
 		
-		desk.removeAll();
-		grtoolbarDesigner = new GRToolBarDesigner(this);
-		grtoolbar.add(grtoolbarDesigner);
+		this.clearSession();
+		
+		if(grtoolbarDesigner == null) {
+			grtoolbarDesigner = new GRToolBarDesigner(this);
+			grtoolbar.add(grtoolbarDesigner);
+		}
 		grtoolbar.activeButton(true, true, true, true, true);
 		grtoolbarStrumenti.setVisible(true);
 		
@@ -384,7 +452,7 @@ public class GREditor extends JFrame implements ActionListener {
 			openDoc(fc.getSelectedFile());
 		}
 		
-		
+	
 	}
 	public void openDoc(File f) {
 		grtoolbarDesigner = new GRToolBarDesigner(this);
@@ -402,14 +470,16 @@ public class GREditor extends JFrame implements ActionListener {
 			return;
 		}
 		
+		path_dirTemp = PATH_TEMP+dirTemp+"//";
+			
 		try {
 			/* Legge il file .main */
-			this.readSource(new File(PATH_TEMP+dirTemp+"//grmain.xml"));
+			this.readSource(new File(path_dirTemp+"grmain.xml"));
 			
 			/* Cicla per tutti le pagine presenti nel documento */
 			for(int i = 0;i < grproject.getTotalePagine();i++) {
 				doc = grproject.getDocument(i);
-				this.readSource(new File(PATH_TEMP+dirTemp+"//"+grproject.getDocument(i).getNameDocument()));
+				this.readSource(new File(PATH_TEMP+dirTemp+"//"+grproject.getDocument(i).getNameDocument()+".xml"));
 			
 				desk.add(doc);
 				doc.setMaximum(true);
@@ -474,57 +544,34 @@ public class GREditor extends JFrame implements ActionListener {
 			}
 		}
 	}
-	public void saveDocument() {
-		String pathSave = "";
-		
-		JFileChooser fc = new JFileChooser();
-		fc.setFileFilter(new FileNameExtensionFilter("Global Reports Source","grs"));
-		fc.setCurrentDirectory(new File("."));
-		
-		int r = fc.showSaveDialog(this);
-		if(r == JFileChooser.APPROVE_OPTION) {
-			if(fc.getSelectedFile().toString().endsWith(".xml"))
-				pathSave = fc.getSelectedFile().toString().substring(0,fc.getSelectedFile().toString().length()-4);
-			else
-				pathSave = fc.getSelectedFile().toString();
-			this.writeLayout(pathSave);	
-		}
-	}
-	public void saveAll() {
-		String pathSave = "";
-		
-		JFileChooser fc = new JFileChooser();
-		fc.setFileFilter(new FileNameExtensionFilter("Global Reports Source","xml"));
-		fc.setCurrentDirectory(new File("."));
-		
-		int r = fc.showSaveDialog(this);
-		if(r == JFileChooser.APPROVE_OPTION) {
-			if(fc.getSelectedFile().toString().endsWith(".xml"))
-				pathSave = fc.getSelectedFile().toString().substring(0,fc.getSelectedFile().toString().length()-4);
-			else
-				pathSave = fc.getSelectedFile().toString();
-			this.writeLayout(pathSave);	
-		}
-	}
-	public void saveProject() {
-		String pathSave = "";
-		String fileNameGRS = "";
-		
-		JFileChooser fc = new JFileChooser();
-		fc.setFileFilter(new FileNameExtensionFilter("Global Reports Source","grs"));
-		fc.setCurrentDirectory(new File("."));
-		
-		int r = fc.showSaveDialog(this);
-		if(r == JFileChooser.APPROVE_OPTION) {
-			fileNameGRS = fc.getSelectedFile().getName();
+	
+	
+	public void saveProject(boolean allPage, boolean saveAs) {
+		if(pathDocumentSaved == null || nameDocumentSaved == null || saveAs) {
+			JFileChooser fc = new JFileChooser();
+			fc.setFileFilter(new FileNameExtensionFilter("Global Reports Source","grs"));
+			fc.setCurrentDirectory(new File("."));
 			
-			if(fileNameGRS.endsWith(".grs"))
-				fileNameGRS = fileNameGRS.substring(0,fileNameGRS.length()-4);
-						
-			pathSave = fc.getSelectedFile().getParent();
-						
-			this.writeGRS(fileNameGRS,pathSave, true);	
+			int r = fc.showSaveDialog(this);
+			if(r == JFileChooser.APPROVE_OPTION) {
+				nameDocumentSaved = fc.getSelectedFile().getName();
+				
+				if(nameDocumentSaved.endsWith(".grs"))
+					nameDocumentSaved = nameDocumentSaved.substring(0,nameDocumentSaved.length()-4);
+							
+				pathDocumentSaved = fc.getSelectedFile().getParent();
+							
+				this.writeGRS(nameDocumentSaved,pathDocumentSaved, allPage);	
+				
+				this.setTitle(nameDocumentSaved+" - GlobalReports Editor");
+			}
+		} else {
+			this.writeGRS(nameDocumentSaved,pathDocumentSaved, allPage);
+			
+			this.setTitle(nameDocumentSaved+" - GlobalReports Editor");
 		}
+		
+		grproject.setNameProject(nameDocumentSaved);
 	}
 	public void setZoom(float value) {
 		doc.setZoom(value);
@@ -537,10 +584,12 @@ public class GREditor extends JFrame implements ActionListener {
 			this.printPDF(true,"");
 		} else {
 			Vector<String> variables = new Vector<String>();
+			Vector<String> varList = new Vector<String>();
 			
 			// Cicla per tutti gli oggetti contenuti nel body della pagina
 			for(int i = 0;i < doc.getTotaleObject();i++) {
-				if(doc.getObject(i) instanceof GRText) {
+				if(doc.getObject(i) instanceof GRText && doc.getObject(i).getListFather() == null) {
+					
 					GRText refText = (GRText)doc.getObject(i);
 					Vector<String> var = refText.getVariables();
 					
@@ -552,11 +601,34 @@ public class GREditor extends JFrame implements ActionListener {
 						
 			}
 			
-			if(variables.size() == 0) {
+			// Cerca tutti gli oggetti GRList
+			String nameList = null;
+			for(int i = 0;i < doc.getTotaleObject();i++) {
+				if(doc.getObject(i) instanceof GRList) {
+					nameList = ((GRList)doc.getObject(i)).getNameXml();
+					
+					for(int x = 0;x < doc.getTotaleObject();x++) {
+						if(doc.getObject(x) instanceof GRText && doc.getObject(x).hasListFather()) {
+							GRText refText = (GRText)doc.getObject(x);
+							
+							if(refText.getListFather().getNameXml().equals(nameList)) {
+								Vector<String> var = refText.getVariables();
+								
+								for(int v = 0;v < var.size();v++) {
+									if(!varList.contains(var.get(v)))
+										varList.add(var.get(v));
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			if(variables.size() == 0 && varList.size() == 0) {
 				this.printPDF(true, "");
 			} else {
-				String datiXml = new GRDialogAnteprimaXml(variables).getXml();
-				
+				String datiXml = new GRDialogAnteprimaXml(variables,nameList,varList).getXml();
+
 				if(datiXml != null)
 					this.printPDF(true,datiXml);
 			}
@@ -630,7 +702,15 @@ public class GREditor extends JFrame implements ActionListener {
 		
 		// Compila il file temporaneo appena creato
 		GRCompiler grcomp = new GRCompiler(GRSetting.PATHTEMP+"temp.grs");
-		grcomp.compilaNew(GRSetting.PATHTEMP+"temp.grb");
+		try {
+			grcomp.compilaNew(GRSetting.PATHTEMP+"temp.grb");
+		} catch(GRCompFileCorruptedException fce) {
+			JOptionPane.showMessageDialog(this,fce.getMessage(),"GREditor::printPDF::GRCompFileCorruptedException",JOptionPane.ERROR_MESSAGE);
+			return;
+		} catch(GRCompIOException ioe) {
+			JOptionPane.showMessageDialog(this, ioe.getMessage(),"GREditor::printPDF::GRCompIOException",JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		
 		// Genera il file PDF
 		GRPDF glob = new GRPDF();
@@ -642,19 +722,19 @@ public class GREditor extends JFrame implements ActionListener {
 		} catch(GRLayoutException le) {
 			JOptionPane.showMessageDialog(this,le.getMessage(),"GREditor::printPDF::GRLayoutException",JOptionPane.ERROR_MESSAGE);
 			
-			System.out.println("GREditor::printPDF::GRLayoutException: "+le.getMessage());
+			return;
 		} catch (GRPdfPathNotFoundException pnfe) {
 			JOptionPane.showMessageDialog(this,pnfe.getMessage(),"GREditor::printPDF::GRPdfPathNotFoundException",JOptionPane.ERROR_MESSAGE);
 			
-			System.out.println("GREditor::printPDF::GRPdfPathNotFoundException: "+pnfe.getMessage());
+			return;
 		} catch (GRPdfIOWriteException iowe) {
 			JOptionPane.showMessageDialog(this,iowe.getMessage(),"GREditor::printPDF::GRPdfIOWriteException",JOptionPane.ERROR_MESSAGE);
 			
-			System.out.println("GREditor::printPDF::GRPdfIOWriteException: "+iowe.getMessage());
+			return;
 		} catch (GRValidateException ve) {
 			JOptionPane.showMessageDialog(this,ve.getMessage(),"GREditor::printPDF::GRValidateException",JOptionPane.ERROR_MESSAGE);
 			
-			System.out.println("GREditor::printPDF::GRValidateException: "+ve.getMessage());
+			return;
 		} 
 				
 		// Lancio il file per visualizzare l'anteprima
@@ -671,10 +751,14 @@ public class GREditor extends JFrame implements ActionListener {
 			this.openDocument();
 		} else if(e.getSource() == menuFileAdd) {
 			this.addPageDocument();
-		} else if(e.getSource() == menuFileSaveAll) {
-			this.saveAll();
+		} else if(e.getSource() == menuFileSave) {
+			this.saveProject(true,false);
+		} else if(e.getSource() == menuFileSaveAs) {
+			this.saveProject(true, true);
+		} else if(e.getSource() == menuFileSaveSingle) {
+			this.saveProject(false, true);
 		} else if(e.getSource() == menuFileSaveProject) {
-			this.saveProject();
+			this.saveProject(true,true);
 		} else if(e.getSource() == menuFileAnteprimaPDF) {
 			this.printPDF(false, "");
 		} else if(e.getSource() == menuFileAnteprimaPDFDocument) {
@@ -689,6 +773,10 @@ public class GREditor extends JFrame implements ActionListener {
 			this.undo();
 		} else if(e.getSource() == menuModificaCancella) {
 			doc.clearObject();
+		} else if(e.getSource() == menuModificaCopia) {
+			doc.copyObject();
+		} else if(e.getSource() == menuModificaIncolla) {
+			doc.pasteObject();
 		} else if(e.getSource() == menuStrumentiGrigliaImpostaValori) {
 			new GRDialogImpostaValoriGriglia(this, doc.getGapGrid());
 		} else if(e.getSource() == menuArchivioImmagini) {
@@ -745,7 +833,9 @@ public class GREditor extends JFrame implements ActionListener {
 	public GRResImages getImgResources() {
 		return resImg;
 	}
-	
+	public void removeImgResources(String id) {
+		resImg.removeResource(id);
+	}
 	private void writeHeaderXml(RandomAccessFile raf) throws IOException {
 		raf.writeBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 		raf.writeBytes("<globalreports edit=\""+GRAbout.EDIT_NAME+"\" version=\""+GRAbout.MAIOR_VERSION+"."+GRAbout.MINOR_VERSION+"\">\n");
@@ -795,15 +885,15 @@ public class GREditor extends JFrame implements ActionListener {
 				rOut.writeBytes("</images>\n");
 			}
 			rOut.writeBytes("</grresources>\n");
-			
+		
 			/* GRPAGES */
 			rOut.writeBytes("<grpages>\n");
 			// Inserisce le pagine
 			if(!allPage) {
-				rOut.writeBytes("<grpage>"+doc.getNameDocument()+".xml</grpage>\n");
+				rOut.writeBytes("<grpage>"+doc.getNameDocument()+"</grpage>\n");
 			} else {
 				for(int i = 0;i < grproject.getTotalePagine();i++) {
-					rOut.writeBytes("<grpage>"+grproject.getDocument(i).getNameDocument()+".xml</grpage>\n");
+					rOut.writeBytes("<grpage>"+grproject.getDocument(i).getNameDocument()+"</grpage>\n");
 				}
 			}
 			rOut.writeBytes("</grpages>\n");
@@ -814,9 +904,11 @@ public class GREditor extends JFrame implements ActionListener {
 			/* Scrivo le pagine agganciate al documento */
 			// Inserisce le pagine
 			if(!allPage) {
+				//rOut = new RandomAccessFile("temp//test//"+doc.getNameDocument()+".xml","rw");
 				rOut = new RandomAccessFile(PATH_TEMP+"//"+nameFileTemp+"//"+nameFile+"//"+doc.getNameDocument()+".xml","rw");
 				this.writePage(rOut,doc);
 				rOut.close();
+				//return;
 			} else {
 				for(int i = 0;i < grproject.getTotalePagine();i++) {
 					rOut = new RandomAccessFile(PATH_TEMP+"//"+nameFileTemp+"//"+nameFile+"//"+grproject.getDocument(i).getNameDocument()+".xml","rw");
@@ -913,18 +1005,25 @@ public class GREditor extends JFrame implements ActionListener {
 			rOut.writeBytes("<pagefooter>"+doc.getFooterSize()+"</pagefooter>\n");
 		}
 		
-		// Cicla per tutti gli oggetti.
+		/* Cicla per tutti gli oggetti.
+		 * La scrittura prevede l'inserimento degli oggetti nell'ordine in cui
+		 * sono stati disegnati. Fanno eccezione gli oggetti legati ad una
+		 * eventuale lista. Questi NON vengono inseriti, sarà la lista che
+		 * li inserirà nel suo codice
+		 */
 		// HEAD
 		totObject = 0;
 		for(int i = 0;i < doc.getTotaleObject();i++) {
 			if(doc.getObject(i).getSection() == GRObject.SECTION_HEADER) {
-				if(totObject == 0) {
-					rOut.writeBytes("<grheader>\n");
+				if(!doc.getObject(i).hasListFather()) {
+					if(totObject == 0) {
+						rOut.writeBytes("<grheader>\n");
+					}
+					
+					rOut.writeBytes(doc.getObject(i).createCodeGRS()+"\n");
+					
+					totObject++;
 				}
-				
-				rOut.writeBytes(doc.getObject(i).createCodeGRS()+"\n");
-				
-				totObject++;
 			}
 		}
 		if(totObject > 0)	// Chiude la section
@@ -934,21 +1033,43 @@ public class GREditor extends JFrame implements ActionListener {
 		totObject = 0;
 		for(int i = 0;i < doc.getTotaleObject();i++) {
 			if(doc.getObject(i).getSection() == GRObject.SECTION_BODY) {
-				if(totObject == 0) {
-					rOut.writeBytes("<grbody>\n");
+				if(!doc.getObject(i).hasListFather()) {
+					if(totObject == 0) {
+						rOut.writeBytes("<grbody>\n");
+					}
+					
+					if(!doc.getObject(i).hasListFather()) {
+						rOut.writeBytes(doc.getObject(i).createCodeGRS()+"\n");
+					}
+					totObject++;
 				}
 				
-				rOut.writeBytes(doc.getObject(i).createCodeGRS()+"\n");
-				
-				totObject++;
 			}
 		}
 		if(totObject > 0)	// Chiude la section
 			rOut.writeBytes("</grbody>\n");
 		
-		
+		// FOOT
+		totObject = 0;
+		for(int i = 0;i < doc.getTotaleObject();i++) {
+			if(doc.getObject(i).getSection() == GRObject.SECTION_FOOTER) {
+				if(!doc.getObject(i).hasListFather()) {
+					if(totObject == 0) {
+						rOut.writeBytes("<grfooter>\n");
+					}
+					
+					rOut.writeBytes(doc.getObject(i).createCodeGRS()+"\n");
+					
+					totObject++;
+				}
+			}
+		}
+		if(totObject > 0)	// Chiude la section
+			rOut.writeBytes("</grfooter>\n");
+				
 		rOut.writeBytes("</page>\n");
 		rOut.writeBytes("</globalreports>\n");
+		
 	}
 	/* Apertura di un doc preesistente. XML */
 	private boolean readSource(File grsource) throws JDOMException {
@@ -1065,7 +1186,7 @@ public class GREditor extends JFrame implements ActionListener {
 				}
 			} else if(element.getName().equals("path")) {
 				if(((Element)element.getParent()).getName().equals("image")) {
-					resImg.setImagePath(element.getValue());
+					resImg.setImagePath(path_dirTemp,element.getValue());
 				}
 			} else if(element.getName().equals("originalwidth")) {
 				if(((Element)element.getParent()).getName().equals("image")) {

@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.GRSetting
+ * class name  : com.globalreports.editor.designer.resources.GRColor
  * Begin       : 
  * Last Update : 
  *
@@ -49,43 +49,45 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor;
+package com.globalreports.editor.designer.resources;
 
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.SystemColor;
 
-import com.globalreports.editor.graphics.GRText;
-
-
-public interface GRSetting {
-	// Percorsi
-	public final String PATHIMAGE 		= "resources/images/";
-	public final String PATHTEMP		= "temp/";
-	public final String PATHFONTCONFIG	= "resources/fonts/";
-	public final String PATHTEMPLATE	= "resources/template/";
-	public final String PATHLICENSE		= "resources/license/";
+@SuppressWarnings("serial")
+public class GRColor {
+	private Color color;
+	private boolean transparent;
 	
-	// Dimensioni
-	public final int MIN_DIMENSION_OBJ	= 15;	// Dimensione minima espressa in pixels (5 mm)
-	public final int WIDTHPAGE			= 630;	// 210 mm - A4 Verticale
-	public final int HEIGHTPAGE		= 891;	// 297 mm - A4 Verticale
+	public GRColor(int red, int green, int blue) {
+		this(new Color(red,green,blue),false);
+	}
+	public GRColor(boolean transparent) {
+		this(Color.BLACK,true);
+	}
+	private GRColor(Color c, boolean transparent) {
+		color = c;
+		this.transparent = transparent;
+	}
 	
-	// Valori di default degli oggetti
-	// FONT
-	public final Font DEFAULTFONT	= new Font("Lucida Grande",Font.PLAIN,10);
-	public final String FONTNAME	= "Verdana";
-	public final int FONTSIZE		= 10;
-	public final int FONTALIGNMENT	= GRText.ALIGNTEXT_LEFT;
-	public final int FONTSTYLE		= GRText.STYLETEXT_NORMAL;
-	public final float LINESPACING	= 2.0f;		// Dimensione espressa in millimetri
-	
-	// Colori
-	public final Color COLORSTROKE			= Color.BLACK;
-	public final Color COLORFILL			= null;
-	public final Color COLORTRANSPARENT		= SystemColor.inactiveCaptionBorder;
-	
-	// Tratto
-	public final double WIDTHSTROKE	= 0.5;
-	
+	public void setTransparent(boolean value) {
+		transparent = value;
+	}
+	public boolean isTransparent() {
+		return transparent;
+	}
+	public int getRed() {
+		return color.getRed();
+	}
+	public int getGreen() {
+		return color.getGreen();
+	}
+	public int getBlue() {
+		return color.getBlue();
+	}
+	public Color getColor() {
+		if(transparent)
+			return null;
+		
+		return color;
+	}
 }

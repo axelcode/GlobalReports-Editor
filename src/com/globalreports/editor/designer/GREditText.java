@@ -59,6 +59,8 @@ import javax.swing.text.*;
 
 import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.configuration.font.GRFontProperty;
+import com.globalreports.editor.designer.dialog.GRDialogColorChooser;
+import com.globalreports.editor.designer.resources.GRColor;
 import com.globalreports.editor.graphics.GRText;
 import com.globalreports.editor.graphics.text.GRTextFormatted;
 import com.globalreports.editor.graphics.text.GRTextFormattedElement;
@@ -210,7 +212,7 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 		attributi = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(attributi,fontName);
 		StyleConstants.setFontSize(attributi,fontSize);
-		StyleConstants.setAlignment(attributi,StyleConstants.ALIGN_RIGHT);
+		StyleConstants.setAlignment(attributi,StyleConstants.ALIGN_LEFT);
 		
 	}
 	
@@ -283,14 +285,16 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 			this.changeFontStyle();
 			flagButtonChanged = true;
 		} else if(e.getSource() == bFontColor) {
-			Color c = null;
+			GRColor c = null;
 			AttributeSet a = textArea.getCharacterAttributes();
 			
-			c = JColorChooser.showDialog(this, "Color Chooser", (Color)a.getAttribute(StyleConstants.Foreground));
-		
+			//c = JColorChooser.showDialog(this, "Color Chooser", (Color)a.getAttribute(StyleConstants.Foreground));
+			c = GRDialogColorChooser.showDialog((Color)a.getAttribute(StyleConstants.Foreground),false);
+			
 			if(c == null) 
 				return;
-				StyleConstants.setForeground(attributi, c);
+				
+			StyleConstants.setForeground(attributi, c.getColor());
 			//StyleConstants.setForeground(attributi,true);
 			textArea.setCharacterAttributes(attributi,false);
 			//panelColor.setColorStroke(c);
@@ -360,9 +364,9 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 		
 		for(int i = 0;i < grtext.getTotaleElement();i++) {
 			GRTextFormattedElement grelem = grtext.getElement(i);
-						
+					
 			StyleConstants.setFontFamily(attributi,grelem.getFontName());
-			StyleConstants.setFontSize(attributi,grelem.getFontSize());
+			StyleConstants.setFontSize(attributi,grelem.getOriginalFontSize());
 			StyleConstants.setItalic(attributi,grelem.isItalic());
 			StyleConstants.setBold(attributi,grelem.isBold());
 			StyleConstants.setForeground(attributi,grelem.getFontColor());
@@ -377,7 +381,7 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 			}
 
 			fontName = grelem.getFontName();
-			fontSize = grelem.getFontSize();
+			fontSize = grelem.getOriginalFontSize();
 			
 			textArea.setFont(new Font(fontName,Font.PLAIN,fontSize));
 		}
@@ -415,7 +419,6 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 	}
 	public void showDialog(int type) {
 		typeDialog = type;
-		
 		
 		setVisible(true);
 		textArea.requestFocusInWindow();

@@ -31,7 +31,7 @@ public class GRDialogPropertyTableList extends JDialog implements ActionListener
 	private final JPanel contentPanel = new JPanel();
 	private JTabbedPane tabbedPane;
 	private JButton okButton;
-	private JButton cancelButton;
+	private JButton closeButton;
 	
 	private JTextField[] textColumnDimension;
 	
@@ -76,9 +76,9 @@ public class GRDialogPropertyTableList extends JDialog implements ActionListener
 		buttonPane.add(okButton);
 		getRootPane().setDefaultButton(okButton);
 		
-		cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(this);
-		buttonPane.add(cancelButton);
+		closeButton = new JButton("Chiudi");
+		closeButton.addActionListener(this);
+		buttonPane.add(closeButton);
 		
 		c.add(buttonPane, BorderLayout.SOUTH);
 		
@@ -121,6 +121,7 @@ public class GRDialogPropertyTableList extends JDialog implements ActionListener
             textColumnDimension[i].setPreferredSize(new Dimension(100,24));
             textColumnDimension[i].setBounds(120,5,100,24);
             textColumnDimension[i].setText(""+GRLibrary.fromPixelsToMillimeters(grtableList.getColDimension(i)));
+            textColumnDimension[i].addFocusListener(this);
             rowPanel.add(textColumnDimension[i]);
             
             if(i % 2 == 0)
@@ -128,6 +129,7 @@ public class GRDialogPropertyTableList extends JDialog implements ActionListener
 		}
 		
 	}
+
 	private void refreshTableList() {
 		/* Tab Colonne */
 		for(int i = 0;i < grtableList.getNumColumns();i++)
@@ -136,6 +138,8 @@ public class GRDialogPropertyTableList extends JDialog implements ActionListener
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == okButton) {
 			refreshTableList();
+		} else if(e.getSource() == closeButton) {
+			this.dispose();
 		}
 	}
 	@Override

@@ -59,16 +59,21 @@ public class GRTextFormattedElement {
 	private String fId;
 	private String fontName;
 	private int fontSize;
+	private int fontSizeOriginal;
 	private int fontStyle;
 	private Color fontColor;
 	private String value;
+	private float zoom;
 	
 	public GRTextFormattedElement(String fName, int fSize, boolean fBold, boolean fItalic, Color fColor, String value) {
 		this.fontName = fName;
 		this.fontSize = fSize;
+		this.fontSizeOriginal = fSize;
 		this.fontColor = fColor;
 		this.value = value;
 		this.fId = fName;
+		
+		zoom = 1.0f;
 		
 		fontStyle = GRText.STYLETEXT_NORMAL;
 		if(fBold) {
@@ -86,6 +91,11 @@ public class GRTextFormattedElement {
 		
 	}
 	
+	public void setZoom(float value) {
+		zoom = value;
+		
+		this.setFontSize(fontSizeOriginal);
+	}
 	public Color getFontColor() {
 		return fontColor;
 	}
@@ -101,17 +111,42 @@ public class GRTextFormattedElement {
 	public String getValue() {
 		return value;
 	}
+	public void setFontSize(int fSize) {
+		this.fontSize = (int)(fSize * zoom);
+		this.setOriginalFontSize(fontSize);
+	}
 	public int getFontSize() {
 		return fontSize;
 	}
-	public void setFontSize(int fSize) {
-		this.fontSize = fSize;
+	public void setOriginalFontSize(int fSize) {
+		this.fontSizeOriginal = (int)(fSize / zoom);
+	}
+	public int getOriginalFontSize() {
+		return fontSizeOriginal;
 	}
 	public int getFontStyle() {
 		return fontStyle;
 	}
 	public void setFontStyle(int fStyle) {
 		this.fontStyle = fStyle;
+		
+		this.fId = this.fontName;
+		
+		switch(fStyle) {
+			case GRText.STYLETEXT_BOLD:
+				this.fId = this.fId + "-Bold";
+				break;
+				
+			case GRText.STYLETEXT_ITALIC:
+				this.fId = this.fId + "-Italic";
+				break;
+				
+			case GRText.STYLETEXT_BOLDITALIC:
+				this.fId = this.fId + "-BoldItalic";
+				break;
+			
+		}
+		
 	}
 	public void setFontId(String value) {
 		fId = value;

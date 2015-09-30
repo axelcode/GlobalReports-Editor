@@ -57,18 +57,24 @@ import javax.swing.*;
 public class GRTableProperty  {
 	private JTable table;
 	
+	private GRTableCellEditor tablecellEditor;
+	
 	public GRTableProperty() {
 		table = new JTable();
 		
 		table.setFont(new Font("Lucida Grande",Font.PLAIN,10));
 		table.setRowHeight(24);
+		
+		tablecellEditor = new GRTableCellEditor();
 	}
-	
 	
 	public JTable getTable() {
 		return table;
 	}
-	
+	public void debug() {
+		table.setEnabled(false);
+		table.setEnabled(true);
+	}
 	public void setModelPage(GRTableModelPage model) {
 		table.setModel(model);
 		
@@ -101,6 +107,12 @@ public class GRTableProperty  {
 		this.initRender();
 		table.setVisible(true);
 	}
+	public void setModelList(GRTableModelList model) {
+		table.setModel(model);
+		
+		this.initRender();
+		table.setVisible(true);
+	}
 	public void setModelTableList(GRTableModelTableList model) {
 		table.setModel(model);
 		
@@ -109,7 +121,16 @@ public class GRTableProperty  {
 	}
 	private void initRender() {
 		table.getColumn("Value").setCellRenderer(new GRTableCellRenderer());
-		table.getColumn("Value").setCellEditor(new GRTableCellEditor());
+		//table.getColumn("Value").setCellEditor(new GRTableCellEditor());
+		table.getColumn("Value").setCellEditor(tablecellEditor);
 	}
+	
+	public void addListFather(String value) {
+		tablecellEditor.addListFather(value);
+	}
+	public void removeListFather(String value) {
+		tablecellEditor.removeListFather(value);
+	}
+	
 	
 }

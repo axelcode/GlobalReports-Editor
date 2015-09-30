@@ -67,8 +67,8 @@ public class GRImage extends GRObject {
 	
 	private String idImg;
 	private String pathFile;
-	private int widthOriginal;
-	private int heightOriginal;
+	private int widthFile;
+	private int heightFile;
 	
 	private MediaTracker tracker;
 	private GRResImages resImg;
@@ -87,6 +87,11 @@ public class GRImage extends GRObject {
 		
 		tracker = new MediaTracker(grpage);
 		imgOriginal = null;
+				
+		x1Original = x1;
+		y1Original = y1;
+		widthOriginal = width;
+		heightOriginal = height;
 		
 		// Crea le ancore
 		tsx = new Rectangle(x1-4,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
@@ -125,8 +130,13 @@ public class GRImage extends GRObject {
 			tracker.waitForID(0);
 		} catch(InterruptedException e) {}
 		
-		widthOriginal = imgOriginal.getWidth(null);
-		heightOriginal = imgOriginal.getHeight(null);
+		widthFile = imgOriginal.getWidth(null);
+		heightFile = imgOriginal.getHeight(null);
+		
+		x1Original = x1;
+		y1Original = y1;
+		widthOriginal = width;
+		heightOriginal = height;
 		
 		scaledImage();
 		
@@ -154,11 +164,11 @@ public class GRImage extends GRObject {
 	public String getPathFile() {
 		return pathFile;
 	}
-	public int getOriginalWidth() {
-		return widthOriginal;
+	public int getFileWidth() {
+		return widthFile;
 	}
-	public int getOriginalHeight() {
-		return heightOriginal;
+	public int getFileHeight() {
+		return heightFile;
 	}
 	public void setIdImage(String idImg) {
 		this.idImg = idImg;
@@ -178,11 +188,14 @@ public class GRImage extends GRObject {
 				tracker.waitForID(0);
 			} catch(InterruptedException e) {}
 			
-			widthOriginal = imgOriginal.getWidth(null);
-			heightOriginal = imgOriginal.getHeight(null);
+			widthFile = imgOriginal.getWidth(null);
+			heightFile = imgOriginal.getHeight(null);
 			
 			scaledImage();
 		}
+	}
+	public String getIdImage() {
+		return idImg;
 	}
 	public void setWidth(int w) {
 		super.setWidth(w);
@@ -194,8 +207,28 @@ public class GRImage extends GRObject {
 		
 		scaledImage();
 	}
+	public void setZoom(float value) {
+		super.setZoom(value);
+		
+		scaledImage();
+	}
+	public GRImage clone(long id) {
+		return null;
+	}
 	public void draw(Graphics g) {
+		int hGap = 0;
+		int y1 = this.y1;
+		
+		if(hPosition) {
+			hGap = hGap + grpage.hPosition;
+			gapH = hGap;
+		}
+		
+		y1 = y1 + hGap;
+		
 		g.drawImage(imgScaled,x1,y1,null);
+		
+		grpage.hPosition = y1 + height;
 		
 		if(selected) {
 			g.drawRect(x1,y1,width,height);
@@ -208,17 +241,25 @@ public class GRImage extends GRObject {
 	}
 	public String createCodeGRS() {
 		StringBuffer buff = new StringBuffer();
-		int y1 = this.y1;
+		int y1 = this.y1Original;
 		
 		if(section == GRObject.SECTION_BODY)
 			y1 = y1 - grpage.getHeaderSize();
-		
+		if(section == GRObject.SECTION_FOOTER) {
+			y1 = y1 - (grpage.getHeight() - grpage.getFooterSize());
+		}
 		buff.append("<image>\n");
 		buff.append("<refid>"+idImg+"</refid>\n");
-		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(x1)+"</left>\n");
+		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(x1Original)+"</left>\n");
 		buff.append("<top>"+GRLibrary.fromPixelsToMillimeters(y1)+"</top>\n");
-		buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(width)+"</width>\n");
-		buff.append("<height>"+GRLibrary.fromPixelsToMillimeters(height)+"</height>\n");
+		buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(widthOriginal)+"</width>\n");
+		buff.append("<height>"+GRLibrary.fromPixelsToMillimeters(heightOriginal)+"</height>\n");
+		buff.append("<hposition>");
+		if(hPosition)
+			buff.append("relative");
+		else
+			buff.append("absolute");
+		buff.append("</hposition>\n");
 		buff.append("</image>");
 		
 		return buff.toString();

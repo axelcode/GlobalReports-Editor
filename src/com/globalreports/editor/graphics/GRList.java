@@ -52,34 +52,45 @@
 package com.globalreports.editor.graphics;
 
 import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
+import java.util.Vector;
 
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.tools.GRLibrary;
 
 public class GRList extends GRObject {
-	private GRPage grpage;
 	private AlphaComposite composite;	// Canale Alpha per la trasparenza degli oggetti
 	
+	private String nameXml;
+	
 	public GRList(GRPage grpage, long id) {
-		super(GRObject.TYPEOBJ_LIST,id);
+		super(GRObject.TYPEOBJ_LIST,id,grpage);
 		
-		x1 = 0;
+		nameXml = "list";
+		
 		y1 = 0;
-		width = 630;
+		width = grpage.getWidth();
 		height = 0;
 		
-		composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f);
+		y1Original = y1;
+		heightOriginal = height;
+		
+		composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f);
+		this.refreshReferenceSection();		
 	}
 
 	public GRList(GRPage grpage, long id, int yStart, int yEnd) {
-		super(GRObject.TYPEOBJ_LIST,id);
+		super(GRObject.TYPEOBJ_LIST,id,grpage);
 		
-		x1 = 0;
-		width = 630;
+		nameXml = "list";
+		
+		width = grpage.getWidth();
 		
 		if(yStart < yEnd) {
 			y1 = yStart;
@@ -89,31 +100,82 @@ public class GRList extends GRObject {
 			height = yStart - yEnd;
 		}
 		
+		y1Original = y1;
+		heightOriginal = height;
+		
 		composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f);
+		this.refreshReferenceSection();		
 		
 	}
-	
+	public void setNameXml(String nameXml) {
+		this.nameXml = nameXml;
+	}
+	public String getNameXml() {
+		return nameXml;
+	}
+	public GRList clone(long id) {
+		return null;
+	}
+	public void setZoom(float value) {
+		super.setZoom(value);
+		
+		width = grpage.getWidth();
+		x1 = 0;
+		
+		
+	}
 	public void draw(Graphics g) {
 		Graphics2D g2d = (Graphics2D)g;
 		
-		Color oldC = g.getColor();
-		g.setColor(Color.BLUE);
+		Color oldC = g2d.getColor();
+		Stroke oldStroke = g2d.getStroke();
+		
+		g2d.setColor(Color.BLUE);
 		Composite compositeOld = g2d.getComposite();
 		
-		g.drawRect(0,y1,630,height);
+		if(selected) {
+			g2d.setStroke(new BasicStroke(2.0f));
+		}
+		g2d.drawRect(0,y1,width,height);
 		
 		g2d.setComposite(composite);
 		g2d.setPaint(Color.BLUE);
-		g2d.fill(new Rectangle(0,y1,630,height));
+		g2d.fill(new Rectangle(0,y1,width,height));
 		
 		g2d.setComposite(compositeOld);
-		g.setColor(oldC);
+		g2d.setColor(oldC);
+		g2d.setStroke(oldStroke);
 		
+		grpage.hPosition = y1 + height;
 	}
 
-	@Override
 	public String createCodeGRS() {
-		// TODO Auto-generated method stub
-		return null;
+		Vector<GRObject> child = grpage.getListChild(nameXml);
+		
+		if(child == null)
+			return "";
+		
+		StringBuffer buff = new StringBuffer();
+		int y1 = this.y1Original;
+		
+		if(section == GRObject.SECTION_BODY)
+			y1 = y1 - grpage.getHeaderSize();
+		
+		buff.append("<list>\n");
+		buff.append("<id>"+nameXml+"</id>\n");
+		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(x1Original)+"</left>\n");
+		buff.append("<top>"+GRLibrary.fromPixelsToMillimeters(y1)+"</top>\n");
+		buff.append("<height>"+GRLibrary.fromPixelsToMillimeters(heightOriginal)+"</height>\n");
+
+		buff.append("<row>\n");
+		
+		for(int i = 0;i < child.size();i++)
+			buff.append(child.get(i).createCodeGRS()+"\n");
+		
+		buff.append("</row>\n");
+		
+		buff.append("</list>");
+		
+		return buff.toString();
 	}
 }

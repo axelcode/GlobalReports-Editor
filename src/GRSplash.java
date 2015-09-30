@@ -58,6 +58,8 @@ import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.io.File;
+import java.io.RandomAccessFile;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -65,7 +67,9 @@ import javax.swing.JPanel;
 import com.globalreports.editor.GRAbout;
 import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.configuration.font.GRFontProperty;
+import com.globalreports.editor.configuration.template.GRTemplate;
 import com.globalreports.editor.designer.GREditor;
+import com.globalreports.editor.designer.dialog.GRDialogTemplate;
 
 @SuppressWarnings("serial")
 public class GRSplash extends JFrame {
@@ -80,7 +84,7 @@ public class GRSplash extends JFrame {
 		this.initGraphics();
 		
 		GRFontProperty.createFontProperty();
-		
+		caricaTemplate();
 		try {
 			Thread.sleep(1000);
 		} catch(Exception e) {}
@@ -105,6 +109,53 @@ public class GRSplash extends JFrame {
 	    					  (dimension.height - this.getSize().height) / 2 )); 
 		setVisible(true);
 	}
+	
+	private void caricaTemplate() {
+		File dirRootTemplate = new File("resources//template//");
+		File[] elementi = dirRootTemplate.listFiles();
+		
+		File file = null;
+        String result = "";
+        for (int i = 0; i < elementi.length; i++) {
+            file = elementi[i];
+            if (file.isDirectory()) {
+            	// Directory contenente il template
+                System.out.println(file.getName());
+                
+                /* Legge il file e carica le impostazioni */
+                RandomAccessFile raf;
+                	
+                try {
+                	raf = new RandomAccessFile(GRSetting.PATHTEMPLATE+file.getName()+"//grtemplate.grt","r");
+                	
+                	GRTemplate template = new GRTemplate(GRSetting.PATHTEMPLATE+file.getName());
+                	
+                	result = raf.readLine();
+                	while(result != null) {
+                		String[] chiave = result.split("=");
+                		
+                		if(chiave[0].equals("$title"))
+                			template.setTitle(chiave[1]);
+                		else if(chiave[0].equals("$description"))
+                			template.setDescription(chiave[1]);
+                		else if(chiave[1].equals("$grs"))
+                			template.setNameTemplate(chiave[1]);
+                		
+                		result = raf.readLine();
+                	}
+                	
+                	GRDialogTemplate.grtemplate.add(template);
+                	
+                	raf.close();
+                } catch(Exception e) {
+                	System.out.println("EXT");
+                }
+                
+            } else {
+            	//System.out.println(file.getAbsolutePath());
+            }
+        }
+	}
 }
 
 @SuppressWarnings("serial")
@@ -115,8 +166,8 @@ class GRLogo extends JPanel {
 	
 	public GRLogo() {
 		tracker = new MediaTracker(this);
-		img = Toolkit.getDefaultToolkit().getImage(GRSetting.PATHIMAGE+"logoBLUE.png");
-		imgLicense = Toolkit.getDefaultToolkit().getImage(GRSetting.PATHLICENSE+"logo.png");
+		img = Toolkit.getDefaultToolkit().getImage(GRSetting.PATHIMAGE+"logoBLUE_2.png");
+		imgLicense = Toolkit.getDefaultToolkit().getImage(GRSetting.PATHLICENSE+"licenza.png");
 		
 		tracker.addImage(img, 0);
 		tracker.addImage(imgLicense, 1);
@@ -137,11 +188,12 @@ class GRLogo extends JPanel {
 		g.drawImage(img,0,0,this);
 		g.setFont(new Font("Verdana",Font.PLAIN,10));
 		g.setColor(Color.WHITE);
-		g.drawString("Copyright "+new String(Character.toChars(169))+"2015",10,288);
-		g.drawString("v. "+GRAbout.MAIOR_VERSION+"."+GRAbout.MINOR_VERSION, 460, 288);
+		g.drawString("Copyright "+new String(Character.toChars(169))+"2015",10,284);
+		g.drawString("v. "+GRAbout.MAIOR_VERSION+"."+GRAbout.MINOR_VERSION, 460, 284);
+		
 		
 		// Logo utilizzatore prodotto
-		g.drawImage(imgLicense,20,20,this);
+		g.drawImage(imgLicense,0,214,this);
 	}
 }
 

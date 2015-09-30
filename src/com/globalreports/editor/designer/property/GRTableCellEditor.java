@@ -70,12 +70,14 @@ public class GRTableCellEditor implements TableCellEditor {
 	private final static int CELLTYPE_COMBO_FONTALIGN	= 4;
 	private final static int CELLTYPE_COMBO_FONTSTYLE	= 5;
 	private final static int CELLTYPE_COMBO_FONTSIZE	= 6;
+	private final static int CELLTYPE_COMBO_LISTFATHER	= 7;
 	
 	private DefaultCellEditor checkEditor;
 	private DefaultCellEditor comboEditorFontAlignment;
 	private DefaultCellEditor comboEditorFontName;
 	private DefaultCellEditor comboEditorFontStyle;
 	private DefaultCellEditor comboEditorFontSize;
+	private DefaultCellEditor comboEditorListFather;
 	private DefaultCellEditor textEditor;
 	private GRColorCellEditor colorEditor;
 	
@@ -87,6 +89,9 @@ public class GRTableCellEditor implements TableCellEditor {
 	private JComboBox comboFontStyle;
 	@SuppressWarnings("rawtypes")
 	private JComboBox comboFontSize;
+	@SuppressWarnings("rawtypes")
+	private JComboBox comboListFather;
+	
 	
 	private int objSel;
 	private int rowSel;
@@ -123,6 +128,10 @@ public class GRTableCellEditor implements TableCellEditor {
 	    comboFontSize.setEditable(true);
 	    comboEditorFontSize = new DefaultCellEditor(comboFontSize);
 	    
+	    comboListFather = new JComboBox();
+	    comboListFather.addItem("--Nothing--");
+	    comboEditorListFather = new DefaultCellEditor(comboListFather);
+	    
 		JTextField textField = new JTextField();
 		textField.setFont(new Font("Lucida Grande",Font.PLAIN,10));
 		textEditor = new DefaultCellEditor(textField);
@@ -132,6 +141,12 @@ public class GRTableCellEditor implements TableCellEditor {
 		objSel = 0;
 	}
 	
+	public void addListFather(String value) {
+		comboListFather.addItem(value);
+	}
+	public void removeListFather(String value) {
+		comboListFather.removeItem(value);
+	}
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 		//System.out.println("getTableCellEditorComponent: "+value);
 		((GRTableModel)table.getModel()).activeListener();
@@ -163,6 +178,12 @@ public class GRTableCellEditor implements TableCellEditor {
 			colSel = column;
 			String str = (value == null) ? "" : ((GRComboFontSize)value).getValueSelected();
 			return comboEditorFontSize.getTableCellEditorComponent(table, str, isSelected, row, column);
+		} else if(value instanceof GRComboListFather) {
+			objSel = CELLTYPE_COMBO_LISTFATHER;
+			rowSel = row;
+			colSel = column;
+			String str = (value == null) ? "" : ((GRComboListFather)value).getValueSelected();
+			return comboEditorListFather.getTableCellEditorComponent(table, str, isSelected, row, column);
 		} else if (value instanceof String) { // String
 			objSel = CELLTYPE_EDITSTRING;
 			rowSel = row;
@@ -176,7 +197,9 @@ public class GRTableCellEditor implements TableCellEditor {
 			colorEditor = (GRColorCellEditor)value;
 			colorEditor.editColor();
 			
-			table.setValueAt(new GRColorCellEditor(colorEditor.getColor()),row,column);
+			//table.setValueAt(new GRColorCellEditor(colorEditor.getColor()),row,column);
+			table.setValueAt(colorEditor,row,column);
+			
 			return null;
 			//return colorEditor.getCell();
 			
@@ -215,6 +238,11 @@ public class GRTableCellEditor implements TableCellEditor {
 		    	str = (String)comboFontSize.getSelectedItem();
 		    	System.out.println(str);
 		        return new GRComboFontSize(str);
+		    
+			case CELLTYPE_COMBO_LISTFATHER:
+		    	str = (String)comboListFather.getSelectedItem();
+		    	System.out.println(str);
+		        return new GRComboListFather(str);
 		        
 		    case CELLTYPE_EDITSTRING:
 		    	System.out.println("VALUE ["+rowSel+" - "+colSel+"]: "+textEditor.getCellEditorValue());
@@ -253,7 +281,10 @@ public class GRTableCellEditor implements TableCellEditor {
 			
 			case CELLTYPE_COMBO_FONTSIZE:
 		    	return comboEditorFontSize.stopCellEditing();
-		    	
+		    
+			case CELLTYPE_COMBO_LISTFATHER:
+		    	return comboEditorListFather.stopCellEditing();
+		    
 			case CELLTYPE_EDITSTRING:
 				return textEditor.stopCellEditing();
 				
@@ -284,6 +315,10 @@ public class GRTableCellEditor implements TableCellEditor {
 			case CELLTYPE_COMBO_FONTSIZE:
 		    	comboEditorFontSize.cancelCellEditing();
 				break;
+			
+			case CELLTYPE_COMBO_LISTFATHER:
+		    	comboEditorListFather.cancelCellEditing();
+				break;
 				
 			case CELLTYPE_EDITSTRING:
 				textEditor.cancelCellEditing();
@@ -310,6 +345,9 @@ public class GRTableCellEditor implements TableCellEditor {
 		    	
 			case CELLTYPE_COMBO_FONTSIZE:
 		    	return comboEditorFontSize.isCellEditable(anEvent);
+		    	
+			case CELLTYPE_COMBO_LISTFATHER:
+		    	return comboEditorListFather.isCellEditable(anEvent);
 		}
 	
 		return true;
@@ -334,6 +372,9 @@ public class GRTableCellEditor implements TableCellEditor {
 		    	
 			case CELLTYPE_COMBO_FONTSIZE:
 		    	return comboEditorFontSize.shouldSelectCell(anEvent);
+		    	
+			case CELLTYPE_COMBO_LISTFATHER:
+		    	return comboEditorListFather.shouldSelectCell(anEvent);
 		    	
 		}
 		return true;
@@ -364,6 +405,10 @@ public class GRTableCellEditor implements TableCellEditor {
 			case CELLTYPE_COMBO_FONTSIZE:
 		    	comboEditorFontSize.addCellEditorListener(l);
 				break;
+				
+			case CELLTYPE_COMBO_LISTFATHER:
+		    	comboEditorListFather.addCellEditorListener(l);
+				break;
 		}
 	}
 
@@ -389,6 +434,10 @@ public class GRTableCellEditor implements TableCellEditor {
 				
 			case CELLTYPE_COMBO_FONTSIZE:
 		    	comboEditorFontSize.removeCellEditorListener(l);
+				break;
+				
+			case CELLTYPE_COMBO_LISTFATHER:
+		    	comboEditorListFather.removeCellEditorListener(l);
 				break;
 		}
 	}

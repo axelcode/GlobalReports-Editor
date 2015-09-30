@@ -56,54 +56,80 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
+
+import com.globalreports.editor.graphics.GRList;
+import com.globalreports.editor.tools.GRLibrary;
+
 @SuppressWarnings("serial")
 public class GRDialogAnteprimaXml extends JDialog implements ActionListener {
-
+	private Hashtable<String, String> xmlDefault;
+	
 	private final JPanel contentPanel = new JPanel();
-
+	private JPanel addPanel;
+	
 	private JTextField[] textDati;
+	private JTextField[] textList;
 	private JButton okButton;
 	private JButton cancelButton;
+	private JButton addButton;
+	private JCheckBox chkSave;
 	
+	//Vector<JTextField[]> textRowList; 
+	Vector<Vector> textRowList;
 	Vector<String> nodiXml;
+	Vector<String> nodiListXml;
 	private String xml;
+	private String nameList;
 	
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			GRDialogAnteprimaXml dialog = new GRDialogAnteprimaXml(null);
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
+	private JPanel columnpanel;
 	/**
 	 * Create the dialog.
+	 * @wbp.parser.constructor
 	 */
 	public GRDialogAnteprimaXml(Vector<String> nodi) {
+		this(nodi, null, null);
+	}
+	public GRDialogAnteprimaXml(String nameList, Vector<String> varList) {
+		this(null, nameList, varList);
+	}
+	public GRDialogAnteprimaXml(Vector<String> nodi, String nameList, Vector<String> varList) {
+		this.nameList = nameList;
 		this.nodiXml = nodi;
+		this.nodiListXml = varList;
 		setMinimumSize(new Dimension(620,400));
 		
 		Container c = getContentPane();
 		c.setLayout(new BorderLayout());
+		
+		// Acquisisce i dati di default
+		readDefaultXml("temp");
 		
 		JScrollPane scroll = new JScrollPane();
 		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -113,14 +139,16 @@ public class GRDialogAnteprimaXml extends JDialog implements ActionListener {
         scroll.setViewportView(borderlaoutpanel);
         borderlaoutpanel.setLayout(new BorderLayout(0, 0));
         
-        JPanel columnpanel = new JPanel();
+        columnpanel = new JPanel();
         borderlaoutpanel.add(columnpanel, BorderLayout.NORTH);
         columnpanel.setLayout(new GridLayout(0, 1, 0, 1));
         columnpanel.setBackground(Color.gray);
 
         textDati = new JTextField[nodi.size()];
         
+        /* Genera a run time la struttura delle variabili */
         for(int i=0;i < nodi.size();i++) {
+        	
             JPanel rowPanel = new JPanel();
             rowPanel.setPreferredSize(new Dimension(300,30));
             columnpanel.add(rowPanel);
@@ -133,6 +161,9 @@ public class GRDialogAnteprimaXml extends JDialog implements ActionListener {
             textDati[i] = new JTextField();
             textDati[i].setPreferredSize(new Dimension(100,24));
             textDati[i].setBounds(120,5,100,24);
+            
+            if(xmlDefault != null)
+            	textDati[i].setText(this.getValueDefault(nodi.get(i)));
             rowPanel.add(textDati[i]);
             
             JLabel label2 = new JLabel("</"+nodi.get(i)+">");
@@ -141,8 +172,38 @@ public class GRDialogAnteprimaXml extends JDialog implements ActionListener {
             if(i % 2 == 0)
                 rowPanel.setBackground(SystemColor.inactiveCaptionBorder);
         }
+        
+        /* Nel caso di oggetti dinamici genera i panel con le liste */
+        if(nameList != null && varList.size() > 0) { 
+        	setPanelAddButton();
+        	
+        	JPanel titlePanel = new JPanel();
+        	titlePanel.setPreferredSize(new Dimension(300,30));
+        	titlePanel.setBackground(new Color(22,128,197));
+        	columnpanel.add(titlePanel);
+        	titlePanel.setLayout(new FlowLayout());
+        	
+        	JLabel label1 = new JLabel("GRLIST::"+nameList);
+            label1.setBounds(20, 5, 100, 24);
+            label1.setForeground(Color.WHITE);
+            label1.setFont(new Font("Tahoma",Font.BOLD,12));
+            titlePanel.add(label1);
+            
+            addRowList();   
+            
+        }
+        
+        JPanel southPanel = new JPanel(new GridLayout(1,2));
+        
 		JPanel buttonPane = new JPanel();
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		
+		JPanel chkPanel = new JPanel();
+		chkPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		chkSave = new JCheckBox("Salva impostazioni");
+		chkSave.setSelected(true);
+		chkPanel.add(chkSave);
 		
 		okButton = new JButton("OK");
 		okButton.addActionListener(this);
@@ -153,7 +214,10 @@ public class GRDialogAnteprimaXml extends JDialog implements ActionListener {
 		cancelButton.addActionListener(this);
 		buttonPane.add(cancelButton);
 		
-		c.add(buttonPane, BorderLayout.SOUTH);
+		southPanel.add(chkPanel);
+		southPanel.add(buttonPane);
+		
+		c.add(southPanel, BorderLayout.SOUTH);
 		
 		contentPanel.setLayout(new FlowLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -165,18 +229,180 @@ public class GRDialogAnteprimaXml extends JDialog implements ActionListener {
 		
 	}
 
+	private void readDefaultXml(String idSession) {
+		
+		try {
+				
+			SAXBuilder builder = new SAXBuilder();
+			Document document = builder.build(new File("temp//"+idSession+".xml"));
+					
+			Element rootElement = document.getRootElement();
+			//List<Element> children = rootElement.getChildren();
+			List<Element> children = GRLibrary.castList(Element.class,rootElement.getChildren());	
+				
+			Iterator<Element> iterator = children.iterator();
+			while (iterator.hasNext()){
+					
+				readChild((Element)iterator.next());
+			} 
+							
+		} catch(JDOMException jde) {
+			System.out.println("GRManage::readSource::JDOMException: "+jde.getMessage());
+			
+		} catch(IOException ioe) {
+			System.out.println("GREditor::readSource::IOException: "+ioe.getMessage());
+		} 
+			
+		
+	}
+	private void readChild(Element element) {
+		if(element.getName().equals("data")) {
+			readData(element);
+		} else if(element.getName().equals("list")) {
+			//System.out.println("list");
+		} 
+			
+	}
+	private void readData(Element el) {
+		List children = el.getChildren();
+		Iterator iterator = children.iterator();
+		
+		while(iterator.hasNext()) {
+			Element element = (Element)iterator.next();
+			
+			if(((Element)element.getParent()).getName().equals("data")) {
+				if(xmlDefault == null)
+					xmlDefault = new Hashtable<String, String>();
+				
+				xmlDefault.put(element.getName(),element.getValue());
+			} 
+		}
+		
+	}
+	private String getValueDefault(String key) {
+		if(xmlDefault == null)
+			return "";
+		
+		return xmlDefault.get(key);
+		
+	}
+	private void saveXmlDefault() {
+		if(xml == null)
+			return;
+		
+		/* Se il file temp esiste lo cancella */
+		File f = new File("temp//temp.xml");
+		f.delete();
+		
+		RandomAccessFile rOut;
+		try {
+			rOut = new RandomAccessFile("temp//temp.xml","rw");
+			
+			rOut.writeBytes(xml+"\n");
+			rOut.close();
+		} catch(Exception e) {
+			
+		}
+	}
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == okButton) {
 			this.setXml();
+			
+			if(chkSave.isSelected())
+				saveXmlDefault();
+			
 			this.dispose();
 		} else if(e.getSource() == cancelButton) {
 			xml = null;
 			
 			this.dispose();
+		} else if(e.getSource() == addButton) {
+			addRowList();
 		}
 	}
+	private void addRowList() {
+		JPanel rowPanel = null;
+		
+		if(textRowList == null)
+        	textRowList = new Vector<Vector>();
+        
+		Vector<JTextField> textList = new Vector<JTextField>();
+        
+		columnpanel.remove(addButton);
+		
+		/* APERTURA NODO ROW */
+		JPanel recordPanelOpen = new JPanel();
+		recordPanelOpen.setPreferredSize(new Dimension(300,30));
+    	columnpanel.add(recordPanelOpen);
+    	recordPanelOpen.setLayout(new FlowLayout(FlowLayout.LEFT));
+    	
+    	JLabel label1 = new JLabel("<ROW>");
+        label1.setBounds(20, 5, 100, 24);
+        label1.setFont(new Font("Tahoma",Font.BOLD,12));
+        recordPanelOpen.add(label1);
+        
+        /* NODI FIGLI */
+    	for(int i = 0;i < nodiListXml.size();i++) {
+    		rowPanel = new JPanel();
+            rowPanel.setPreferredSize(new Dimension(300,30));
+            //columnpanel.add(rowPanel);
+            rowPanel.setLayout(new FlowLayout());
+
+            JLabel lblNodoOpen = new JLabel("<"+nodiListXml.get(i)+">");
+            lblNodoOpen.setBounds(20, 5, 100, 24);
+            rowPanel.add(lblNodoOpen);
+
+            JTextField tField = new JTextField();
+            
+            tField.setPreferredSize(new Dimension(100,24));
+            tField.setBounds(120,5,100,24);
+            rowPanel.add(tField);
+            
+            JLabel lblNodoClose = new JLabel("</"+nodiListXml.get(i)+">");
+            lblNodoClose.setBounds(220, 5, 100, 24);
+            rowPanel.add(lblNodoClose);
+            if(i % 2 == 0)
+                rowPanel.setBackground(SystemColor.inactiveCaptionBorder);
+            
+            textList.add(tField);
+            columnpanel.add(rowPanel);
+            
+            tField.setFocusable(true);
+        	
+    	}
+    	textRowList.add(textList);
+    	
+    	/* CHIUSURA NODO ROW */
+    	JPanel recordPanelClose = new JPanel();
+		recordPanelOpen.setPreferredSize(new Dimension(300,30));
+    	columnpanel.add(recordPanelOpen);
+    	recordPanelOpen.setLayout(new FlowLayout(FlowLayout.LEFT));
+    	
+    	JLabel label2 = new JLabel("<ROW>");
+        label2.setBounds(20, 5, 100, 24);
+        label2.setFont(new Font("Tahoma",Font.BOLD,12));
+        recordPanelClose.add(label2);
+        
+    	/* Aggiunta del pulsante nuovo nodo row */
+    	columnpanel.add(addPanel);   
+    	
+    	/* Questo va fatto per refreshare l'area */
+    	this.setSize(this.getWidth(),this.getHeight()+1);
+    	this.setSize(this.getWidth(),this.getHeight()-1);
+    	
+	}
+	private void setPanelAddButton() {
+		addPanel = new JPanel();
+    	addPanel.setPreferredSize(new Dimension(300,36));
+    	addPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+    	
+    	addButton = new JButton("Aggiungi");
+    	addButton.addActionListener(this);
+    	//addButton.setBounds(20, 5, 100, 24);
+        addPanel.add(addButton);
+	}
 	private void setXml() {
-		if(nodiXml.size() == 0) {
+		if(nodiXml.size() == 0 && nodiListXml.size() == 0) {
 			xml = null;
 			
 			return;
@@ -190,6 +416,26 @@ public class GRDialogAnteprimaXml extends JDialog implements ActionListener {
 			buffer.append("<"+nodiXml.get(i)+">"+textDati[i].getText()+"</"+nodiXml.get(i)+">\n");
 		}
 		buffer.append("</data>\n");
+		
+		if(nodiListXml.size() > 0) {
+			buffer.append("<list>\n");
+			buffer.append("<name>"+nameList+"</name>\n");
+			
+			for(int x = 0;x < textRowList.size();x++) {
+				Vector<JTextField> tRow = textRowList.get(x);
+				
+				buffer.append("<row>\n");
+				
+				for(int y = 0;y < tRow.size();y++) {
+					buffer.append("<"+nodiListXml.get(y)+">"+tRow.get(y).getText()+"</"+nodiListXml.get(y)+">\n");
+				}
+				
+				buffer.append("</row>\n");
+			}
+			
+			buffer.append("</list>\n");
+		}
+		
 		buffer.append("</globalreports>\n");
 		
 		xml = buffer.toString();

@@ -64,10 +64,11 @@ import com.globalreports.editor.designer.swing.GRHandle;
 @SuppressWarnings("serial")
 public class GRPanelSection extends JPanel implements MouseListener, MouseMotionListener {
 	private GRHandle grHeader;
+	private GRHandle grFooter;
 	private GRPage grpage;
 	
 	private final int Y_HEAD	= 17;
-
+	private final int Y_FOOT	= 8;
 	
 	public GRPanelSection(GRPage grpage, int height) {
 		this.grpage = grpage;
@@ -77,11 +78,17 @@ public class GRPanelSection extends JPanel implements MouseListener, MouseMotion
 		setLayout(null);
 		setBorder(new MatteBorder(0,0,1,1,Color.black));
 		
-		grHeader = new GRHandle();
+		grHeader = new GRHandle(GRHandle.GRHANDLE_HEADER);
 		grHeader.setLocation(0,Y_HEAD);
 		grHeader.addMouseListener(this);
 		grHeader.addMouseMotionListener(this);
 		add(grHeader);
+		
+		grFooter = new GRHandle(GRHandle.GRHANDLE_FOOTER);
+		grFooter.setLocation(0,grpage.getHeight()+Y_FOOT);
+		grFooter.addMouseListener(this);
+		grFooter.addMouseMotionListener(this);
+		add(grFooter);
 	}
 	
 	public void setHeader(int value) {
@@ -90,6 +97,12 @@ public class GRPanelSection extends JPanel implements MouseListener, MouseMotion
 		
 		grHeader.setLocation(0,Y_HEAD + value);
 		grpage.modifyHeader(value);
+	}
+	public void setFooter(int value) {
+		if(value < 0)
+			value = 0;
+		
+		grpage.modifyFooter(value);
 	}
 	public void setHeight(int value) {
 		setSize(71,value);
@@ -102,6 +115,16 @@ public class GRPanelSection extends JPanel implements MouseListener, MouseMotion
 		grHeader.setLocation(0,newY);
 		
 		grpage.modifyHeader(newY - Y_HEAD);
+		grpage.repaint();
+	}
+	private void modifyFooter(int yValue) {
+		int newY = grFooter.getLocation().y + yValue;
+		
+		if(newY > (grpage.getHeight()+Y_FOOT))
+			newY = grpage.getHeight()+Y_FOOT;
+		grFooter.setLocation(0,newY);
+		
+		grpage.modifyFooter(grpage.getHeight() - newY + Y_FOOT);
 		grpage.repaint();
 	}
 	public void mouseClicked(MouseEvent me) {
@@ -119,8 +142,9 @@ public class GRPanelSection extends JPanel implements MouseListener, MouseMotion
 	public void mouseMoved(MouseEvent me) {
 	}
 	public void mouseDragged(MouseEvent me) {
-		
-		modifyHeader(me.getY());
-		
+		if(me.getSource() == grHeader) {
+			modifyHeader(me.getY());
+		} else if(me.getSource() == grFooter)
+			modifyFooter(me.getY());
 	}
 }

@@ -55,10 +55,13 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Stroke;
 
 import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.property.GRTableModel;
+import com.globalreports.editor.designer.property.GRTableModelRectangle;
 import com.globalreports.editor.tools.GRLibrary;
 
 public class GRRectangle extends GRShape {
@@ -66,6 +69,8 @@ public class GRRectangle extends GRShape {
 	private int colorFillGREEN;
 	private int colorFillBLUE;
 	private Color cFill;
+	
+	private GRTableModelRectangle modelTable;
 	
 	public GRRectangle(GRPage grpage, long id) {
 		this(grpage, id, 0, 0, 0, 0, Color.BLACK, null);
@@ -109,8 +114,16 @@ public class GRRectangle extends GRShape {
 		Graphics2D g2d = (Graphics2D)g;
 		
 		Color oldStroke = g2d.getColor();
+		Shape oldClip = g2d.getClip();
+		
 		Stroke s = g2d.getStroke();
 		int y1 = this.y1;
+		
+		/* Se è figlio di una lista imposta la clipArea */
+		if(grlistFather != null) {
+			g2d.setClip(0,grlistFather.getY(),grpage.getWidth(),grlistFather.getHeight()+1);
+			y1 = grlistFather.getY() + this.y1;
+		}
 		
 		// Nel caso in cui il rettangolo abbia un riempimento
 		// disegna prima l'interno
@@ -123,12 +136,13 @@ public class GRRectangle extends GRShape {
 		// Disegna il contorno esterno
 		g2d.setColor(cStroke);
 		g2d.setStroke(typeStroke);
+		
 		g2d.drawRect(x1,y1,width,height);
-		//g2d.drawRect((int)(x1*grpage.getZoom()),(int)(y1*grpage.getZoom()),(int)(width*grpage.getZoom()),(int)(height*grpage.getZoom()));
 		
 		// Ripristina le info originali
 		g2d.setStroke(s);
 		g2d.setColor(oldStroke);
+		g2d.setClip(oldClip);
 		
 		if(selected) {
 			g.fillRect(x1-4,y1-4,4,4);
@@ -139,6 +153,27 @@ public class GRRectangle extends GRShape {
 		
 	}
 	
+	public void setProperty(GRTableModel model) {
+		this.modelTable = (GRTableModelRectangle)model;
+		modelTable.setGRObject(this);
+		
+		this.refreshProperty();
+	}
+	public void refreshProperty() {
+		if(modelTable == null)
+			return ;
+		
+		modelTable.setWidthStroke(this.getWidthStroke());
+		modelTable.setColorStroke(this.getColorStroke().getRed(), this.getColorStroke().getGreen(), this.getColorStroke().getBlue());
+		if(this.getColorFill() == null)
+			modelTable.setColorFill(-1, -1, -1);
+		else
+			modelTable.setColorFill(this.getColorFill().getRed(), this.getColorFill().getGreen(), this.getColorFill().getBlue());
+		modelTable.setLeft(this.getOriginalX());
+		modelTable.setTop(this.getOriginalY());
+		modelTable.setWidth(this.getOriginalWidth());
+		modelTable.setHeight(this.getOriginalHeight());
+	}
 	public int getColorFillRED() {
 		return colorFillRED;
 	}
@@ -204,19 +239,34 @@ public class GRRectangle extends GRShape {
 		bsx.setBounds(x1-4,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		bdx.setBounds(x1+width,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 	}
+	public GRRectangle clone(long id) {
+		int newX = x1+15;
+		int newY = y1+15;
+		
+		GRRectangle grclone = new GRRectangle(grpage,id,newX,newY,newX+width,newY+height,cStroke,cFill);
+		
+		return grclone;
+	}
+	public void setZoom(float value) {
+		super.setZoom(value);
+		
+		setWidthStroke(widthStrokeOriginal);
+	}
 	public String createCodeGRS() {
 		StringBuffer buff = new StringBuffer();
-		int y1 = this.y1;
+		int y1 = this.y1Original;
 		
 		if(section == GRObject.SECTION_BODY)
 			y1 = y1 - grpage.getHeaderSize();
-		
+		if(section == GRObject.SECTION_FOOTER) {
+			y1 = y1 - (grpage.getHeight() - grpage.getFooterSize());
+		}
 		buff.append("<shape>\n");
 		buff.append("<type>rectangle</type>\n");
-		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(x1)+"</left>\n");
+		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(x1Original)+"</left>\n");
 		buff.append("<top>"+GRLibrary.fromPixelsToMillimeters(y1)+"</top>\n");
-		buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(width)+"</width>\n");
-		buff.append("<height>"+GRLibrary.fromPixelsToMillimeters(height)+"</height>\n");
+		buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(widthOriginal)+"</width>\n");
+		buff.append("<height>"+GRLibrary.fromPixelsToMillimeters(heightOriginal)+"</height>\n");
 		buff.append("<colorstroke>"+cStroke.getRed()+" "+cStroke.getGreen()+" "+cStroke.getBlue()+"</colorstroke>\n");
 		buff.append("<colorfill>");
 		if(cFill == null)
@@ -224,9 +274,10 @@ public class GRRectangle extends GRShape {
 		else
 			buff.append(cFill.getRed()+" "+cFill.getGreen()+" "+cFill.getBlue());
 		buff.append("</colorfill>\n");
-		buff.append("<widthstroke>"+widthStroke+"</widthstroke>\n");
+		buff.append("<widthstroke>"+widthStrokeOriginal+"</widthstroke>\n");
 		buff.append("</shape>");
 		
 		return buff.toString();
 	}
+	
 }

@@ -80,6 +80,7 @@ public abstract class GRObject {
 	protected int y1Original;
 	protected int widthOriginal;
 	protected int heightOriginal;
+	protected int y1Parent;
 	protected int x1;
 	protected int y1;
 	protected int width;
@@ -102,8 +103,13 @@ public abstract class GRObject {
 	protected Rectangle bsx;
 	protected Rectangle bdx;
 	
+	protected float zoom;
+	
 	// La pagina ove è inserito l'oggetto
 	protected GRPage grpage;
+	
+	// Puntatore all'oggetto GRList
+	protected GRList grlistFather;
 	
 	public GRObject(int type, long id, GRPage grpage) {
 		this.type = type;
@@ -116,6 +122,9 @@ public abstract class GRObject {
 		height = 0;
 		hPosition = false;
 		
+		zoom = 1.0f;
+		y1Parent = 0;
+		
 		selected = false;
 	}
 	public GRObject(int type, long id) {
@@ -126,39 +135,101 @@ public abstract class GRObject {
 		return id;
 	}
 	public void setX(int x) {
-		x1Original = x;
-		x1 = x;
-		
-		
+		x1 = (int)(x * zoom);
+		this.setOriginalX(x1);	
 	}
 	public int getX() {
 		return x1;
 	}
+	public void setOriginalX(int x) {
+		x1Original = (int)(x / zoom);
+		
+		refreshProperty();
+	}
+	public int getOriginalX() {
+		return x1Original;
+	}
 	public void setY(int y) {
-		y1 = y;
+		y1 = (int)(y * zoom);
+		this.setOriginalY(y1);
 		
 		this.refreshReferenceSection();
 	}
 	public int getY() {
 		return y1;
 	}
+	public void setOriginalY(int y) {
+		y1Original =(int)(y / zoom);
+		
+		refreshProperty();
+	}
+	public int getOriginalY() {
+		return y1Original;
+	}
 	public void setWidth(int width) {
+		this.widthOriginal = width;
 		this.width = width;
+		
+		refreshProperty();
 	}
 	public int getWidth() {
 		return width;
 	}
+	public int getOriginalWidth() {
+		return widthOriginal;
+	}
 	public void setHeight(int height) {
+		this.heightOriginal = height;
 		this.height = height;
+		
+		refreshProperty();
 	}
 	public int getHeight() {
 		return height;
+	}
+	public int getOriginalHeight() {
+		return heightOriginal;
+	}
+	public void setHPosition(String value) {
+		if(value.equals("absolute"))
+			this.hPosition = false;
+		else if(value.equals("relative"))
+			this.hPosition = true;
 	}
 	public void setHPosition(boolean value) {
 		this.hPosition = value;
 	}
 	public boolean getHPosition() {
 		return hPosition;
+	}
+	public void setListFather(GRList grlist) {
+		this.grlistFather = grlist;
+		
+		if(grlistFather != null) {
+			y1Parent = y1;
+			
+			this.setY(0);
+			//y1 = this.setY(0);
+		} else {
+			if(y1Parent != 0) {
+				//y1 = y1Parent;
+				this.setY(y1Parent);
+				
+				y1Parent = 0;
+			}
+		}
+	}
+	public void setListFather(String name) {
+		this.setListFather(grpage.getList(name));
+	}
+	public GRList getListFather() {
+		return grlistFather;
+	}
+	public boolean hasListFather() {
+		if(grlistFather == null)
+			return false;
+		
+		return true;
 	}
 	public void resize(int xStart, int yStart, int xEnd, int yEnd) {
 		x1 = xStart;
@@ -177,14 +248,19 @@ public abstract class GRObject {
 			GRLine refObj = (GRLine)this;
 			refObj.refreshReferenceSection();
 		} else {
-			if(grpage != null) {
-				if(y1 <= grpage.getHeaderSize()) {
+			if(grpage != null && grlistFather == null) {
+				if(y1 < grpage.getHeaderSize()) {
 					this.setSection(GRObject.SECTION_HEADER);
+				} else if(y1 > (grpage.getHeight() - grpage.getFooterSize())) {
+					this.setSection(GRObject.SECTION_FOOTER);
 				} else {
 					this.setSection(GRObject.SECTION_BODY);
 				}
 			}
 		}
+	}
+	public void refresh() {
+		grpage.repaint();
 	}
 	public void setCoordsSelected(int x, int y) {
 		xSel = x;
@@ -205,7 +281,10 @@ public abstract class GRObject {
 		int hGap = 0;
 		if(hPosition)
 			hGap = gapH;
-			
+		
+		if(grlistFather != null)
+			hGap = grlistFather.getY();
+		
 		if(coordX >= x1 && coordX <= (x1 + width)) 
 			if(coordY >= (y1+hGap) && coordY <= (y1 + height + hGap))
 				return true;
@@ -240,8 +319,11 @@ public abstract class GRObject {
 			refLine.setXEnd(refLine.getXEnd() + x);
 		}
 		xSel = xSel + x;
+		
+		this.setOriginalX(x1);
 	}	
 	public void translateY(int y) {
+		
 		y1 = y1 + y;
 		
 		if(this instanceof GRLine) {
@@ -249,6 +331,8 @@ public abstract class GRObject {
 			refLine.setYEnd(refLine.getYEnd() + y);
 		} 
 		ySel = ySel + y;
+		
+		this.setOriginalY(y1);			
 	}
 	
 	public void moveTo(int x, int y) {
@@ -274,17 +358,19 @@ public abstract class GRObject {
 		return section;
 	}
 	public void setZoom(float value) {
-		x1 = x1Original * (int)value;
-		y1 = y1Original * (int)value;
-		width = widthOriginal * (int)value;
-		height = heightOriginal * (int)value;
+		zoom = value;
 		
-		if(this instanceof GRText) {
-			GRText refText = (GRText)this;
-			refText.setZoom(value);
-		}
+		x1 = (int)(x1Original * value);
+		y1 = (int)(y1Original * value);
+		width = (int)(widthOriginal * value);
+		height = (int)(heightOriginal * value);
+		
 	}
 	/* Metodi astratti */
+	public void refreshProperty() {
+		//System.out.println("OBJECT::refreshProperty");
+	}
+	public abstract GRObject clone(long id);
 	public abstract String createCodeGRS();
 	
 }

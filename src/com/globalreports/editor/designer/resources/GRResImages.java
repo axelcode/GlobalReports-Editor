@@ -87,22 +87,29 @@ public class GRResImages {
 		// Ne genera una nuova
 		id = "Im"+progressivo;
 		progressivo++;
-		res.add(new GRImageResource(id,pathFile,grimg.getOriginalWidth(),grimg.getOriginalHeight()));
+		res.add(new GRImageResource(id,pathFile,grimg.getFileWidth(),grimg.getFileHeight()));
 		
 		return id;
 	}
 		
+	public void removeResource(String id) {
+		for(int i = 0;i < res.size();i++) {
+			if(res.get(i).getId().equals(id)) {
+				res.remove(i);
+			}
+		}
+	}
 	public void setImageId(String idImg) {
 		if(res.size() == 0) 
 			this.addResource();
 			
 		res.lastElement().setId(idImg);
 	}
-	public void setImagePath(String value) {
+	public void setImagePath(String path, String value) {
 		if(res.size() == 0) 
 			this.addResource();
 			
-		res.lastElement().setPath(value);
+		res.lastElement().setPath(path, value);
 	}
 	public void setImageOriginalWidth(String value) {
 		if(res.size() == 0) 

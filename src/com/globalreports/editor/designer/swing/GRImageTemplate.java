@@ -14,12 +14,12 @@ import com.globalreports.editor.GRSetting;
 public class GRImageTemplate extends JPanel {
 	private MediaTracker tracker;
 	private Image imgTemplate[];
-	private String[] nameImg = {"modEmpty_s.png","modBaseCNP_s.png"};
+	private String[] nameImg = {"modEmpty_s.png","modBaseCNP_s.png","modPolizzaCNP_s.png"};
 	private int indexTemplate;
 	
 	public GRImageTemplate() {
 		tracker = new MediaTracker(this);
-		imgTemplate = new Image[2];
+		imgTemplate = new Image[3];
 		indexTemplate = 0;
 		
 		for(int i = 0;i < nameImg.length;i++) {

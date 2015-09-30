@@ -56,6 +56,8 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
+import com.globalreports.editor.designer.dialog.GRDialogColorChooser;
+import com.globalreports.editor.designer.resources.GRColor;
 import com.globalreports.editor.tools.GRLibrary;
 
 import java.util.EventObject;
@@ -68,11 +70,18 @@ public class GRColorCellEditor extends AbstractCellEditor {
 	private Color color;
 	private JPanel panel;
 	private String strColor;
+	private boolean channelTransparent;
+	private boolean transparent;
 	
 	public GRColorCellEditor() {
 		this(255,255,255);
 	}
 	public GRColorCellEditor(int red, int green, int blue) {
+		this(red,green,blue,false);
+	}
+	public GRColorCellEditor(int red, int green, int blue, boolean transparent) {
+		this.channelTransparent = transparent;
+			
 		if(red == -1 || green == -1 || blue == -1) {
 			this.color = null;
 			
@@ -85,16 +94,17 @@ public class GRColorCellEditor extends AbstractCellEditor {
 	}
 	public GRColorCellEditor(Color c) {
 		this.color = c;
-		
 		this.init();
 	}
 	public GRColorCellEditor(int c) {
 		if(c == GRColorCellEditor.TRANSPARENT) {
 			color = new Color(255,255,255);
 			
+			channelTransparent = true;
 		} else {
 			color = new Color(c,c,c);
 			
+			channelTransparent = false;
 		}
 		
 		this.init();
@@ -145,17 +155,26 @@ public class GRColorCellEditor extends AbstractCellEditor {
 		return null;
 	}
 	public void editColor() {
-		Color c = JColorChooser.showDialog(panel, "Color Chooser", color);
+		
+		//Color c = JColorChooser.showDialog(panel, "Color Chooser", color);
+		//GRColor c = new GRDialogColorChooser(color,channelTransparent).getColor();
+		GRColor c = GRDialogColorChooser.showDialog(color, channelTransparent);
 		
 		if(c == null) 
 			return;
-			
-		color = c;
-		panel.setBackground(color);
+				
+		if(c.isTransparent()) {
+			color = null;
+			panel.setBackground(new Color(240,240,240));
+		} else {
+			color = c.getColor();
+			panel.setBackground(color);
+		}
 		
 		lblColor.setForeground(GRLibrary.ColorText(color));
 		lblColor.setText(getColorString());
 	}
+	
 	public Color getColor() {
 		return color;
 	}

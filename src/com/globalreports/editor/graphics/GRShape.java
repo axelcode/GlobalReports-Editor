@@ -55,6 +55,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 
+import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.designer.GRPage;
 
 public abstract class GRShape extends GRObject {
@@ -63,24 +64,32 @@ public abstract class GRShape extends GRObject {
 	protected int colorStrokeBLUE;
 	protected Color cStroke;
 	protected double widthStroke;
+	protected double widthStrokeOriginal;
 	
 	protected BasicStroke typeStroke;
 	
 	public GRShape(int type, long id, GRPage grpage) {
 		super(type,id,grpage);
 		
-		widthStroke = 0.25;
+		widthStroke = GRSetting.WIDTHSTROKE;
+		widthStrokeOriginal = GRSetting.WIDTHSTROKE;
 		typeStroke = new BasicStroke((float)(widthStroke * 2));
 		
 	}
 	
 	public void setWidthStroke(double value) {
-		widthStroke = value;
-		
+		widthStroke = value * zoom;
+		this.setOriginalWidthStroke(widthStroke);
 		typeStroke = new BasicStroke((float)(widthStroke * 2));
 	}
 	public double getWidthStroke() {
 		return widthStroke;
+	}
+	public void setOriginalWidthStroke(double value) {
+		widthStrokeOriginal = value / zoom;
+	}
+	public double getOriginalWidthStroke() {
+		return widthStrokeOriginal;
 	}
 	public int getColorStrokeRED() {
 		return colorStrokeRED;
