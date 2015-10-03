@@ -240,8 +240,8 @@ public class GRRectangle extends GRShape {
 		bdx.setBounds(x1+width,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 	}
 	public GRRectangle clone(long id) {
-		int newX = x1+15;
-		int newY = y1+15;
+		int newX = x1;
+		int newY = y1+height;
 		
 		GRRectangle grclone = new GRRectangle(grpage,id,newX,newY,newX+width,newY+height,cStroke,cFill);
 		

@@ -86,7 +86,7 @@ public class GRSplash extends JFrame {
 		GRFontProperty.createFontProperty();
 		caricaTemplate();
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(4000);
 		} catch(Exception e) {}
 		
 		new GREditor();
@@ -190,7 +190,7 @@ class GRLogo extends JPanel {
 		g.setFont(new Font("Verdana",Font.PLAIN,10));
 		g.setColor(Color.WHITE);
 		g.drawString("Copyright "+new String(Character.toChars(169))+"2015",10,284);
-		g.drawString("v. "+GRAbout.MAIOR_VERSION+"."+GRAbout.MINOR_VERSION, 460, 284);
+		g.drawString("v. "+GRAbout.MAIOR_VERSION+"."+GRAbout.MINOR_VERSION+"."+GRAbout.RELEASE_VERSION, 454, 284);
 		
 		
 		// Logo utilizzatore prodotto

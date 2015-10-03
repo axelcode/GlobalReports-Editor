@@ -87,6 +87,7 @@ import com.globalreports.editor.designer.resources.GRImageResource;
 import com.globalreports.editor.designer.resources.GRResFonts;
 import com.globalreports.editor.designer.resources.GRResImages;
 import com.globalreports.editor.designer.GRDocumentNew;
+import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.designer.swing.toolbar.GRToolBar;
 import com.globalreports.editor.designer.swing.toolbar.GRToolBarDesigner;
 import com.globalreports.editor.designer.swing.toolbar.GRToolBarStrumenti;
@@ -142,6 +143,7 @@ public class GREditor extends JFrame implements ActionListener {
 	private GRToolBarStrumenti grtoolbarStrumenti;
 	private JDesktopPane desk;
 	private GRTableProperty panelProperty;
+	private GRTable grproperty;
 	private GRProject grproject;
 	
 	private GRDocument doc;
@@ -284,11 +286,13 @@ public class GREditor extends JFrame implements ActionListener {
 		
 		c.setFont(font);
 		panelProperty = new GRTableProperty();
+		grproperty = new GRTable();
 		
 		desk = new JDesktopPane();
 		
 		grproject = new GRProject(this);
 		splitProperty = new JSplitPane(JSplitPane.VERTICAL_SPLIT,panelProperty.getTable(),null);
+		//splitProperty = new JSplitPane(JSplitPane.VERTICAL_SPLIT,grproperty,null);
 		splitProperty.setDividerLocation(300);
 		
 		split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,splitProperty,desk);

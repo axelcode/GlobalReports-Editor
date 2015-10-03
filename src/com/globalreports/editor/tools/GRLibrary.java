@@ -200,10 +200,22 @@ public abstract class GRLibrary {
 	}
 	public static String lineASCIIToOct(String value) {
 		StringBuffer buffer = new StringBuffer();
+		boolean parentesiGraffa = false;
 		
 		for(int i = 0;i < value.length();i++) {
-			buffer.append(GRLibrary.fromASCIIToOct(value.codePointAt(i)));
+			if(value.codePointAt(i) == 123) {	
+				parentesiGraffa = true;
+			}
 			
+			if(parentesiGraffa) {
+				buffer.append(value.substring(i,(i + 1)));
+			} else {
+				buffer.append(GRLibrary.fromASCIIToOct(value.codePointAt(i)));
+			}
+			
+			if(value.codePointAt(i) == 125) {
+				parentesiGraffa = false;
+			}
 		}
 		
 		return buffer.toString();

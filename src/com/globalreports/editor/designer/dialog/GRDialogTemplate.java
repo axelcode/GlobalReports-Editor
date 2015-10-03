@@ -53,6 +53,7 @@ package com.globalreports.editor.designer.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 
 import javax.swing.DefaultListModel;
@@ -134,12 +135,14 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 		titTemplate = new JList(model);
 		titTemplate.addListSelectionListener(this);
 		
-		JPanel panel = new JPanel();
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		panel.setBorder(new MatteBorder(0, 0, 0, 1, (Color) UIManager.getColor("Button.background")));
 		panel.setBackground(Color.WHITE);
 		panel.add(titTemplate);
-		c.add(panel, BorderLayout.WEST);
+		//panel.setPreferredSize(new Dimension(200,0));
+		//panel.setMaximumSize(new Dimension(200,0));
 		
+		c.add(panel, BorderLayout.WEST);
 		
 		JPanel buttonPane = new JPanel();
 		buttonPane.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -182,7 +185,7 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 		panelLayout.setBackground(Color.WHITE);
 		this.changeTemplate(0);
 		
-		setBounds(100, 100, 620, 400);
+		setBounds(100, 100, 680, 400);
 		setVisible(true);
 		
 	}

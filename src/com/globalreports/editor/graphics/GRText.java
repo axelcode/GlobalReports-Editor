@@ -366,8 +366,8 @@ public class GRText extends GRObject {
 		font = new Font(fontName,fontStyle,fontSize);
 	}
 	public GRText clone(long id) {
-		int newX = x1Original+15;
-		int newY = y1Original+15;
+		int newX = x1Original;
+		int newY = y1Original+height;
 		
 		Rectangle r = new Rectangle(newX,newY,widthOriginal,heightOriginal);
 		GRText grclone = new GRText(grpage,gdc,id,grtextFormatted.getDocument(),grtextFormatted.getAlignment(),grtextFormatted.getText(),r);
@@ -394,13 +394,15 @@ public class GRText extends GRObject {
 	}
 	
 	private void insertTextFormatted() {
-		
+
 		int endStream = 0;
 		String tempStream = "";
 		
 		int dim = 0;
 		gpar = new GRParagraph(x1, y1, grtextFormatted.getAlignment(), gdc);
 		gpar.newRow();
+		
+		value = grtextFormatted.getText();
 		
 		for(int i = 0;i < grtextFormatted.getTotaleElement();i++) {
 			GRTextFormattedElement grtextElement = grtextFormatted.getElement(i);

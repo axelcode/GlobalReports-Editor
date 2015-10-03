@@ -1020,8 +1020,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			restoreToolBar();
 			repaint();
 		} else if(flagAzione == GRPage.ACTION_DRAWTEXT) {
-			if(Math.abs(xEnd-xStart) < GRSetting.MIN_DIMENSION_OBJ ||
-					Math.abs(yEnd - yStart) < GRSetting.MIN_DIMENSION_OBJ)
+			if(Math.abs(xEnd-xStart) < GRSetting.MIN_DIMENSION_OBJ)
 				return;
 			GREditText et = new GREditText(this, new Rectangle(xStart, yStart, xEnd-xStart, yEnd-yStart));
 			
@@ -1390,6 +1389,16 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			grobj.add(refCopy);
 			idObj++;
 			repaint();
+			
+			clearSelected();
+			
+			this.selectObj(refCopy,refCopy.getX(), refCopy.getY());
+			idObjSelected = (int)idObj;
+			grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, true);
+			grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 3, true);
+			grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 4, true);
+			
+			
 		}
 	}
 	public void clearObject() {
