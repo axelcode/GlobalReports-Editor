@@ -143,7 +143,6 @@ public class GREditor extends JFrame implements ActionListener {
 	private GRToolBarStrumenti grtoolbarStrumenti;
 	private JDesktopPane desk;
 	private GRTableProperty panelProperty;
-	private GRTable grproperty;
 	private GRProject grproject;
 	
 	private GRDocument doc;
@@ -286,18 +285,19 @@ public class GREditor extends JFrame implements ActionListener {
 		
 		c.setFont(font);
 		panelProperty = new GRTableProperty();
-		grproperty = new GRTable();
 		
 		desk = new JDesktopPane();
 		
 		grproject = new GRProject(this);
-		splitProperty = new JSplitPane(JSplitPane.VERTICAL_SPLIT,panelProperty.getTable(),null);
+		splitProperty = new JSplitPane(JSplitPane.VERTICAL_SPLIT,panelProperty.getProperty(),null);
 		//splitProperty = new JSplitPane(JSplitPane.VERTICAL_SPLIT,grproperty,null);
 		splitProperty.setDividerLocation(300);
 		
 		split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,splitProperty,desk);
-		split.setDividerLocation(200);
+		split.setDividerLocation(300);
 		c.add(split,BorderLayout.CENTER);
+		
+		panelProperty.setSplit(splitProperty);
 		
 		/* Footer
 		 * Contiene le info relative all'oogetto selezionato

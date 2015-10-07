@@ -86,7 +86,7 @@ public class GRSplash extends JFrame {
 		GRFontProperty.createFontProperty();
 		caricaTemplate();
 		try {
-			Thread.sleep(4000);
+			Thread.sleep(1000);
 		} catch(Exception e) {}
 		
 		new GREditor();

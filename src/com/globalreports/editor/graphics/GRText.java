@@ -77,6 +77,7 @@ import com.globalreports.editor.designer.property.GRTableModelRectangle;
 import com.globalreports.editor.designer.property.GRTableModelText;
 import com.globalreports.editor.designer.resources.GRResFonts;
 import com.globalreports.editor.designer.resources.GRFontResource;
+import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.graphics.text.*;
 import com.globalreports.editor.tools.GRCharCodeSet;
 import com.globalreports.editor.tools.GRLibrary;
@@ -172,27 +173,41 @@ public class GRText extends GRObject {
 		this.refreshReferenceSection();	
 	}
 	
-	public void setProperty(GRTableModel model) {
-		/*
+	public void setProperty(GRTable model) {
 		this.modelTable = (GRTableModelText)model;
 		modelTable.setGRObject(this);
 		
 		this.refreshProperty();
-		*/
 	}
-	/*
+	
 	public void refreshProperty() {
+		if(modelTable == null)
+			return ;
+		
 		modelTable.setLeft(this.getOriginalX());
 		modelTable.setTop(this.getOriginalY());
 		modelTable.setWidth(this.getOriginalWidth());
-		modelTable.setHPosition(this.getHPosition());
-		modelTable.setLineSpacing(this.getLineSpacing());
+		
 		modelTable.setFont(this.getFontFamily());
 		modelTable.setFontStyle(this.getFontStyleToString());
 		modelTable.setFontSize(this.getFontSize());
 		modelTable.setFontAlignment(this.getFontAlignmentToString());
+		
+		/*
+		modelTable.setHPosition(this.getHPosition());
+		modelTable.setLineSpacing(this.getLineSpacing());
+		
+		
+		
+		if(grtext.hasListFather())
+				modelText.setListFather(grtext.getListFather().getNameXml());
+			else
+				modelText.setListFather("--Nothing--");
+		 * 
+		 */
+		
 	}
-	*/
+	
 	public void setValueFromGRS(String value, GRResFonts resFont) {
 		Color fontColor = Color.black;
 		int cRED;

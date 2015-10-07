@@ -107,19 +107,6 @@ public class GRDialogColorChooser extends JDialog implements ActionListener, Ite
 	private JPanel colorDefault3;
 	
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			GRDialogColorChooser dialog = new GRDialogColorChooser();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
 	public static GRColor showDialog() {

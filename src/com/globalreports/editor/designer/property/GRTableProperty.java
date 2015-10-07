@@ -52,84 +52,138 @@
 package com.globalreports.editor.designer.property;
 
 import java.awt.*;
+
 import javax.swing.*;
 
+import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.swing.table.GRTable;
+
 public class GRTableProperty  {
+	public static final int TYPEMODEL_PAGE				= 0;
+	public static final int TYPEMODEL_LINE				= 1;
+	public static final int TYPEMODEL_RECTANGLE			= 2;
+	public static final int TYPEMODEL_IMAGE				= 3;
+	public static final int TYPEMODEL_TEXT				= 4;
+	public static final int TYPEMODEL_LIST				= 5;
+	public static final int TYPEMODEL_TABLELIST			= 6;
+	
+	private JPanel panelProperty;
+	private GRTable grtable;
+	private GRPage pagina;
+	private JSplitPane split;
+	
 	private JTable table;
 	
-	private GRTableCellEditor tablecellEditor;
+	/* Oggetti tabella. Uno per ogni oggetto */
+	private GRTable grtablePage;
+	private GRTable grtableRectangle;
+	private GRTable grtableLine;
+	private GRTable grtableImage;
+	private GRTable grtableText;
+	private GRTable grtableList;
+	private GRTable grtableTableList;
 	
 	public GRTableProperty() {
+		String[] title = {"Proprietà","Valore"};
+		grtable = new GRTable(title);
+		
+		/* Istanzia le tabelle riferite agli oggetti
+		 * 
+		 */
+		grtablePage = new GRTableModelPage(this,title);
+		grtableRectangle = new GRTableModelRectangle(this,title);
+		grtableLine = new GRTableModelLine(this,title);
+		grtableImage = new GRTableModelImage(this,title);
+		grtableText = new GRTableModelText(this,title);
+		grtableList = new GRTableModelList(this,title);
+		grtableTableList = new GRTableModelTableList(this,title);
+		
+		panelProperty = new JPanel(new GridLayout(0,1));
+		panelProperty.setBackground(Color.white);
+		panelProperty.add(grtable);
+		
 		table = new JTable();
 		
 		table.setFont(new Font("Lucida Grande",Font.PLAIN,10));
 		table.setRowHeight(24);
 		
-		tablecellEditor = new GRTableCellEditor();
 	}
-	
-	public JTable getTable() {
-		return table;
+	public void setSplit(JSplitPane split) {
+		this.split = split;
 	}
-	public void debug() {
-		table.setEnabled(false);
-		table.setEnabled(true);
+	public void setPage(GRPage pagina) {
+		this.pagina = pagina;
 	}
-	public void setModelPage(GRTableModelPage model) {
-		table.setModel(model);
+	public GRPage getPage() {
+		return pagina;
+	}
+	public JPanel getProperty() {
+		return panelProperty;
+	}
+	public GRTable getTable() {
+		return grtable;
+	}
+	public void setModel(int type) {
+		switch(type) {
+			case TYPEMODEL_PAGE:
+				grtable = grtablePage;
+				panelProperty.removeAll();
+				
+				break;
+			
+			case TYPEMODEL_RECTANGLE:
+				grtable = grtableRectangle;
+				panelProperty.removeAll();
+				
+				break;
+				
+			case TYPEMODEL_LINE:
+				grtable = grtableLine;
+				panelProperty.removeAll();
+				
+				break;
+				
+			case TYPEMODEL_IMAGE:
+				grtable = grtableImage;
+				panelProperty.removeAll();
+				
+				break;
+				
+			case TYPEMODEL_TEXT:
+				grtable = grtableText;
+				panelProperty.removeAll();
+				
+				break;
+				
+			case TYPEMODEL_LIST:
+				grtable = grtableList;
+				panelProperty.removeAll();
+				
+				break;
+				
+			case TYPEMODEL_TABLELIST:
+				grtable = grtableTableList;
+				panelProperty.removeAll();
+				
+				break;
+		}
 		
-		this.initRender();
-		table.setVisible(true);
-	}
-	public void setModelLine(GRTableModelLine model) {
-		table.setModel(model);
+		grtable.refresh();
+		panelProperty.add(grtable);
+		panelProperty.repaint();
 		
-		this.initRender();
-		table.setVisible(true);
-	}
-	public void setModelRectangle(GRTableModelRectangle model) {
-		table.setModel(model);
+		/* Quello che segue serve per forzare il refresh dello split */
 		
-		this.initRender();
-		table.setVisible(true);
+		split.setDividerSize(split.getDividerSize()+1);
+		split.setDividerSize(split.getDividerSize()-1);
 		
-	}
-	public void setModelText(GRTableModelText model) {
-		table.setModel(model);
-		
-		this.initRender();
-		table.setVisible(true);
-		
-	}
-	public void setModelImage(GRTableModelImage model) {
-		table.setModel(model);
-		
-		this.initRender();
-		table.setVisible(true);
-	}
-	public void setModelList(GRTableModelList model) {
-		table.setModel(model);
-		
-		this.initRender();
-		table.setVisible(true);
-	}
-	public void setModelTableList(GRTableModelTableList model) {
-		table.setModel(model);
-		
-		this.initRender();
-		table.setVisible(true);
-	}
-	private void initRender() {
-		table.getColumn("Value").setCellRenderer(new GRTableCellRenderer());
-		//table.getColumn("Value").setCellEditor(new GRTableCellEditor());
-		table.getColumn("Value").setCellEditor(tablecellEditor);
 	}
 	
 	public void addListFather(String value) {
-		tablecellEditor.addListFather(value);
+		((GRTableModelText)grtableText).addListFather(value);
 	}
 	public void removeListFather(String value) {
-		tablecellEditor.removeListFather(value);
+		//tablecellEditor.removeListFather(value);
 	}
 	
 	

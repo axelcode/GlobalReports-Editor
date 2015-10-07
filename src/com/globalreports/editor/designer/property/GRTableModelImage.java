@@ -52,89 +52,89 @@
 package com.globalreports.editor.designer.property;
 
 
+import javax.swing.JCheckBox;
+import javax.swing.JTextField;
 import javax.swing.event.*;
 
 import com.globalreports.editor.tools.GRLibrary;
 import com.globalreports.editor.graphics.GRImage;
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.swing.table.GRTable;
+import com.globalreports.editor.designer.swing.table.GRTableCell;
+import com.globalreports.editor.designer.swing.table.GRTableSeparator;
+import com.globalreports.editor.designer.swing.table.element.GRColorElement;
+import com.globalreports.editor.designer.swing.table.event.GRTableEvent;
+import com.globalreports.editor.designer.swing.table.event.GRTableListener;
 
 @SuppressWarnings("serial")
-public class GRTableModelImage extends GRTableModel implements TableModelListener {
-	private Object[][] element = {{"Type","Image"},
-			  {"",""},
-			  {"Absolute Height Position",new Boolean(false)},
-			  {"Left",""},
-			  {"Top",""},
-			  {"Width",""},
-			  {"Height",""}};
+public class GRTableModelImage extends GRTableModel implements GRTableListener {
+	
+	private Object[][] element = {{"Oggetto","Immagine"},
+								  {new GRTableSeparator("Posizione"), null},
+								  {"Posizione relativa", new JCheckBox()},
+								  {"Asse X", new JTextField()},
+								  {"Asse Y", new JTextField()},
+								  {"Larghezza", new JTextField()},
+								  {"Altezza", new JTextField()}};
 	
 	private GRImage objImage;
 	
-	public GRTableModelImage(GRPage page) {
-		this.pagina = page;
-		eventChangeActive = false;
-		setDataVector(element,header);
-		addTableModelListener(this);
-	}
-	
-	public void tableChanged(TableModelEvent e) {
+	public GRTableModelImage(GRTableProperty panelProperty, String[] title) {
+		super(title);
+		this.panelProperty = panelProperty;
 		
-		if(eventChangeActive) {
-			switch(e.getFirstRow()) {
-				case 2:		// H Position
-					objImage.setHPosition((Boolean)getValueAt(2,1));
-					break;
-			
-				case 3:
-					objImage.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(3,1).toString())));
-					break;
-				
-				case 4:
-					objImage.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(4,1).toString())));
-					break;	
-
-				case 5:
-					objImage.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(5,1).toString())));
-					break;	
-
-				case 6:
-					objImage.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(6,1).toString())));
-					break;
-
-			}
-			
-			eventChangeActive = false;
-			pagina.repaint();
-		}
+		createBody(element);
+		addGRTableListener(this);
 	}
-	public boolean isCellEditable(int row, int column) {
-        if (column == 1) {
-			if(row == 0 || row == 1)
-				return false;
-				
-        	return true;
-        }
-        
-        return false;
-    }
 	
 	public void setGRObject(GRImage ref) {
 		this.objImage = ref;
 	}
 	public void setHPosition(boolean value) {
-		this.setValueAt(new Boolean(value),2,1);
+		//this.setValueAt(new Boolean(value),2,1);
 	}
 	public void setLeft(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),3,1);
+		this.setValueAt(2,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setTop(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),4,1);
+		this.setValueAt(3,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setWidth(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),5,1);
+		this.setValueAt(4,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setHeight(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),6,1);
+		this.setValueAt(5,1,""+GRLibrary.fromPixelsToMillimeters(value));
+	}
+
+	@Override
+	public void valueChanged(GRTableEvent e) {
+		GRTableCell cell = (GRTableCell)e.getSource();
+		
+		switch(e.getRow()) {
+			case 1:	// hposition
+				//objImage.setHPosition((Boolean)getValueAt(2,1));
+				break;
+			
+			case 2:	// left
+				objImage.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 3:	// top
+				objImage.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 4:	// width
+				objImage.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 5:	// height
+				objImage.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+			
+				
+		}
+	
+		panelProperty.getPage().repaint();
 	}
 
 }

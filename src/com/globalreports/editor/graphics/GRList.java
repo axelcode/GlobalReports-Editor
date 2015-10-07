@@ -62,12 +62,17 @@ import java.awt.Stroke;
 import java.util.Vector;
 
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.property.GRTableModelImage;
+import com.globalreports.editor.designer.property.GRTableModelList;
+import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
 
 public class GRList extends GRObject {
 	private AlphaComposite composite;	// Canale Alpha per la trasparenza degli oggetti
 	
 	private String nameXml;
+	
+	private GRTableModelList modelTable;
 	
 	public GRList(GRPage grpage, long id) {
 		super(GRObject.TYPEOBJ_LIST,id,grpage);
@@ -148,7 +153,21 @@ public class GRList extends GRObject {
 		
 		grpage.hPosition = y1 + height;
 	}
-
+	public void setProperty(GRTable model) {
+		this.modelTable = (GRTableModelList)model;
+		modelTable.setGRObject(this);
+		
+		this.refreshProperty();
+	}
+	public void refreshProperty() {
+		if(modelTable == null)
+			return ;
+		
+		modelTable.setNameXml(this.getNameXml());
+		modelTable.setTop(this.getOriginalY());
+		modelTable.setHeight(this.getOriginalHeight());
+		
+	}
 	public String createCodeGRS() {
 		Vector<GRObject> child = grpage.getListChild(nameXml);
 		

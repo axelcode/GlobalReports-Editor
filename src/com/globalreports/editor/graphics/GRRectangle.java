@@ -62,6 +62,7 @@ import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModel;
 import com.globalreports.editor.designer.property.GRTableModelRectangle;
+import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
 
 public class GRRectangle extends GRShape {
@@ -153,7 +154,7 @@ public class GRRectangle extends GRShape {
 		
 	}
 	
-	public void setProperty(GRTableModel model) {
+	public void setProperty(GRTable model) {
 		this.modelTable = (GRTableModelRectangle)model;
 		modelTable.setGRObject(this);
 		
@@ -163,16 +164,18 @@ public class GRRectangle extends GRShape {
 		if(modelTable == null)
 			return ;
 		
-		modelTable.setWidthStroke(this.getWidthStroke());
-		modelTable.setColorStroke(this.getColorStroke().getRed(), this.getColorStroke().getGreen(), this.getColorStroke().getBlue());
-		if(this.getColorFill() == null)
-			modelTable.setColorFill(-1, -1, -1);
-		else
-			modelTable.setColorFill(this.getColorFill().getRed(), this.getColorFill().getGreen(), this.getColorFill().getBlue());
 		modelTable.setLeft(this.getOriginalX());
 		modelTable.setTop(this.getOriginalY());
 		modelTable.setWidth(this.getOriginalWidth());
 		modelTable.setHeight(this.getOriginalHeight());
+		modelTable.setWidthStroke(this.getWidthStroke());
+		modelTable.setColorStroke(this.getColorStroke().getRed(), this.getColorStroke().getGreen(), this.getColorStroke().getBlue());
+		
+		if(this.getColorFill() == null)
+			modelTable.setColorFill(-1, -1, -1);
+		else
+			modelTable.setColorFill(this.getColorFill().getRed(), this.getColorFill().getGreen(), this.getColorFill().getBlue());
+		
 	}
 	public int getColorFillRED() {
 		return colorFillRED;

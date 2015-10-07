@@ -53,138 +53,62 @@ package com.globalreports.editor.designer.property;
 
 import java.awt.Color;
 
+import javax.swing.JCheckBox;
+import javax.swing.JTextField;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.swing.table.GRTable;
+import com.globalreports.editor.designer.swing.table.GRTableCell;
+import com.globalreports.editor.designer.swing.table.GRTableSeparator;
+import com.globalreports.editor.designer.swing.table.element.GRColorElement;
+import com.globalreports.editor.designer.swing.table.event.GRTableEvent;
+import com.globalreports.editor.designer.swing.table.event.GRTableListener;
 import com.globalreports.editor.graphics.GRTableList;
 import com.globalreports.editor.tools.GRLibrary;
 
 @SuppressWarnings("serial")
-public class GRTableModelTableList extends GRTableModel implements TableModelListener {
-	private Object[][] element = {{"Type","Table List"},
-			  {"",""},
-			  {"Relative Height Position",new Boolean(false)},
-			  {"Name XML dati",""},
-			  {"Left",""},
-			  {"Top",""},
-			  {"Width",""},
-			  {"",""},
-			  {"<html><b>HEADER</b></html>",""},
-			  {"WidthStroke","0.25"},
-			  {"ColorStroke",new GRColorCellEditor(0,0,0)},
-			  {"ColorFill",new GRColorCellEditor(GRColorCellEditor.TRANSPARENT)},
-			  {"MinHeight",""},
-			  {"",""},
-			  {"<html><b>BODY</b></html>",""},
-			  {"WidthStroke","0.25"},
-			  {"ColorStroke",new GRColorCellEditor(0,0,0)},
-			  {"ColorFill",new GRColorCellEditor(GRColorCellEditor.TRANSPARENT)},
-			  {"MinHeight",""},
-			  {"",""},
-			  {"<html><b>FOOTER</b></html>",""},
-			  {"WidthStroke","0.25"},
-			  {"ColorStroke",new GRColorCellEditor(0,0,0)},
-			  {"ColorFill",new GRColorCellEditor(GRColorCellEditor.TRANSPARENT)},
-			  {"MinHeight",""}};
+public class GRTableModelTableList extends GRTableModel implements GRTableListener {
+	
+	private Object[][] element = {{"Oggetto","Tabella"},
+								  {new GRTableSeparator("Posizione"), null},
+								  {"Posizione relativa",new JCheckBox()},
+								  {"Nome XML dati", new JTextField()},
+								  {"Asse X", new JTextField()},
+								  {"Asse Y", new JTextField()},
+								  {"Larghezza", new JTextField()},
+								  {new GRTableSeparator("HEADER"), null},
+								  {"Dimensione tratto", new JTextField()},
+								  {"Colore tratto", new GRColorElement(Color.BLACK)},
+								  {"Colore riempimento", new GRColorElement()},
+								  {"Altezza minima", new JTextField()},
+								  {new GRTableSeparator("BODY"), null},
+								  {"Dimensione tratto", new JTextField()},
+								  {"Colore tratto", new GRColorElement(Color.BLACK)},
+								  {"Colore riempimento", new GRColorElement()},
+								  {"Altezza minima", new JTextField()},
+								  {new GRTableSeparator("FOOTER"), null},
+								  {"Dimensione tratto", new JTextField()},
+								  {"Colore tratto", new GRColorElement(Color.BLACK)},
+								  {"Colore riempimento", new GRColorElement()},
+								  {"Altezza minima", new JTextField()}};
 			  
-	private GRTableList objTableList;	// Riferimento all'oggetto per poterne modificare le propriet���
+	private GRTableList objTableList;	// Riferimento all'oggetto per poterne modificare le proprietà
 
-	public GRTableModelTableList(GRPage page) {
-		this.pagina = page;
-		eventChangeActive = false;
-		setDataVector(element,header);
-		addTableModelListener(this);
+	public GRTableModelTableList(GRTableProperty panelProperty, String[] title) {
+		super(title);
+		this.panelProperty = panelProperty;
+		
+		createBody(element);
+		addGRTableListener(this);
 	}
 	
-	public void tableChanged(TableModelEvent e) {
-		
-		if(eventChangeActive) {
-			
-			switch(e.getFirstRow()) {
-				case 3:
-					objTableList.setNameXml(getValueAt(3,1).toString());
-					break;
-					
-				case 4:
-					objTableList.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(4,1).toString())));
-					break;
-				
-				case 5:
-					objTableList.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(5,1).toString())));
-					break;	
-
-				case 6:
-					objTableList.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(6,1).toString())));
-					break;	
-
-				case 9:
-					objTableList.setHeaderWidthStroke(Double.parseDouble(getValueAt(9,1).toString()));
-					break;
-				
-				case 10:
-					objTableList.setHeaderColorStroke(((GRColorCellEditor)getValueAt(10,1)).getColor());
-					break;
-				
-				case 11:
-					objTableList.setHeaderColorFill(((GRColorCellEditor)getValueAt(11,1)).getColor());
-					break;
-					
-				case 12:
-					objTableList.setHeaderMinHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(12,1).toString())));
-					break;	
-
-				case 15:
-					objTableList.setBodyWidthStroke(Double.parseDouble(getValueAt(15,1).toString()));
-					break;
-				
-				case 16:
-					objTableList.setBodyColorStroke(((GRColorCellEditor)getValueAt(16,1)).getColor());
-					break;
-				
-				case 17:
-					objTableList.setBodyColorFill(((GRColorCellEditor)getValueAt(17,1)).getColor());
-					break;
-					
-				case 18:
-					objTableList.setBodyMinHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(18,1).toString())));
-					break;	
-					
-				case 21:
-					objTableList.setFooterWidthStroke(Double.parseDouble(getValueAt(21,1).toString()));
-					break;
-				
-				case 22:
-					objTableList.setFooterColorStroke(((GRColorCellEditor)getValueAt(22,1)).getColor());
-					break;
-				
-				case 23:
-					objTableList.setFooterColorFill(((GRColorCellEditor)getValueAt(23,1)).getColor());
-					break;
-					
-				case 24:
-					objTableList.setFooterMinHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(24,1).toString())));
-					break;	
-			}
-			
-			eventChangeActive = false;
-			pagina.repaint();
-		}
-	}
-	public boolean isCellEditable(int row, int column) {
-        if (column == 1) {
-			if(row == 0 || row == 1 || row == 7 || row == 13 || row == 18 || row == 19)
-				return false;
-				
-        	return true;
-        }
-        
-        return false;
-    }
 	
 	public void setGRObject(GRTableList ref) {
 		this.objTableList = ref;
 	}
+	/*
 	public void setLeft(int value) {
 		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),4,1);
 	}
@@ -274,5 +198,13 @@ public class GRTableModelTableList extends GRTableModel implements TableModelLis
 	}
 	public void setFooterMinHeight(int value) {
 		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value), 24, 1);
+	}
+	*/
+	@Override
+	public void valueChanged(GRTableEvent e) {
+		GRTableCell cell = (GRTableCell)e.getSource();
+		
+		panelProperty.getPage().repaint();
+		
 	}
 }

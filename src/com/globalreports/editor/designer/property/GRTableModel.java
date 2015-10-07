@@ -51,19 +51,19 @@
  */
 package com.globalreports.editor.designer.property;
 
-import javax.swing.table.*;
-
-import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.swing.table.GRTable;
+import com.globalreports.editor.designer.swing.table.element.GRComboElement;
 
 @SuppressWarnings("serial")
-public abstract class GRTableModel extends DefaultTableModel {
-	protected Object[] header = {"Property","Value"};
-	protected boolean eventChangeActive;
-	protected GRPage pagina;
+public abstract class GRTableModel extends GRTable {
+	protected GRTableProperty panelProperty;
 	
-	public abstract boolean isCellEditable(int row, int column);
+	protected GRComboElement listFather = new GRComboElement();
 	
-	public void activeListener() {
-		eventChangeActive = true;
+	public GRTableModel(String[] title) {
+		super(title);
+	}
+ 	public void addListFather(String value) {
+		listFather.addItem(value);
 	}
 }

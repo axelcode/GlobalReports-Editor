@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.property.GRTableCellRenderer
+ * class name  : com.globalreports.editor.designer.swing.table.GRTableSeparator
  * Begin       : 
  * Last Update : 
  *
@@ -49,41 +49,82 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor.designer.property;
+package com.globalreports.editor.designer.swing.table;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-import com.globalreports.editor.designer.property.combo.*;
-import com.globalreports.editor.designer.property.element.*;
-
-@SuppressWarnings("serial")
-public class GRTableCellRenderer extends DefaultTableCellRenderer {
-	private JCheckBox checkBox = new JCheckBox();
-
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-		Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+public class GRTableSeparator extends JPanel {
+	//private Color cSeparator1 = new Color(143, 158, 77);
+	//private Color cSeparator2 = new Color(108, 128, 14);
+	//private Color cSeparator1 = new Color(187, 92, 83);
+	//private Color cSeparator2 = new Color(160, 25, 12);
+	private Color cSeparator1 = new Color(217, 237, 246);
+	private Color cSeparator2 = new Color(174, 195, 214);
+	
+	private GradientPaint gp = null;
+	private Font f;
+	private String title;
+	
+	public GRTableSeparator() {
+		this("");
+	}
+	public GRTableSeparator(String value) {
+		f = new Font("Tahoma",Font.BOLD,12);
 		
-	    if (value instanceof Boolean) { // Boolean
-			checkBox.setSelected(((Boolean) value).booleanValue());
-			checkBox.setHorizontalAlignment(JLabel.CENTER);
-			return checkBox;
-	    } else if(value instanceof GRComboProperty) {
-	    	String str = (value == null) ? "" : ((GRComboProperty)value).getValueSelected();
-	        return super.getTableCellRendererComponent(table, str, isSelected,
-	            hasFocus, row, column);
-	    } else if(value instanceof GRColorString) {
-	    	//Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			Color c = ((GRColorString)value).getColor();
-			cell.setBackground(c);
-			return cell;
-		} else if(value instanceof GRColorCellEditor) {
-			return ((GRColorCellEditor)value).getCell();
-		}
-	    String str = (value == null) ? "" : value.toString();
-		cell.setBackground(Color.WHITE);
-	    return super.getTableCellRendererComponent(table, str, isSelected, hasFocus, row, column);
+		title = value;
+		/*
+		Font f = new Font("Tahoma",Font.BOLD,12);
+		
+		JLabel lblShadow = new JLabel(value);
+		lblShadow.setFont(f);
+		lblShadow.setForeground(Color.black);
+		lblShadow.setBounds(9,4,100,20);
+		
+		JLabel lblTitle = new JLabel(value);
+		lblTitle.setFont(f);
+		lblTitle.setForeground(Color.white);
+		lblTitle.setBounds(8,3,100,20);
+		
+		add(lblTitle);
+		add(lblShadow);
+
+		setBackground(cSeparator);
+		setMaximumSize(new Dimension(0,8));
+		
+		setLayout(null);
+		//setLayout(new FlowLayout(FlowLayout.LEFT));
+		 * 
+		 */
+	}
+	
+	public void paint(Graphics g) {
+		super.paint(g);
+				
+		Graphics2D g2d = (Graphics2D)g;
+		
+		if(gp == null)
+			gp = new GradientPaint(0, 0, cSeparator1, 0, (float)this.getHeight(), cSeparator2);
+		
+		g2d.setPaint(gp);
+		g2d.fillRect(0,0,this.getWidth(),this.getHeight());
+		
+		g2d.setFont(f);
+		
+		g2d.setColor(cSeparator2);
+		g2d.drawString(title,11,19);
+		
+		g2d.setColor(new Color(57,105,138));
+		g2d.drawString(title,10,18);
+		
 	}
 }

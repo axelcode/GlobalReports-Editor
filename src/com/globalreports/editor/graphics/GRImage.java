@@ -58,7 +58,10 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.property.GRTableModelImage;
+import com.globalreports.editor.designer.property.GRTableModelRectangle;
 import com.globalreports.editor.designer.resources.GRResImages;
+import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
 
 public class GRImage extends GRObject {
@@ -72,6 +75,8 @@ public class GRImage extends GRObject {
 	
 	private MediaTracker tracker;
 	private GRResImages resImg;
+	
+	private GRTableModelImage modelTable;
 	
 	public GRImage(GRPage grpage, long id, GRResImages resImg) {
 		super(GRObject.TYPEOBJ_IMAGE,id,grpage);
@@ -238,6 +243,23 @@ public class GRImage extends GRObject {
 			g.fillRect(x1+width,y1-4,4,4);
 			g.fillRect(x1+width,y1+height,4,4);
 		}
+	}
+	public void setProperty(GRTable model) {
+		this.modelTable = (GRTableModelImage)model;
+		modelTable.setGRObject(this);
+		
+		this.refreshProperty();
+	}
+	public void refreshProperty() {
+		if(modelTable == null)
+			return ;
+		
+		modelTable.setLeft(this.getOriginalX());
+		modelTable.setTop(this.getOriginalY());
+		modelTable.setWidth(this.getOriginalWidth());
+		modelTable.setHeight(this.getOriginalHeight());
+		modelTable.setHPosition(this.getHPosition());
+		
 	}
 	public String createCodeGRS() {
 		StringBuffer buff = new StringBuffer();

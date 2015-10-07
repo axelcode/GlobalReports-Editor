@@ -61,6 +61,7 @@ import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModel;
 import com.globalreports.editor.designer.property.GRTableModelLine;
 import com.globalreports.editor.designer.property.GRTableModelRectangle;
+import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
 
 public class GRLine extends GRShape {
@@ -173,7 +174,7 @@ public class GRLine extends GRShape {
 		}
 	}
 
-	public void setProperty(GRTableModel model) {
+	public void setProperty(GRTable model) {
 		this.modelTable = (GRTableModelLine)model;
 		modelTable.setGRObject(this);
 		

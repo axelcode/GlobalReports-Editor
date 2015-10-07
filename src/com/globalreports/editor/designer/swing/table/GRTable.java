@@ -53,12 +53,221 @@ package com.globalreports.editor.designer.swing.table;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Vector;
 
 import javax.swing.JPanel;
 
-public class GRTable extends JPanel {
+import com.globalreports.editor.designer.swing.table.event.GRTableEvent;
+import com.globalreports.editor.designer.swing.table.event.GRTableListener;
+
+@SuppressWarnings("serial")
+public class GRTable extends JPanel implements MouseListener {
+	private GRTableListener eventObj;
+	private Vector<GRTableRow> grrow;
+	
+	private GRTableHeader header;
+	
+	private JPanel panelContainer;
+	private int numColumns;
+	private int numRows;
+	private boolean pair;
+	
+	private Color cRowOdd = Color.white;
+	private Color cRowEqual = new Color(209,221,233);
+	private Color cRowSelected = new Color(57,105,138);
+	
+	private GRTableRow rowSelected;
+	private Font f = new Font("Tahoma",Font.PLAIN,10);
+	
 	public GRTable() {
+		this(null, null);
+		
+	}
+	public GRTable(String[] head) {
+		this(head, null);
+	}
+	public GRTable(Object[][] obj) {
+		this(null, obj);
+	}
+	public GRTable(String[] head, Object[][] obj) {
 		setLayout(new BorderLayout(0,0));
+		
+		numColumns = 1;
+		numRows = 0;
+		rowSelected = null;
+		pair = true;
+		
+		panelContainer = new JPanel(new GridLayout(0,1,0,0));
+		if(head != null && head.length > 0) {
+			createHead(head);
+		}
+		if(obj != null)
+			createBody(obj);
+		
+		add(panelContainer, BorderLayout.NORTH);
 		setBackground(Color.white);
+	}
+	public void addGRTableListener(GRTableListener e) {
+		this.eventObj = e;
+	}
+	public void activateTableEvent(GRTableCell cell) {
+		if(eventObj == null)
+			return;
+		
+		for(int x = 0;x < grrow.size();x++) {
+			GRTableRow row = grrow.get(x);
+			
+			for(int y = 0;y < numColumns;y++) {
+				if(row.getCell(y) == cell) {
+					eventObj.valueChanged(new GRTableEvent(cell, cell.getValue(), x, y));
+				}
+			}
+		}
+	}
+	public void addRow(Object[] obj) {
+		GRTableRow row = new GRTableRow(this, obj, pair);
+		row.addMouseListener(this);
+		
+		panelContainer.add(row);
+		
+		if(grrow == null)
+			grrow = new Vector<GRTableRow>();
+		grrow.add(row);
+		
+		numRows++;
+		
+		pair = !pair;
+	}
+	public void addSeparator(String value) {
+		GRTableSeparator separator = new GRTableSeparator(value);
+		
+		panelContainer.add(separator);
+		pair = true;
+	}
+	public void addSeparator(GRTableSeparator separator) {
+		panelContainer.add(separator);
+		pair = true;
+	}
+	public String getValueAt(int iRow, int iCol) {
+		try {
+			GRTableRow r = grrow.get(iRow);
+			
+			return r.getValue(iCol);
+		} catch(ArrayIndexOutOfBoundsException e) {
+			System.out.println("ERR");
+		}
+		return null;
+	}
+	public void setValueAt(int iRow, int iCol, String value) {
+		try {
+			GRTableRow r = grrow.get(iRow);
+			
+			r.setValue(iCol, value);
+		} catch(ArrayIndexOutOfBoundsException e) {
+			
+		}
+	}
+	public void setValueAt(int iRow, int iCol, Object value) {
+		try {
+			GRTableRow r = grrow.get(iRow);
+			
+			r.setValue(iCol, value);
+		} catch(ArrayIndexOutOfBoundsException e) {
+			
+		}
+	}
+	public int getNumRows() {
+		return numRows;
+	}
+	public int getNumColumns() {
+		return numColumns;
+	}
+	public Color getColorOdd() {
+		return cRowOdd;
+	}
+	public Color getColorEqual() {
+		return cRowEqual;
+	}
+	public Color getColorSelected() {
+		return cRowSelected;
+	}
+	public Color getColorDefault(boolean value) {
+		if(value)
+			return cRowOdd;
+		else
+			return cRowEqual;
+	}
+	public Font getFont() {
+		return f;
+	}
+	public void refresh() {
+		if(rowSelected != null) {
+			GRTableListener tempEvent = eventObj;
+			eventObj = null;	// Sgancia un eventuale ascoltatore
+			
+			rowSelected.setSelected(false);	// Esegue il refresh
+			eventObj = tempEvent;	// Riesegue l'aggancio dell'ascoltatore
+		}
+					
+		rowSelected = null;
+	}
+	private void createHead(String[] head) {
+		
+		header = new GRTableHeader(head);
+		panelContainer.add(header);
+		
+		numColumns = header.getNumColumns();
+	}
+	protected void createBody(Object[][] obj) {
+	
+		for(int i = 0;i < obj.length;i++) {
+			if(obj[i][0] instanceof GRTableSeparator) {
+				this.addSeparator((GRTableSeparator)obj[i][0]);
+			} else {
+				this.addRow(obj[i]);
+			}
+					
+		}
+	}
+	private void selectRow(GRTableRow row) {
+		if(row.isSelected())
+			return;
+		
+		if(rowSelected != null)
+			rowSelected.setSelected(false);
+		row.setSelected(true);
+		
+		rowSelected = row;
+		
+	}
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		GRTableRow row = (GRTableRow)e.getSource();
+		
+		selectRow(row);
+	}
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }

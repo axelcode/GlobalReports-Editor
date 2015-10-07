@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.property.GRTableModelList
+ * class name  : com.globalreports.editor.designer.swing.table.GRTableRow
  * Begin       : 
  * Last Update : 
  *
@@ -49,81 +49,80 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor.designer.property;
+package com.globalreports.editor.designer.swing.table;
 
-import javax.swing.JCheckBox;
-import javax.swing.JTextField;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.util.Vector;
 
-import com.globalreports.editor.designer.GRPage;
-import com.globalreports.editor.designer.swing.table.GRTable;
-import com.globalreports.editor.designer.swing.table.GRTableCell;
-import com.globalreports.editor.designer.swing.table.GRTableSeparator;
-import com.globalreports.editor.designer.swing.table.event.GRTableEvent;
-import com.globalreports.editor.designer.swing.table.event.GRTableListener;
-import com.globalreports.editor.graphics.GRList;
-import com.globalreports.editor.graphics.GRRectangle;
-import com.globalreports.editor.tools.GRLibrary;
+import javax.swing.JPanel;
 
-@SuppressWarnings("serial")
-public class GRTableModelList extends GRTableModel implements GRTableListener {
+public class GRTableRow extends JPanel {
+	private GRTable grtable;
+	private Vector<GRTableCell> grcell;
 	
-	private Object[][] element = {{"Oggetto","Lista"},
-								  {new GRTableSeparator("Posizione"), null},
-								  {"Posizione relativa",new JCheckBox()},
-								  {"Identificativo", new JTextField()},
-								  {"Asse Y", new JTextField()},
-								  {"Altezza", new JTextField()}};
-			  
-	private GRList objList;	// Riferimento all'oggetto per poterne modificare le proprietà
-
-	public GRTableModelList(GRTableProperty panelProperty, String[] title) {
-		super(title);
-		this.panelProperty = panelProperty;
-		
-		createBody(element);
-		addGRTableListener(this);
-	}
+	private boolean typeAlternate;
+	private boolean selected;
 	
-	public void setGRObject(GRList ref) {
-		this.objList = ref;
-	}
-	public void setNameXml(String value) {
-		this.setValueAt(2,1,value);
-	}
-	public void setTop(int value) {
-		this.setValueAt(3,1,""+GRLibrary.fromPixelsToMillimeters(value));
-	}
-	public void setHeight(int value) {
-		this.setValueAt(4,1,""+GRLibrary.fromPixelsToMillimeters(value));
-	}
-
-	@Override
-	public void valueChanged(GRTableEvent e) {
-		GRTableCell cell = (GRTableCell)e.getSource();
+	public GRTableRow(GRTable grtable, Object[] r, boolean type) {
+		this.grtable = grtable;
+		this.typeAlternate = type;
 		
-		switch(e.getRow()) {
-			case 1:	// hposition
-				//objImage.setHPosition((Boolean)getValueAt(2,1));
-				break;
+		grcell = new Vector<GRTableCell>();
+		selected = false;
+		
+		setBackground(Color.white);
+		setMaximumSize(new Dimension(0,8));
+		setLayout(new GridLayout(1,0));
+		
+		//addMouseListener(this);
+		
+		if(r == null) {
+			// Genera una riga vuota
 			
-			case 2:	// id
-				objList.setNameXml(e.getValue());
-				break;
-				
-			case 3:	// top
-				objList.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
-				break;
-				
-			case 4:	// height
-				objList.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
-				break;
-								
+		} else {
+			createRecord(r);
 		}
-	
-		panelProperty.getPage().repaint();
-		
 	}
 	
+	private void createRecord(Object[] r) {
+		
+		// Cicla per tutte le colonne
+		for(int i = 0;i < grtable.getNumColumns();i++) {
+			
+			JPanel p = new JPanel();
+			p.setBackground(Color.white);
+			p.setLayout(new GridLayout(1,0));
+				
+			GRTableCell cell = new GRTableCell(grtable,r[i],typeAlternate);
+			grcell.add(cell);
+			
+			add(cell);
+		}
+		
+	}
+	public String getValue(int indexColumn) throws ArrayIndexOutOfBoundsException {
+		return grcell.get(indexColumn).getValue();
+		
+	}
+	public void setValue(int indexColumn, String value) {
+		grcell.get(indexColumn).setValue(value);
+	}
+	public void setValue(int indexColumn, Object value) {
+		grcell.get(indexColumn).setValue(value);
+	}
+	public void setSelected(boolean value) {
+		selected = value;
+		
+		for(int i = 0;i < grcell.size();i++)
+			grcell.get(i).setSelected(selected);
+		
+	}
+	public boolean isSelected() {
+		return selected;
+	}
+	public GRTableCell getCell(int index) {
+		return grcell.get(index);
+	}
 }

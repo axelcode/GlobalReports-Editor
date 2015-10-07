@@ -51,6 +51,11 @@
  */
 package com.globalreports.editor.designer.property;
 
+import java.awt.Color;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
 import javax.swing.event.*;
 
 import com.globalreports.editor.tools.GRLibrary;
@@ -58,114 +63,112 @@ import com.globalreports.editor.graphics.GRRectangle;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.combo.GRComboFontName;
 import com.globalreports.editor.designer.property.combo.GRComboListFather;
+import com.globalreports.editor.designer.swing.table.element.GRComboElement;
+import com.globalreports.editor.designer.swing.table.GRTable;
+import com.globalreports.editor.designer.swing.table.GRTableCell;
+import com.globalreports.editor.designer.swing.table.GRTableSeparator;
+import com.globalreports.editor.designer.swing.table.element.GRColorElement;
+import com.globalreports.editor.designer.swing.table.event.GRTableEvent;
+import com.globalreports.editor.designer.swing.table.event.GRTableListener;
 
 @SuppressWarnings("serial")
-public class GRTableModelRectangle extends GRTableModel implements TableModelListener {
-	private Object[][] element = {{"Type","Rectangle"},
-								  {"",""},
-								  {"Relative Height Position",new Boolean(false)},
-								  {"Left",""},
-								  {"Top",""},
-								  {"Width",""},
-								  {"Height",""},
-								  {"",""},
-								  {"WidthStroke","0.25"},
-								  {"ColorStroke",new GRColorCellEditor(0,0,0)},
-								  {"ColorFill",new GRColorCellEditor(GRColorCellEditor.TRANSPARENT)},
-								  {"",""},
-								  {"List Father",new GRComboListFather("--Nothing--")}};
+public class GRTableModelRectangle extends GRTableModel implements GRTableListener {
+	
+	private Object[][] element = {{"Oggetto","Rettangolo"},
+								  {new GRTableSeparator("Posizione"), null},
+								  {"Posizione relativa", new JCheckBox()},
+								  {"Asse X", new JTextField()},
+								  {"Asse Y",  new JTextField()},
+								  {"Larghezza",  new JTextField()},
+								  {"Altezza",  new JTextField()},
+								  {new GRTableSeparator("Aspetto"), null},
+								  {"Dimensione tratto", new JTextField("0.25")},
+								  {"Colore tratto", new GRColorElement(Color.BLACK)},
+								  {"Colore riempimento", new GRColorElement()},
+								  {new GRTableSeparator("Oggetti dinamici"), null},
+								  {"Lista", listFather}};
 								  
 	private GRRectangle objRectangle;	// Riferimento all'oggetto per poterne modificare le propriet���
 	
-	public GRTableModelRectangle(GRPage page) {
-		this.pagina = page;
-		eventChangeActive = false;
-		setDataVector(element,header);
-		addTableModelListener(this);
-	}
-	
-	
-	public void tableChanged(TableModelEvent e) {
+	public GRTableModelRectangle(GRTableProperty panelProperty, String[] title) {
+		super(title);
+		this.panelProperty = panelProperty;
 		
-		if(eventChangeActive) {
-			switch(e.getFirstRow()) {
-				case 3:
-					objRectangle.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(3,1).toString())));
-					break;
-				
-				case 4:
-					objRectangle.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(4,1).toString())));
-					break;	
-
-				case 5:
-					objRectangle.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(5,1).toString())));
-					break;	
-
-				case 6:
-					objRectangle.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(6,1).toString())));
-					break;
-
-				case 8:
-					objRectangle.setWidthStroke(Double.parseDouble(getValueAt(8,1).toString()));
-					break;
-				
-				case 9:
-					objRectangle.setColorStroke(((GRColorCellEditor)getValueAt(9,1)).getColor());
-					break;
-					
-				case 10:
-					objRectangle.setColorFill(((GRColorCellEditor)getValueAt(10,1)).getColor());
-					break;
-					
-				case 12:
-					objRectangle.setListFather(((GRComboListFather)getValueAt(12,1)).getValueSelected());
-					break;
-			}
-			
-			eventChangeActive = false;
-			pagina.repaint();
-		}
+		createBody(element);
+		addGRTableListener(this);
 	}
-	public boolean isCellEditable(int row, int column) {
-        if (column == 1) {
-			if(row == 0 || row == 1 || row == 7 || row == 11)
-				return false;
-				
-        	return true;
-        }
-        
-        return false;
-    }
 	
 	public void setGRObject(GRRectangle ref) {
 		this.objRectangle = ref;
 	}
+	@Override
+	public void valueChanged(GRTableEvent e) {
+		GRTableCell cell = (GRTableCell)e.getSource();
+		
+		switch(e.getRow()) {
+			case 2:	// X
+				objRectangle.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 3:	// Y
+				objRectangle.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 4:	// width
+				objRectangle.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 5:	// height
+				objRectangle.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+			
+			case 6:	// widthstroke
+				objRectangle.setWidthStroke(Double.parseDouble(e.getValue()));
+				break;
+			
+			case 7:	// colorstroke
+				
+				objRectangle.setColorStroke(((GRColorElement)cell.getObjectValue()).getColor());
+				//panelProperty.getPage().refreshHeader(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 8:	// colorfill
+
+				objRectangle.setColorFill(((GRColorElement)cell.getObjectValue()).getColor());
+				break;
+				
+			case 9:	// listfather
+				
+				break;
+		}
+	
+		panelProperty.getPage().repaint();
+		
+	}
+	
 	public void setLeft(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),3,1);
+		this.setValueAt(2,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setTop(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),4,1);
+		this.setValueAt(3,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setWidth(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),5,1);
+		this.setValueAt(4,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setHeight(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),6,1);
+		this.setValueAt(5,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setWidthStroke(double value) {
-		this.setValueAt(""+value,8,1);
+		this.setValueAt(6, 1, ""+value);
 	}
 	public void setColorStroke(int red, int green, int blue) {
-		this.setValueAt(new GRColorCellEditor(red,green,blue),9,1);
+		this.setValueAt(7,1,new Color(red, green, blue));
 	}
 	public void setColorFill(int red, int green, int blue) {
 		if(red == -1 || green == -1 || blue == -1)
-			this.setValueAt(new GRColorCellEditor(red,green,blue,true),10,1);
+			this.setValueAt(8,1,new GRColorElement());
 		else
-			this.setValueAt(new GRColorCellEditor(red,green,blue,true),10,1);
+			this.setValueAt(8, 1, new GRColorElement(new Color(red, green, blue)));
+		
 	}
-	public void setListFather(String value) {
-		this.setValueAt(new GRComboListFather(value), 12, 1);
-	}
-	
 }

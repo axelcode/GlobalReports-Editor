@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.property.GRTableModelPage
+ * class name  : com.globalreports.editor.designer.swing.table.event.GRTableEvent
  * Begin       : 
  * Last Update : 
  *
@@ -49,51 +49,32 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor.designer.property;
+package com.globalreports.editor.designer.swing.table.event;
 
-import javax.swing.JTextField;
+import java.util.EventObject;
 
-import com.globalreports.editor.designer.swing.table.GRTable;
-import com.globalreports.editor.designer.swing.table.event.GRTableEvent;
-import com.globalreports.editor.designer.swing.table.event.GRTableListener;
-import com.globalreports.editor.tools.GRLibrary;
-
-@SuppressWarnings("serial")
-public class GRTableModelPage extends GRTableModel implements GRTableListener {
+public class GRTableEvent extends EventObject {
+	private String value;
+	private int iRow;
+	private int iCol;
 	
-	private Object[][] element = {{"Header", new JTextField()},
-								  {"Footer", new JTextField()}};
-	
-	public GRTableModelPage(GRTableProperty panelProperty, String[] title) {
-		super(title);
-		this.panelProperty = panelProperty;
+	public GRTableEvent(Object source) {
+		super(source);
+	}
+	public GRTableEvent(Object source, String value, int iRow, int iCol) {
+		super(source);
 		
-		createBody(element);
-		addGRTableListener(this);
+		this.value = value;
+		this.iRow = iRow;
+		this.iCol = iCol;
 	}
-	
-	public void setHeader(int value) {
-		setValueAt(0,1,""+GRLibrary.fromPixelsToMillimeters(value));
+	public String getValue() {
+		return value;
 	}
-	public void setFooter(int value) {
-		setValueAt(1,1,""+GRLibrary.fromPixelsToMillimeters(value));
+	public int getRow() {
+		return iRow;
 	}
-
-	@Override
-	public void valueChanged(GRTableEvent e) {
-		
-		switch(e.getRow()) {
-			case 0:	// Header
-				panelProperty.getPage().refreshHeader(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
-				break;
-				
-			case 1:	// Footer
-				panelProperty.getPage().refreshFooter(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
-				break;
-		}
-		
-		panelProperty.getPage().repaint();
+	public int getColumn() {
+		return iCol;
 	}
-	
-	
 }

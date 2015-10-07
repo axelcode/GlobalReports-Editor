@@ -62,6 +62,9 @@ import java.awt.Stroke;
 import java.util.Vector;
 
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.property.GRTableModelList;
+import com.globalreports.editor.designer.property.GRTableModelTableList;
+import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.graphics.tablelist.GRTableListBody;
 import com.globalreports.editor.graphics.tablelist.GRTableListCell;
 import com.globalreports.editor.graphics.tablelist.GRTableListColumn;
@@ -88,6 +91,8 @@ public class GRTableList extends GRObject {
 	private Color cBordoEsterno;
 	
 	private String nameXml;
+	
+	private GRTableModelTableList modelTable;
 	
 	public GRTableList(GRPage grpage, long id, int xStart, int yStart, int xEnd, int yEnd, int totColumn) {
 		super(GRObject.TYPEOBJ_TABLELIST,id,grpage);
@@ -200,6 +205,51 @@ public class GRTableList extends GRObject {
 			//g.drawString("BODY",x1+2,y1+height);
 			g.setFont(oldFont);
 		}
+	}
+	public void setProperty(GRTable model) {
+		this.modelTable = (GRTableModelTableList)model;
+		modelTable.setGRObject(this);
+		
+		this.refreshProperty();
+	}
+	public void refreshProperty() {
+		if(modelTable == null)
+			return ;
+		/*
+		modelTable.setNameXml(this.getNameXml());
+		modelTable.setTop(this.getOriginalY());
+		modelTable.setHeight(this.getOriginalHeight());
+		
+		modelTableList.setGRObject(grtablelist);
+			modelTableList.setLeft(grtablelist.getX());
+			modelTableList.setTop(grtablelist.getY());
+			modelTableList.setWidth(grtablelist.getWidth());
+			modelTableList.setNameXml(grtablelist.getNameXml());
+			
+			// HEADER
+			if(grtablelist.isHeader()) {
+				modelTableList.setHeaderWidthStroke(grtablelist.getHeaderWidthStroke());
+				modelTableList.setHeaderColorStroke(grtablelist.getHeaderColorStroke());
+				modelTableList.setHeaderColorFill(grtablelist.getHeaderColorFill());
+				modelTableList.setHeaderMinHeight(grtablelist.getHeaderMinHeight());
+				
+			}
+						
+			// BODY
+			modelTableList.setBodyWidthStroke(grtablelist.getBodyWidthStroke());
+			modelTableList.setBodyColorStroke(grtablelist.getBodyColorStroke());
+			modelTableList.setBodyColorFill(grtablelist.getBodyColorFill());
+			modelTableList.setBodyMinHeight(grtablelist.getBodyMinHeight());
+			
+			// FOOTER
+			if(grtablelist.isFooter()) {
+				modelTableList.setFooterWidthStroke(grtablelist.getFooterWidthStroke());
+				modelTableList.setFooterColorStroke(grtablelist.getFooterColorStroke());
+				modelTableList.setFooterColorFill(grtablelist.getFooterColorFill());
+				modelTableList.setFooterMinHeight(grtablelist.getFooterMinHeight());
+				
+			}
+		*/
 	}
 	public int getColLeft(int index) {
 		if(index < 0 || index >= grtablelistColumns.size())

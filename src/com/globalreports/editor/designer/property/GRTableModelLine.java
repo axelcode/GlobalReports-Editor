@@ -51,101 +51,102 @@
  */
 package com.globalreports.editor.designer.property;
 
+import java.awt.Color;
+
+import javax.swing.JCheckBox;
+import javax.swing.JTextField;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.swing.table.GRTable;
+import com.globalreports.editor.designer.swing.table.GRTableCell;
+import com.globalreports.editor.designer.swing.table.GRTableSeparator;
+import com.globalreports.editor.designer.swing.table.element.GRColorElement;
+import com.globalreports.editor.designer.swing.table.event.GRTableEvent;
+import com.globalreports.editor.designer.swing.table.event.GRTableListener;
 import com.globalreports.editor.graphics.GRLine;
 import com.globalreports.editor.tools.GRLibrary;
 
 @SuppressWarnings("serial")
-public class GRTableModelLine extends GRTableModel implements TableModelListener {
-	private Object[][] element = {{"Type","Line"},
-			  {"",""},
-			  {"Relative Height Position",new Boolean(false)},
-			  {"X1",""},
-			  {"Y1",""},
-			  {"X2",""},
-			  {"Y2",""},
-			  {"",""},
-			  {"WidthStroke","0.25"},
-			  {"ColorStroke",new GRColorCellEditor(0,0,0)}};
+public class GRTableModelLine extends GRTableModel implements GRTableListener {
 	
-	private GRLine objLine;	// Riferimento all'oggetto per poterne modificare le propriet�
+	private Object[][] element = {{"Oggetto","Linea"},
+								  {new GRTableSeparator("Posizione"), null},
+								  {"Posizione relativa", new JCheckBox()},
+								  {"X1", new JTextField()},
+								  {"Y1", new JTextField()},
+								  {"X2", new JTextField()},
+								  {"Y2", new JTextField()},
+								  {new GRTableSeparator("Aspetto"), null},
+								  {"Dimensione tratto", new JTextField()},
+								  {"Colore tratto", new GRColorElement(Color.BLACK)}};
 	
-	public GRTableModelLine(GRPage page) {
-		this.pagina = page;
-		eventChangeActive = false;
-		setDataVector(element,header);
-		addTableModelListener(this);
-	}
+	private GRLine objLine;	// Riferimento all'oggetto per poterne modificare le proprietà
 	
-	public void tableChanged(TableModelEvent e) {
+	public GRTableModelLine(GRTableProperty panelProperty, String[] title) {
+		super(title);
+		this.panelProperty = panelProperty;
 		
-		if(eventChangeActive) {
-			switch(e.getFirstRow()) {
-				case 3:
-					objLine.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(3,1).toString())));
-					break;
-				
-				case 4:
-					objLine.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(4,1).toString())));
-					break;	
-
-				case 5:
-					objLine.setXEnd(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(5,1).toString())));
-					break;	
-
-				case 6:
-					objLine.setYEnd(GRLibrary.fromMillimetersToPixels(Double.parseDouble(getValueAt(6,1).toString())));
-					break;
-
-				case 8:
-					objLine.setWidthStroke(Double.parseDouble(getValueAt(8,1).toString()));
-					break;
-					
-				case 9:
-					objLine.setColorStroke(((GRColorCellEditor)getValueAt(9,1)).getColor());
-					break;
-					
-				
-			}
-			
-			eventChangeActive = false;
-			pagina.repaint();
-		}
+		createBody(element);
+		addGRTableListener(this);
 	}
-	public boolean isCellEditable(int row, int column) {
-        if (column == 1) {
-			if(row == 0 || row == 1 || row == 7)
-				return false;
-				
-        	return true;
-        }
-        
-        return false;
-    }
 	
 	public void setGRObject(GRLine ref) {
 		this.objLine = ref;
 	}
 	public void setX1(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),3,1);
+		this.setValueAt(2,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setY1(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),4,1);
+		this.setValueAt(3,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setX2(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),5,1);
+		this.setValueAt(4,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setY2(int value) {
-		this.setValueAt(""+GRLibrary.fromPixelsToMillimeters(value),6,1);
+		this.setValueAt(5,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
 	public void setWidthStroke(double value) {
-		this.setValueAt(""+value,8,1);
+		this.setValueAt(6, 1, ""+value);
 	}
 	public void setColorStroke(int red, int green, int blue) {
-		this.setValueAt(new GRColorCellEditor(red,green,blue),9,1);
+		this.setValueAt(7,1,new Color(red, green, blue));
+	}
+
+	@Override
+	public void valueChanged(GRTableEvent e) {
+		GRTableCell cell = (GRTableCell)e.getSource();
+		
+		switch(e.getRow()) {
+			case 2:	// X1
+				objLine.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 3:	// Y1
+				objLine.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 4:	// X2
+				objLine.setXEnd(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+				
+			case 5:	// Y2
+				objLine.setYEnd(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				break;
+			
+			case 6:	// widthstroke
+				objLine.setWidthStroke(Double.parseDouble(e.getValue()));
+				break;
+			
+			case 7:	// colorstroke
+				objLine.setColorStroke(((GRColorElement)cell.getObjectValue()).getColor());
+				break;
+				
+		}
+	
+		panelProperty.getPage().repaint();
+		
 	}
 	
 }

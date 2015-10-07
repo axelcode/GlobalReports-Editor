@@ -142,13 +142,6 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	GRTableProperty panelProperty;
 	GRToolBarDesigner grtoolbar;
 	GRToolBarStrumenti grtoolbarStrumenti;
-	GRTableModelPage modelPage;
-	GRTableModelLine modelLine;
-	GRTableModelRectangle modelRectangle;
-	GRTableModelText modelText;
-	GRTableModelImage modelImage;
-	GRTableModelList modelList;
-	GRTableModelTableList modelTableList;
 	
 	// Cursori
 	Cursor defaultCursor;
@@ -211,23 +204,16 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		refObj = null;
 		refObjCopy = null;
 		
-		// Istanzio i modelli relativi alle propriet�� di ogni singolo oggetto grafico
-		modelPage = new GRTableModelPage(this);
-		modelLine = new GRTableModelLine(this);
-		modelRectangle = new GRTableModelRectangle(this);
-		modelText = new GRTableModelText(this);
-		modelImage = new GRTableModelImage(this);
-		modelList = new GRTableModelList(this);
-		modelTableList = new GRTableModelTableList(this);
-		
 		// Istanzio i cursori che andrò ad utilizzare
 		defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 		TSXBDXCursor = new Cursor(Cursor.NW_RESIZE_CURSOR);
 		TDXBSXCursor = new Cursor(Cursor.NE_RESIZE_CURSOR);
 		
+		panelProperty.setPage(this);
+		panelProperty.setModel(GRTableProperty.TYPEMODEL_PAGE);
+		GRTableModelPage modelPage = (GRTableModelPage)panelProperty.getTable();
 		modelPage.setHeader(heightHeader);
 		modelPage.setFooter(heightFooter);
-		panelProperty.setModelPage(modelPage);
 		
 		hPosition = 0;
 		
@@ -587,9 +573,13 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		grtoolbarStrumenti.setBackwardEnabled(false);
 		grtoolbarStrumenti.setForwardEnabled(false);
 		
+		panelProperty.setPage(this);
+		
+		panelProperty.setModel(GRTableProperty.TYPEMODEL_PAGE);
+		GRTableModelPage modelPage = (GRTableModelPage)panelProperty.getTable();
 		modelPage.setHeader(heightHeader);
 		modelPage.setFooter(heightFooter);
-		panelProperty.setModelPage(modelPage);
+		
 	}
 	
 	public void setAction(int value) {
@@ -681,16 +671,22 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	public void refreshFooter(int value) {
 		grdoc.setFooterPage(value);
 		
+		//this.releaseFooter();
 	}
 	public void modifyHeader(int value) {
 		if(value < 0)
 			value = 0;
 		heightHeader = value;
+		
+		((GRTableModelPage)panelProperty.getTable()).setHeader(value);
+		
 	}
 	public void modifyFooter(int value) {
 		if(value < 0)
 			value = 0;
 		heightFooter = value;
+		
+		((GRTableModelPage)panelProperty.getTable()).setFooter(value);
 	}
 	public int getHeaderSize() {
 		return heightHeader;
@@ -713,98 +709,43 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		if(refObj instanceof GRLine) {
 			GRLine grline = (GRLine)refObj;
 			
-			grline.setProperty(modelLine);
-			panelProperty.setModelLine(modelLine);
-			
+			panelProperty.setModel(GRTableProperty.TYPEMODEL_LINE);
+			grline.setProperty(panelProperty.getTable());
+						
 			grline.setLocation(grline.getX(),grline.getY());
 		} else if(refObj instanceof GRRectangle) {
 			GRRectangle grrect = (GRRectangle)refObj;
 			
-			grrect.setProperty(modelRectangle);
-			panelProperty.setModelRectangle(modelRectangle);
+			panelProperty.setModel(GRTableProperty.TYPEMODEL_RECTANGLE);
+			grrect.setProperty(panelProperty.getTable());
 			
 			grrect.setLocation(grrect.getX(),grrect.getY());
 		} else if(refObj instanceof GRText) {
 			GRText grtext = (GRText)refObj;
 			
-			//grtext.setProperty(modelText);
-			modelText.setGRObject(grtext);
-			
-			modelText.setLeft(grtext.getOriginalX());
-			modelText.setTop(grtext.getOriginalY());
-			modelText.setWidth(grtext.getOriginalWidth());
-			modelText.setHPosition(grtext.getHPosition());
-			modelText.setLineSpacing(grtext.getLineSpacing());
-			modelText.setFont(grtext.getFontFamily());
-			modelText.setFontStyle(grtext.getFontStyleToString());
-			modelText.setFontSize(grtext.getFontSize());
-			modelText.setFontAlignment(grtext.getFontAlignmentToString());
-			
-			if(grtext.hasListFather())
-				modelText.setListFather(grtext.getListFather().getNameXml());
-			else
-				modelText.setListFather("--Nothing--");
-			
-			panelProperty.setModelText(modelText);
+			panelProperty.setModel(GRTableProperty.TYPEMODEL_TEXT);
+			grtext.setProperty(panelProperty.getTable());
 			
 			grtext.setLocation(grtext.getX(),grtext.getY());
 		} else if(refObj instanceof GRImage) {
 			GRImage grimage = (GRImage)refObj;
 			
-			modelImage.setGRObject(grimage);
-			modelImage.setLeft(grimage.getOriginalX());
-			modelImage.setTop(grimage.getOriginalY());
-			modelImage.setWidth(grimage.getOriginalWidth());
-			modelImage.setHeight(grimage.getOriginalHeight());
-			modelImage.setHPosition(grimage.getHPosition());
-			
-			panelProperty.setModelImage(modelImage);
-			
+			panelProperty.setModel(GRTableProperty.TYPEMODEL_IMAGE);
+			grimage.setProperty(panelProperty.getTable());
+								
 			grimage.setLocation(grimage.getX(),grimage.getY());
 		} else if(refObj instanceof GRList) {
 			GRList grlist = (GRList)refObj;
 			
-			modelList.setGRObject(grlist);
-			modelList.setNameXml(grlist.getNameXml());
-			modelList.setTop(grlist.getOriginalY());
-			modelList.setHeight(grlist.getOriginalHeight());
-			panelProperty.setModelList(modelList);
+			panelProperty.setModel(GRTableProperty.TYPEMODEL_LIST);
+			grlist.setProperty(panelProperty.getTable());
 			
 			grlist.setLocation(grlist.getX(),grlist.getY());			
 		} else if(refObj instanceof GRTableList) {
 			GRTableList grtablelist = (GRTableList)refObj;
 			
-			modelTableList.setGRObject(grtablelist);
-			modelTableList.setLeft(grtablelist.getX());
-			modelTableList.setTop(grtablelist.getY());
-			modelTableList.setWidth(grtablelist.getWidth());
-			modelTableList.setNameXml(grtablelist.getNameXml());
-			
-			// HEADER
-			if(grtablelist.isHeader()) {
-				modelTableList.setHeaderWidthStroke(grtablelist.getHeaderWidthStroke());
-				modelTableList.setHeaderColorStroke(grtablelist.getHeaderColorStroke());
-				modelTableList.setHeaderColorFill(grtablelist.getHeaderColorFill());
-				modelTableList.setHeaderMinHeight(grtablelist.getHeaderMinHeight());
-				
-			}
-						
-			// BODY
-			modelTableList.setBodyWidthStroke(grtablelist.getBodyWidthStroke());
-			modelTableList.setBodyColorStroke(grtablelist.getBodyColorStroke());
-			modelTableList.setBodyColorFill(grtablelist.getBodyColorFill());
-			modelTableList.setBodyMinHeight(grtablelist.getBodyMinHeight());
-			
-			// FOOTER
-			if(grtablelist.isFooter()) {
-				modelTableList.setFooterWidthStroke(grtablelist.getFooterWidthStroke());
-				modelTableList.setFooterColorStroke(grtablelist.getFooterColorStroke());
-				modelTableList.setFooterColorFill(grtablelist.getFooterColorFill());
-				modelTableList.setFooterMinHeight(grtablelist.getFooterMinHeight());
-				
-			}
-			
-			panelProperty.setModelTableList(modelTableList);
+			panelProperty.setModel(GRTableProperty.TYPEMODEL_TABLELIST);
+			grtablelist.setProperty(panelProperty.getTable());
 			
 			grtablelist.setLocation(grtablelist.getX(), grtablelist.getY());
 		} 
