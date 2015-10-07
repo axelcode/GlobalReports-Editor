@@ -4,6 +4,11 @@ L'editor visuale per disegnare graficamente e compilare i layout per il motore G
 Elenco dei rilasci 
 ==================
 
+V.0.5.2 - 07/10/2015
+--------------------
+
+- Modificata la tabella delle proprietà: l'oggetto JTable è stato abbandonato ed al suo posto è ora presente una GRTable disegnata da zero e più adatta e fruibile dell'oggetto nativo di Java
+
 V.0.5.1 - 03/10/2015
 --------------------
 
