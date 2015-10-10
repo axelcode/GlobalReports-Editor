@@ -6,13 +6,12 @@ Ma GlobalReports Editor può essere usato anche come editor per creare documenti
 Elenco dei rilasci 
 ==================
 
-**V.0.5.3 - 10/10/2015
---------------------
+**V.0.5.3** - 10/10/2015
 
-- Correzione dei seguenti bug:
--- All'apertura di un nuovo documento veniva duplicata la barra degli strumenti.
--- La cancellazione di una lista non liberava il suo riferimento dalla memoria.
--- Se un oggetto veniva selezionato e si procedeva a muovere le ancore relative alle sezioni della pagina, l'applicativo andava in eccezione.
+Correzione dei seguenti bug:
+- All'apertura di un nuovo documento veniva duplicata la barra degli strumenti.
+- La cancellazione di una lista non liberava il suo riferimento dalla memoria.
+- Se un oggetto veniva selezionato e si procedeva a muovere le ancore relative alle sezioni della pagina, l'applicativo andava in eccezione.
 
 Aggiunte le seguenti features:
 - La lista viene sempre disegnata sotto tutti gli altri oggetti.
