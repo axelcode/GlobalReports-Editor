@@ -6,7 +6,7 @@ Ma GlobalReports Editor può essere usato anche come editor per creare documenti
 Elenco dei rilasci 
 ==================
 
-**V.0.5.3** - 10/10/2015
+*V.0.5.3 - 10/10/2015*
 
 Correzione dei seguenti bug:
 - All'apertura di un nuovo documento veniva duplicata la barra degli strumenti.
