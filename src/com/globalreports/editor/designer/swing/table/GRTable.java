@@ -74,6 +74,7 @@ public class GRTable extends JPanel implements MouseListener {
 	private JPanel panelContainer;
 	private int numColumns;
 	private int numRows;
+	private int numElements;
 	private boolean pair;
 	
 	private Color cRowOdd = Color.white;
@@ -139,6 +140,7 @@ public class GRTable extends JPanel implements MouseListener {
 		grrow.add(row);
 		
 		numRows++;
+		numElements++;
 		
 		pair = !pair;
 	}
@@ -147,10 +149,14 @@ public class GRTable extends JPanel implements MouseListener {
 		
 		panelContainer.add(separator);
 		pair = true;
+		
+		numElements++;
 	}
 	public void addSeparator(GRTableSeparator separator) {
 		panelContainer.add(separator);
 		pair = true;
+		
+		numElements++;
 	}
 	public String getValueAt(int iRow, int iCol) {
 		try {
@@ -204,6 +210,32 @@ public class GRTable extends JPanel implements MouseListener {
 	public Font getFont() {
 		return f;
 	}
+	public void nextFocus(GRTableCell cell) {
+		int nextRow = 0;
+		
+		if(cell == null)
+			return;
+		
+		for(int x = 0;x < grrow.size();x++) {
+			GRTableRow row = grrow.get(x);
+			
+			for(int y = 0;y < numColumns;y++) {
+				if(row.getCell(y) == cell) {
+					nextRow = x + 1;
+					
+					if(nextRow == grrow.size())
+						nextRow = 0;
+					
+					row.setSelected(false);
+					row = grrow.get(nextRow);
+					row.setSelected(true);
+					
+					rowSelected = row;
+					break;
+				}
+			}
+		}
+	}
 	public void refresh() {
 		if(rowSelected != null) {
 			GRTableListener tempEvent = eventObj;
@@ -214,7 +246,12 @@ public class GRTable extends JPanel implements MouseListener {
 		}
 					
 		rowSelected = null;
+		
 	}
+	public int getHeight() {
+		return (numElements + 1) * 28;
+	}
+	
 	private void createHead(String[] head) {
 		
 		header = new GRTableHeader(head);

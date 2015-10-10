@@ -122,10 +122,7 @@ public class GRTableModelText extends GRTableModel implements GRTableListener {
 	    fAlign.addItem("Centrato");
 	    fAlign.addItem("Destra");
 	    fAlign.addItem("Giustificato");
-	    
-	    // List Father
-	    listFather.addItem("--Nessuna--");
-	    
+	    	    
 		createBody(element);
 		addGRTableListener(this);
 	}
@@ -161,12 +158,13 @@ public class GRTableModelText extends GRTableModel implements GRTableListener {
 	public void setFontAlignment(String fAlign) {
 		this.setValueAt(9,1,fAlign);
 	}
-	/*
-	
 	public void setListFather(String value) {
-		this.setValueAt(new GRComboListFather(value), 14, 1);
+		if(value == null)
+			this.setValueAt(11, 1, "--Nessuna--");
+		else
+			this.setValueAt(11,1,value);
 	}
-	*/
+	
 	@Override
 	public void valueChanged(GRTableEvent e) {
 		GRTableCell cell = (GRTableCell)e.getSource();
@@ -212,7 +210,7 @@ public class GRTableModelText extends GRTableModel implements GRTableListener {
 				break;
 				
 			case 11:	// listfather
-				// objText.setListFather(((GRComboListFather)getValueAt(14,1)).getValueSelected());
+				objText.setListFather(e.getValue());
 				break;
 			
 		}
@@ -221,9 +219,7 @@ public class GRTableModelText extends GRTableModel implements GRTableListener {
 		panelProperty.getPage().repaint();
 		
 	}
-	public void addListFather(String value) {
-		listFather.addItem(value);
-	}
+	
 	private int getFontSize(String value) {
 		if(value.equals("Sinistra"))
 			return GRText.ALIGNTEXT_LEFT;

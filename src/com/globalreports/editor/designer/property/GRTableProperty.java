@@ -68,24 +68,23 @@ public class GRTableProperty  {
 	public static final int TYPEMODEL_TABLELIST			= 6;
 	
 	private JPanel panelProperty;
-	private GRTable grtable;
+	private GRTableModel grtable;
 	private GRPage pagina;
 	private JSplitPane split;
-	
-	private JTable table;
-	
+		
 	/* Oggetti tabella. Uno per ogni oggetto */
-	private GRTable grtablePage;
-	private GRTable grtableRectangle;
-	private GRTable grtableLine;
-	private GRTable grtableImage;
-	private GRTable grtableText;
-	private GRTable grtableList;
-	private GRTable grtableTableList;
+	private GRTableModel grtablePage;
+	private GRTableModel grtableRectangle;
+	private GRTableModel grtableLine;
+	private GRTableModel grtableImage;
+	private GRTableModel grtableText;
+	private GRTableModel grtableList;
+	private GRTableModel grtableTableList;
 	
 	public GRTableProperty() {
 		String[] title = {"Proprietà","Valore"};
-		grtable = new GRTable(title);
+		//grtable = new GRTableModel(title);
+		grtable = new GRTableModel(title);
 		
 		/* Istanzia le tabelle riferite agli oggetti
 		 * 
@@ -102,10 +101,6 @@ public class GRTableProperty  {
 		panelProperty.setBackground(Color.white);
 		panelProperty.add(grtable);
 		
-		table = new JTable();
-		
-		table.setFont(new Font("Lucida Grande",Font.PLAIN,10));
-		table.setRowHeight(24);
 		
 	}
 	public void setSplit(JSplitPane split) {
@@ -173,17 +168,21 @@ public class GRTableProperty  {
 		panelProperty.repaint();
 		
 		/* Quello che segue serve per forzare il refresh dello split */
-		
 		split.setDividerSize(split.getDividerSize()+1);
 		split.setDividerSize(split.getDividerSize()-1);
 		
+		if(split.getDividerLocation() < grtable.getHeight())
+			split.setDividerLocation(grtable.getHeight()+1);
 	}
 	
 	public void addListFather(String value) {
-		((GRTableModelText)grtableText).addListFather(value);
+		grtableRectangle.addListFather(value);
+		grtableText.addListFather(value);
+		
 	}
 	public void removeListFather(String value) {
-		//tablecellEditor.removeListFather(value);
+		grtableRectangle.removeListFather(value);
+		grtableText.removeListFather(value);
 	}
 	
 	

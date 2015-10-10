@@ -55,6 +55,6 @@ package com.globalreports.editor;
 public interface GRAbout {
 	public final static int 	MAIOR_VERSION	= 0;
 	public final static int		MINOR_VERSION	= 5;
-	public final static int		RELEASE_VERSION	= 2;
+	public final static int		RELEASE_VERSION	= 3;
 	public final static String	EDIT_NAME		= "GlobalReports Editor";
 }

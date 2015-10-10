@@ -77,7 +77,7 @@ public class GRList extends GRObject {
 	public GRList(GRPage grpage, long id) {
 		super(GRObject.TYPEOBJ_LIST,id,grpage);
 		
-		nameXml = "list";
+		nameXml = "list"+id;
 		
 		y1 = 0;
 		width = grpage.getWidth();
@@ -93,7 +93,7 @@ public class GRList extends GRObject {
 	public GRList(GRPage grpage, long id, int yStart, int yEnd) {
 		super(GRObject.TYPEOBJ_LIST,id,grpage);
 		
-		nameXml = "list";
+		nameXml = "list"+id;
 		
 		width = grpage.getWidth();
 		

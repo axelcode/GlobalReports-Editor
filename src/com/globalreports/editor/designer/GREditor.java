@@ -349,8 +349,10 @@ public class GREditor extends JFrame implements ActionListener {
 		// Operazioni di pulizia dell'ambiente. Lo prepara per un nuovo lavoro
 		grproject.clear();	// Svuota i progetti
 		
-		if(grtoolbarDesigner != null)
-			grtoolbar.remove(grtoolbarDesigner);	
+		if(grtoolbarDesigner != null) {
+			grtoolbar.remove(grtoolbarDesigner);
+			grtoolbarDesigner = null;
+		}
 		grtoolbarStrumenti.setVisible(false);
 		
 		grtoolbar.activeButton(true, true, false, false, false);
@@ -399,7 +401,7 @@ public class GREditor extends JFrame implements ActionListener {
 		
 		desk.removeAll();
 		
-					
+		newEnvironment();
 	}
 	public void newDocumentDialog() {
 		new GRDialogNewDocument(this);
@@ -459,6 +461,8 @@ public class GREditor extends JFrame implements ActionListener {
 	
 	}
 	public void openDoc(File f) {
+		this.clearSession();
+		
 		grtoolbarDesigner = new GRToolBarDesigner(this);
 		grtoolbar.add(grtoolbarDesigner);
 		

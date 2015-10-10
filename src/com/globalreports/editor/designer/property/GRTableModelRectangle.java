@@ -127,18 +127,16 @@ public class GRTableModelRectangle extends GRTableModel implements GRTableListen
 				break;
 			
 			case 7:	// colorstroke
-				
 				objRectangle.setColorStroke(((GRColorElement)cell.getObjectValue()).getColor());
 				//panelProperty.getPage().refreshHeader(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
 				break;
 				
 			case 8:	// colorfill
-
 				objRectangle.setColorFill(((GRColorElement)cell.getObjectValue()).getColor());
 				break;
 				
 			case 9:	// listfather
-				
+				objRectangle.setListFather(e.getValue());
 				break;
 		}
 	
@@ -170,5 +168,11 @@ public class GRTableModelRectangle extends GRTableModel implements GRTableListen
 		else
 			this.setValueAt(8, 1, new GRColorElement(new Color(red, green, blue)));
 		
+	}
+	public void setListFather(String value) {
+		if(value == null)
+			this.setValueAt(9, 1, "--Nessuna--");
+		else
+			this.setValueAt(9,1,value);
 	}
 }

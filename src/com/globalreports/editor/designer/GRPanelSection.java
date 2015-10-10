@@ -134,7 +134,7 @@ public class GRPanelSection extends JPanel implements MouseListener, MouseMotion
 	public void mouseExited(MouseEvent me) {
 	}
 	public void mousePressed(MouseEvent me) {
-		
+		grpage.clearSelected();
 	}
 	public void mouseReleased(MouseEvent me) {
 		grpage.releaseHeader();

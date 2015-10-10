@@ -192,17 +192,16 @@ public class GRText extends GRObject {
 		modelTable.setFontStyle(this.getFontStyleToString());
 		modelTable.setFontSize(this.getFontSize());
 		modelTable.setFontAlignment(this.getFontAlignmentToString());
-		
+		/*
+		if(this.hasListFather())
+			modelTable.setListFather(this.getListFather().getNameXml());
+		else
+			modelTable.setListFather(null);
+		*/
 		/*
 		modelTable.setHPosition(this.getHPosition());
 		modelTable.setLineSpacing(this.getLineSpacing());
 		
-		
-		
-		if(grtext.hasListFather())
-				modelText.setListFather(grtext.getListFather().getNameXml());
-			else
-				modelText.setListFather("--Nothing--");
 		 * 
 		 */
 		

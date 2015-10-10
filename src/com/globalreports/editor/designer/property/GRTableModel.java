@@ -55,15 +55,21 @@ import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.designer.swing.table.element.GRComboElement;
 
 @SuppressWarnings("serial")
-public abstract class GRTableModel extends GRTable {
+public class GRTableModel extends GRTable {
 	protected GRTableProperty panelProperty;
 	
 	protected GRComboElement listFather = new GRComboElement();
 	
 	public GRTableModel(String[] title) {
 		super(title);
+		
+		// List Father
+	    listFather.addItem("--Nessuna--");
 	}
  	public void addListFather(String value) {
 		listFather.addItem(value);
 	}
+ 	public void removeListFather(String value) {
+ 		listFather.removeItem(value);
+ 	}
 }

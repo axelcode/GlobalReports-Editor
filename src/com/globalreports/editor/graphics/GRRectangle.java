@@ -175,7 +175,11 @@ public class GRRectangle extends GRShape {
 			modelTable.setColorFill(-1, -1, -1);
 		else
 			modelTable.setColorFill(this.getColorFill().getRed(), this.getColorFill().getGreen(), this.getColorFill().getBlue());
-		
+	
+		if(this.hasListFather())
+			modelTable.setListFather(this.getListFather().getNameXml());
+		else
+			modelTable.setListFather(null);
 	}
 	public int getColorFillRED() {
 		return colorFillRED;

@@ -56,10 +56,13 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -74,7 +77,7 @@ import com.globalreports.editor.designer.swing.table.element.GRComboElement;
 import com.globalreports.editor.designer.swing.table.element.GRColorElement;
 
 @SuppressWarnings("serial")
-public class GRTableCell extends JPanel implements MouseListener, FocusListener, ItemListener {
+public class GRTableCell extends JPanel implements MouseListener, FocusListener, ItemListener, KeyListener {
 	public static final int		TYPECELL_STRING		= 1;
 	public static final int		TYPECELL_CHECKBOX	= 2;
 	public static final int 	TYPECELL_TEXTFIELD	= 3;
@@ -160,6 +163,7 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 			pSelected.setLayout(new GridLayout(1,1));
 			pSelected.add(txtValue);
 			txtValue.addFocusListener(this);
+			txtValue.addKeyListener(this);
 			
 			cellValue = labelValue.getText();
 			
@@ -247,6 +251,8 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 			}
 				
 			layout.last(this);
+			if(typeCell == TYPECELL_TEXTFIELD)
+				txtValue.requestFocusInWindow();
 		} else {
 			if(typeCell == TYPECELL_TEXTFIELD) {
 				cellValue = txtValue.getText();
@@ -287,7 +293,7 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 			txtValue.setText(value);
 		} else if(typeCell == TYPECELL_COMBOBOX) {
 			labelValueCombo.setText(value);
-			cmbValue.setSelectedItem(value);
+			//cmbValue.setSelectedItem(value);
 		}
 	}
 	public void setValue(Object value) {
@@ -325,9 +331,8 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		layout.next(this);
+	public void mouseClicked(MouseEvent e) {
+	
 	}
 
 	@Override
@@ -358,6 +363,26 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 	public void itemStateChanged(ItemEvent e) {
 		cellValue = ""+cmbValue.getSelectedItem();
 		grtable.activateTableEvent(this);
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		if(e.getKeyCode() == 10) {
+			
+			grtable.nextFocus(this);
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

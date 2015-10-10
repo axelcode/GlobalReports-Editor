@@ -166,6 +166,9 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	private JMenuItem menuCellPropertyCell;
 	private JMenuItem menuCellPropertyTableList;
 	
+	private JPopupMenu menuRectangle;
+	private JMenuItem menuRectangleInsertText;
+	
 	// Riferimenti per gli oggetti che hanno finestre di proprietà Dialog
 	private GRTableListCell grcellSelected;
 	
@@ -227,6 +230,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	}
 
 	private void initMenu() {
+		/* POPUP CELLA DELLA TABLELIST */
 		menuCell = new JPopupMenu();
 		
 		menuCellUnisciCella = new JMenuItem("Unisci celle");
@@ -242,6 +246,13 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		menuCellPropertyTableList = new JMenuItem("Proprietà...");
 		menuCellPropertyTableList.addActionListener(this);
 		menuCell.add(menuCellPropertyTableList);
+		
+		/* POPUP RECTANGLE */
+		menuRectangle = new JPopupMenu();
+		
+		menuRectangleInsertText = new JMenuItem("Inserisci testo...");
+		menuRectangleInsertText.addActionListener(this);
+		menuRectangle.add(menuRectangleInsertText);
 	}
 	
 	public void paint(Graphics g) {
@@ -563,7 +574,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		flagAzione = GRPage.ACTION_NULL;
 		
 	}
-	private void clearSelected() {
+	public void clearSelected() {
 		for(int i = 0;i < grobj.size();i++)
 			grobj.get(i).setSelected(false);
 			
@@ -867,6 +878,8 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 						
 						menuCell.show(me.getComponent(),me.getX(),me.getY());
 					}
+				} else if(refObj instanceof GRRectangle) {
+					menuRectangle.show(me.getComponent(),me.getX(),me.getY());
 				}
 			}
 		}
@@ -993,13 +1006,14 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			GRList refList = new GRList(this,idObj,yStart,yEnd);
 			//refList.setZoom(zoom);
 			
-			grobj.add(refList);
+			grobj.add(0,refList);
 			idObj++;
 			
 			restoreToolBar();
 			repaint();
 			
 			panelProperty.addListFather(refList.getNameXml());
+			
 		} else if(flagAzione == GRPage.ACTION_DRAWTABLELIST) {
 			if(Math.abs(xEnd-xStart) < GRSetting.MIN_DIMENSION_OBJ ||
 					Math.abs(yEnd - yStart) < GRSetting.MIN_DIMENSION_OBJ)
@@ -1367,6 +1381,10 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 					}
 				}
 			}
+			
+			// Cancella il riferimento alla lista
+			panelProperty.removeListFather(nameList);
+								
 		}
 		
 		grobj.remove(refObj);
@@ -1521,6 +1539,22 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			
 		} else if(e.getSource() == menuCellPropertyTableList) {
 			new GRDialogPropertyTableList(grcellSelected.getFatherSection().getTableList());
+		} else if(e.getSource() == menuRectangleInsertText) {
+			int gapH = 0;
+			int gapV = ((refObj.getHeight() / grtoolbarStrumenti.getFontSize()) + ((refObj.getHeight() / 3) / grtoolbarStrumenti.getFontSize())) * 3;
+			int w = refObj.getWidth();
+			// Se l'area è maggiore delle caratteristiche minime
+			// aggiusta di conseguenza l'area ove comparirà il testo
+			if(w >= 60)	{// Almeno 2 cm
+				gapH = 15;	// 5mm
+				w = w - 30;
+			}
+			Rectangle r = new Rectangle((refObj.getX() + gapH), (refObj.getY() + gapV), w, refObj.getHeight());
+			
+			GREditText et = new GREditText(this, r);
+			
+			et.setFont(grtoolbarStrumenti.getFontName(),grtoolbarStrumenti.getFontSize(),grtoolbarStrumenti.getFontStyle());
+			et.showDialog(GREditText.NEWTEXT);
 		}
 	}
 	/* Lettura dati da xml - GRS */
