@@ -9,16 +9,16 @@ Elenco dei rilasci
 V.0.5.3 - 10/10/2015
 --------------------
 
--Correzione dei seguenti bug:
---All'apertura di un nuovo documento veniva duplicata la barra degli strumenti.
---La cancellazione di una lista non liberava il suo riferimento dalla memoria.
---Se un oggetto veniva selezionato e si procedeva a muovere le ancore relative alle sezioni della pagina, l'applicativo andava in eccezione.
+- Correzione dei seguenti bug:
+-- All'apertura di un nuovo documento veniva duplicata la barra degli strumenti.
+-- La cancellazione di una lista non liberava il suo riferimento dalla memoria.
+-- Se un oggetto veniva selezionato e si procedeva a muovere le ancore relative alle sezioni della pagina, l'applicativo andava in eccezione.
 
 Aggiunte le seguenti features:
--La lista viene sempre disegnata sotto tutti gli altri oggetti.
--Implementata la funzione di aggiunta di un testo all'interno di un rettangolo, tramite menù popup.
--La tabella dele proprietà riconosce il tasto -RETURN nei campi di inserimento testo. Inoltre sposta il focus sulla row successiva.
--Lo splitter contenente la tabella delle proprietà si adatta automaticamente alla dimensione della tabella.
+- La lista viene sempre disegnata sotto tutti gli altri oggetti.
+- Implementata la funzione di aggiunta di un testo all'interno di un rettangolo, tramite menù popup.
+- La tabella dele proprietà riconosce il tasto -RETURN nei campi di inserimento testo. Inoltre sposta il focus sulla row successiva.
+- Lo splitter contenente la tabella delle proprietà si adatta automaticamente alla dimensione della tabella.
 
 V.0.5.2 - 07/10/2015
 --------------------
