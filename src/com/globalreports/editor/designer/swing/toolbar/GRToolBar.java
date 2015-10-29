@@ -56,6 +56,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GREditor;
 import com.globalreports.editor.tools.GRLibrary;
 
@@ -68,6 +69,8 @@ public class GRToolBar extends JToolBar implements ActionListener {
 	public static final int TYPEBUTTON_IMAGE		= 5;
 	public static final int TYPEBUTTON_LIST			= 6;
 	public static final int TYPEBUTTON_TABLELIST	= 7;
+	public static final int TYPEBUTTON_CHART		= 8;
+	public static final int TYPEBUTTON_CIRCLE		= 9;
 	
 	private GREditor greditor;
 	private JButton bNewDoc;
@@ -93,20 +96,20 @@ public class GRToolBar extends JToolBar implements ActionListener {
 		bPDF = new JButton(ico_pdf);
 		
 		bNewDoc.addActionListener(this);
-		bNewDoc.setToolTipText("Nuovo documento");
+		bNewDoc.setToolTipText(GRLanguageMessage.messages.getString("tlbnewdocument"));
 		add(bNewDoc);
 		bOpenDoc.addActionListener(this);
-		bOpenDoc.setToolTipText("Apri documento esistente...");
+		bOpenDoc.setToolTipText(GRLanguageMessage.messages.getString("tlbopendocument"));
 		add(bOpenDoc);
 		bAddPage.addActionListener(this);
-		bAddPage.setToolTipText("Aggiungi pagina al documento");
+		bAddPage.setToolTipText(GRLanguageMessage.messages.getString("tlbaddpage"));
 		add(bAddPage);
 		
 		bSaveDoc.addActionListener(this);
-		bSaveDoc.setToolTipText("Salva la pagina corrente");
+		bSaveDoc.setToolTipText(GRLanguageMessage.messages.getString("tlbsavedocument"));
 		add(bSaveDoc);
 		bPDF.addActionListener(this);
-		bPDF.setToolTipText("Anteprima PDF");
+		bPDF.setToolTipText(GRLanguageMessage.messages.getString("tlbpreview"));
 		add(bPDF);
 		
 		addSeparator();

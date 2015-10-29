@@ -112,7 +112,10 @@ public class GRTableModelImage extends GRTableModel implements GRTableListener {
 		
 		switch(e.getRow()) {
 			case 1:	// hposition
-				//objImage.setHPosition((Boolean)getValueAt(2,1));
+				if(e.getValue().equals("true"))
+					objImage.setHPosition(true);
+				else
+					objImage.setHPosition(false);
 				break;
 			
 			case 2:	// left

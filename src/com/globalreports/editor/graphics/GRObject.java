@@ -53,6 +53,7 @@ package com.globalreports.editor.graphics;
 
 import java.awt.Rectangle;
 
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
 
 public abstract class GRObject {
@@ -63,12 +64,17 @@ public abstract class GRObject {
 	public static final int ANCHOR_BSX			= 3;
 	public static final int ANCHOR_BDX			= 4;
 	
+	public static final int TYPEOBJ_NOTHING		= 0;
 	public static final int TYPEOBJ_TEXT		= 1;
 	public static final int TYPEOBJ_LINE		= 2;
 	public static final int TYPEOBJ_RECTANGLE	= 3;
 	public static final int TYPEOBJ_IMAGE		= 4;
 	public static final int TYPEOBJ_LIST		= 5;
 	public static final int TYPEOBJ_TABLELIST	= 6;
+	public static final int TYPEOBJ_CIRCLE		= 7;
+	public static final int TYPEOBJ_GROUP		= 8;
+	
+	public static final int TYPEOBJ_CHART		= 100;
 	
 	public static final int SECTION_HEADER		= 1;
 	public static final int SECTION_BODY		= 2;
@@ -202,6 +208,12 @@ public abstract class GRObject {
 	public boolean getHPosition() {
 		return hPosition;
 	}
+	public String getHPositionToString() {
+		if(hPosition)
+			return "relative";
+		
+		return "absolute";
+	}
 	public void setListFather(GRList grlist) {
 		this.grlistFather = grlist;
 		
@@ -210,6 +222,7 @@ public abstract class GRObject {
 			
 			this.setY(0);
 			//y1 = this.setY(0);
+			grpage.refreshObjectList(grlist, this);
 		} else {
 			if(y1Parent != 0) {
 				//y1 = y1Parent;
@@ -273,10 +286,6 @@ public abstract class GRObject {
 		return selected;
 	}
 	public boolean isIntersect(int coordX, int coordY) {
-		if(type == GRObject.TYPEOBJ_LINE) {
-			GRLine refObj = (GRLine)this;
-			return refObj.isIntersect(coordX, coordY);
-		}
 			
 		int hGap = 0;
 		if(hPosition)
@@ -365,6 +374,26 @@ public abstract class GRObject {
 		width = (int)(widthOriginal * value);
 		height = (int)(heightOriginal * value);
 		
+	}
+	public String getNameObject() {
+		switch(type) {
+			case GRObject.TYPEOBJ_LINE:
+				return GRLanguageMessage.messages.getString("tlbgrline");
+			
+			case GRObject.TYPEOBJ_RECTANGLE:
+				return GRLanguageMessage.messages.getString("tlbgrrectangle");
+				
+			case GRObject.TYPEOBJ_CIRCLE:
+				return GRLanguageMessage.messages.getString("tlbgrcircle");
+				
+			case GRObject.TYPEOBJ_IMAGE:
+				return GRLanguageMessage.messages.getString("tlbgrimage");
+				
+			case GRObject.TYPEOBJ_TEXT:
+				return GRLanguageMessage.messages.getString("tlbgrtext");
+		}
+		
+		return null;
 	}
 	/* Metodi astratti */
 	public void refreshProperty() {

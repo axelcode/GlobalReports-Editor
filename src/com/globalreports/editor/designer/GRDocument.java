@@ -65,6 +65,7 @@ import javax.swing.event.InternalFrameListener;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import org.jdom.*;
 
@@ -87,6 +88,7 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 	private JPanel panelMaster;
 	
 	private String nameDocument;
+	private String oldNameDocument;
 	
 	/* Dimensioni della pagina */
 	private int widthPage;
@@ -106,6 +108,7 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 		
 		greditor = gredit;
 		nameDocument = title;
+		oldNameDocument = title;
 		widthPage = GRLibrary.fromMillimetersToPixels((double)w);	
 		heightPage = GRLibrary.fromMillimetersToPixels((double)h);
 		
@@ -153,6 +156,7 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 		setVisible(true);
 		
 	}
+	
 	public void setHeaderPage(int value) {
 		panelSection.setHeader(value);
 	}
@@ -187,6 +191,12 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 	public String getNameDocument() {
 		return nameDocument;
 	}
+	public String getOldNameDocument() {
+		return oldNameDocument;
+	}
+	public void selectObject(GRObject grobj) {
+		grpage.selectObject(grobj);
+	}
 	public Point getGapGrid() {
 		return grpage.getGapGrid();
 	}
@@ -218,6 +228,9 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 	public GRObject getObject(int i) {
 		return grpage.getObject(i);
 	}
+	public Vector<GRObject> getObjectInThePage() {
+		return grpage.getObjectInThePage();
+	}
 	public void writeDocument(String pathFile) {
 		greditor.writeLayout(pathFile);
 	}
@@ -228,7 +241,9 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 	public GRResImages getImgResources() {
 		return greditor.getImgResources();
 	}
-	
+	public void refreshPage() {
+		grpage.repaint();
+	}
 	public void openPage(Element el) {
 		List children = el.getChildren();
 		Iterator iterator = children.iterator();
@@ -268,8 +283,9 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 				grpage.loadBody(element);
 			}
 		}	
-				
+		
 		grpage.repaint();
+		
 	}
 	
 	// Comandi derivanti dal menù

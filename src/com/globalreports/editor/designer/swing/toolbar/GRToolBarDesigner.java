@@ -54,11 +54,13 @@ package com.globalreports.editor.designer.swing.toolbar;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GREditor;
 
 @SuppressWarnings("serial")
@@ -69,9 +71,12 @@ public class GRToolBarDesigner extends JToolBar implements ActionListener {
 	private JToggleButton bText;
 	private JToggleButton bRectangle;
 	private JToggleButton bLine;
+	private JToggleButton bCircle;
 	private JToggleButton bImage;
+	private JToggleButton bChart;
 	private JToggleButton bList;
 	private JToggleButton bTableList;
+	private JToggleButton bGroup;
 	
 	public GRToolBarDesigner(GREditor greditor) {
 		this.greditor = greditor;
@@ -80,40 +85,80 @@ public class GRToolBarDesigner extends JToolBar implements ActionListener {
 		ImageIcon ico_text = new ImageIcon(GRSetting.PATHIMAGE+"ico_text.png");
 		ImageIcon ico_line = new ImageIcon(GRSetting.PATHIMAGE+"ico_line.png");
 		ImageIcon ico_rectangle = new ImageIcon(GRSetting.PATHIMAGE+"ico_rectangle.png");
+		ImageIcon ico_circle = new ImageIcon(GRSetting.PATHIMAGE+"ico_circle.png");
 		ImageIcon ico_image = new ImageIcon(GRSetting.PATHIMAGE+"ico_image.png");
+		ImageIcon ico_chart = new ImageIcon(GRSetting.PATHIMAGE+"ico_chart.png");
 		ImageIcon ico_list = new ImageIcon(GRSetting.PATHIMAGE+"ico_list.png");
 		ImageIcon ico_tablelist = new ImageIcon(GRSetting.PATHIMAGE+"ico_table.png");
+		ImageIcon ico_group = new ImageIcon(GRSetting.PATHIMAGE+"ico_header.png");
 		
 		bSel = new JToggleButton(ico_selected);
 		bText = new JToggleButton(ico_text);
 		bLine = new JToggleButton(ico_line);
 		bRectangle = new JToggleButton(ico_rectangle);
+		bCircle = new JToggleButton(ico_circle);
 		bImage = new JToggleButton(ico_image);
+		bChart = new JToggleButton(ico_chart);
 		bList = new JToggleButton(ico_list);
 		bTableList = new JToggleButton(ico_tablelist);
+		bGroup = new JToggleButton(ico_group);
 		
 		bSel.addActionListener(this);
 		add(bSel);
 		
 		addSeparator();
 		
+		bText.setToolTipText(GRLanguageMessage.messages.getString("tlbgrtext"));
 		bText.addActionListener(this);
 		add(bText);
+		bLine.setToolTipText(GRLanguageMessage.messages.getString("tlbgrline"));
 		bLine.addActionListener(this);
 		add(bLine);
+		bRectangle.setToolTipText(GRLanguageMessage.messages.getString("tlbgrrectangle"));
 		bRectangle.addActionListener(this);
 		add(bRectangle);
+		bCircle.setToolTipText(GRLanguageMessage.messages.getString("tlbgrcircle"));
+		bCircle.addActionListener(this);
+		add(bCircle);
+		bImage.setToolTipText(GRLanguageMessage.messages.getString("tlbgrimage"));
 		bImage.addActionListener(this);
 		add(bImage);
+		bChart.setToolTipText(GRLanguageMessage.messages.getString("tlbgrchart"));
+		bChart.addActionListener(this);
+		add(bChart);
+		
+		addSeparator();
+		
+		bList.setToolTipText(GRLanguageMessage.messages.getString("tlbgrlist"));
 		bList.addActionListener(this);
 		add(bList);
+		bTableList.setToolTipText(GRLanguageMessage.messages.getString("tlbgrtablelist"));
 		bTableList.addActionListener(this);
 		add(bTableList);
+		
+		addSeparator();
+		
+		bGroup.setToolTipText(GRLanguageMessage.messages.getString("tlbgrgroup"));
+		bGroup.addActionListener(this);
+		add(bGroup);
+		
+		ButtonGroup groupButton = new ButtonGroup();
+		groupButton.add(bSel);
+		groupButton.add(bText);
+		groupButton.add(bLine);
+		groupButton.add(bRectangle);
+		groupButton.add(bCircle);
+		groupButton.add(bImage);
+		groupButton.add(bChart);
+		groupButton.add(bList);
+		groupButton.add(bTableList);
+		groupButton.add(bGroup);
 		
 		setFloatable(false);
 	}
 	
 	private void clearButton(int type) {
+		/*
 		if(type != GRToolBar.TYPEBUTTON_SELECTED)
 			bSel.setSelected(false);
 		if(type != GRToolBar.TYPEBUTTON_TEXT)
@@ -122,12 +167,17 @@ public class GRToolBarDesigner extends JToolBar implements ActionListener {
 			bLine.setSelected(false);
 		if(type != GRToolBar.TYPEBUTTON_RECTANGLE)
 			bRectangle.setSelected(false);
+		if(type != GRToolBar.TYPEBUTTON_CIRCLE)
+			bCircle.setSelected(false);
 		if(type != GRToolBar.TYPEBUTTON_IMAGE)
 			bImage.setSelected(false);
 		if(type != GRToolBar.TYPEBUTTON_LIST)
 			bList.setSelected(false);
 		if(type != GRToolBar.TYPEBUTTON_TABLELIST)
 			bTableList.setSelected(false);
+		if(type != GRToolBar.TYPEBUTTON_CHART)
+			bChart.setSelected(false);
+		*/
 	}
 	
 	public void restore() {
@@ -137,26 +187,32 @@ public class GRToolBarDesigner extends JToolBar implements ActionListener {
 	
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == bSel) {
-			clearButton(GRToolBar.TYPEBUTTON_SELECTED);
+			//clearButton(GRToolBar.TYPEBUTTON_SELECTED);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_SELECTED);
 		} else if(e.getSource() == bText) {
-			clearButton(GRToolBar.TYPEBUTTON_TEXT);
+			//clearButton(GRToolBar.TYPEBUTTON_TEXT);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_TEXT);
 		} else if(e.getSource() == bLine) {
-			clearButton(GRToolBar.TYPEBUTTON_LINE);
+			//clearButton(GRToolBar.TYPEBUTTON_LINE);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_LINE);
 		} else if(e.getSource() == bRectangle) {
-			clearButton(GRToolBar.TYPEBUTTON_RECTANGLE);
+			//clearButton(GRToolBar.TYPEBUTTON_RECTANGLE);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_RECTANGLE);
+		} else if(e.getSource() == bCircle) {
+			//clearButton(GRToolBar.TYPEBUTTON_CIRCLE);
+			greditor.actionToolBar(GRToolBar.TYPEBUTTON_CIRCLE);
 		} else if(e.getSource() == bImage) {
-			clearButton(GRToolBar.TYPEBUTTON_IMAGE);
+			//clearButton(GRToolBar.TYPEBUTTON_IMAGE);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_IMAGE);
 		} else if(e.getSource() == bList) {
-			clearButton(GRToolBar.TYPEBUTTON_LIST);
+			//clearButton(GRToolBar.TYPEBUTTON_LIST);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_LIST);
 		} else if(e.getSource() == bTableList) {
-			clearButton(GRToolBar.TYPEBUTTON_TABLELIST);
+			//clearButton(GRToolBar.TYPEBUTTON_TABLELIST);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_TABLELIST);
+		} else if(e.getSource() == bChart) {
+			//clearButton(GRToolBar.TYPEBUTTON_CHART);
+			greditor.actionToolBar(GRToolBar.TYPEBUTTON_CHART);
 		}
 	}
 }

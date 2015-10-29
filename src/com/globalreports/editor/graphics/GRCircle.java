@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.graphics.GRRectangle
+ * class name  : com.globalreports.editor.graphics.GRCircle
  * Begin       : 
  * Last Update : 
  *
@@ -61,24 +61,59 @@ import java.awt.Stroke;
 import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModel;
+import com.globalreports.editor.designer.property.GRTableModelCircle;
 import com.globalreports.editor.designer.property.GRTableModelRectangle;
 import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
 
-public class GRRectangle extends GRShape {
+public class GRCircle extends GRShape {
 	private int colorFillRED;
 	private int colorFillGREEN;
 	private int colorFillBLUE;
 	private Color cFill;
 	
-	private GRTableModelRectangle modelTable;
+	private int raggio;
 	
-	public GRRectangle(GRPage grpage, long id) {
+	private GRTableModelCircle modelTable;
+	
+	public GRCircle(GRPage grpage, long id) {
 		this(grpage, id, 0, 0, 0, 0, Color.BLACK, null);
 	}
-	public GRRectangle(GRPage grpage, long id, int xStart, int yStart, int xEnd, int yEnd, Color colorStroke, Color colorFill) {
-		super(GRObject.TYPEOBJ_RECTANGLE,id,grpage);
+	public GRCircle(GRPage grpage, long id, int xStart, int yStart, int xEnd, int yEnd, Color colorStroke, Color colorFill) {
+		super(GRObject.TYPEOBJ_CIRCLE,id,grpage);
 		
+		int x1,y1,x2,y2;
+		int width,height;
+		
+		if(xStart > xEnd) {
+			x1 = xEnd;
+			x2 = xStart;
+		} else {
+			x1 = xStart;
+			x2 = xEnd;
+		}
+		width = x2 - x1;
+			
+		if(yStart > yEnd) {
+			y1 = yEnd;
+			y2 = yStart;
+		} else {
+			y1 = yStart;
+			y2 = yEnd;
+		}
+		height = y2 - y1;
+		
+		if(width > height) {
+			raggio = width;
+		} else {
+			raggio = height;
+		}
+		this.x1 = xStart - raggio;
+		this.y1 = yStart - raggio;
+		this.width = raggio * 2;
+		this.height = raggio * 2;
+		
+		/*
 		if(xStart < xEnd) {
 			x1 = xStart;
 			width = xEnd - xStart;
@@ -93,17 +128,17 @@ public class GRRectangle extends GRShape {
 			y1 = yEnd;
 			height = yStart - yEnd;
 		}
-	
-		x1Original = x1;
-		y1Original = y1;
-		widthOriginal = width;
-		heightOriginal = height;
+		*/
+		x1Original = this.x1;
+		y1Original = this.y1;
+		widthOriginal = this.width;
+		heightOriginal = this.height;
 		
 		// Crea le ancore
-		tsx = new Rectangle(x1-4,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
-		tdx = new Rectangle(x1+width,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
-		bsx = new Rectangle(x1-4,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
-		bdx = new Rectangle(x1+width,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
+		tsx = new Rectangle(this.x1-4,this.y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
+		tdx = new Rectangle(this.x1+this.width,this.y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
+		bsx = new Rectangle(this.x1-4,this.y1+this.height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
+		bdx = new Rectangle(this.x1+this.width,this.y1+this.height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		
 		cStroke = colorStroke;
 		cFill = colorFill;
@@ -119,14 +154,6 @@ public class GRRectangle extends GRShape {
 		
 		Stroke s = g2d.getStroke();
 		int y1 = this.y1;
-		int hGap = 0;
-		
-		if(hPosition) {
-			hGap = hGap + grpage.hPosition;
-			gapH = hGap;
-		}
-		
-		y1 = y1 + hGap;
 		
 		/* Se è figlio di una lista imposta la clipArea */
 		if(grlistFather != null) {
@@ -134,19 +161,16 @@ public class GRRectangle extends GRShape {
 			y1 = grlistFather.getY() + this.y1;
 		}
 		
-		// Nel caso in cui il rettangolo abbia un riempimento
-		// disegna prima l'interno
-		
 		if(cFill != null) {
 			g2d.setColor(cFill);
-			g2d.fillRect(x1, y1, width, height);
+			g2d.fillOval(x1, y1, raggio * 2, raggio * 2);
 		}
 		
 		// Disegna il contorno esterno
 		g2d.setColor(cStroke);
 		g2d.setStroke(typeStroke);
 		
-		g2d.drawRect(x1,y1,width,height);
+		g2d.drawOval(x1,y1,raggio * 2, raggio * 2);
 		
 		// Ripristina le info originali
 		g2d.setStroke(s);
@@ -155,16 +179,15 @@ public class GRRectangle extends GRShape {
 		
 		if(selected) {
 			g.fillRect(x1-4,y1-4,4,4);
-			g.fillRect(x1-4,y1+height,4,4);
-			g.fillRect(x1+width,y1-4,4,4);
-			g.fillRect(x1+width,y1+height,4,4);
+			g.fillRect(x1-4,y1+raggio * 2,4,4);
+			g.fillRect(x1+raggio * 2,y1-4,4,4);
+			g.fillRect(x1+raggio * 2,y1+raggio * 2,4,4);
 		}
 		
-		grpage.hPosition = y1 + height;
 	}
 	
 	public void setProperty(GRTable model) {
-		this.modelTable = (GRTableModelRectangle)model;
+		this.modelTable = (GRTableModelCircle)model;
 		modelTable.setGRObject(this);
 		
 		this.refreshProperty();
@@ -173,23 +196,17 @@ public class GRRectangle extends GRShape {
 		if(modelTable == null)
 			return ;
 		
-		modelTable.setLeft(this.getOriginalX());
-		modelTable.setTop(this.getOriginalY());
-		modelTable.setWidth(this.getOriginalWidth());
-		modelTable.setHeight(this.getOriginalHeight());
+		modelTable.setX(this.getOriginalX());
+		modelTable.setY(this.getOriginalY());
+		modelTable.setRadius(this.getRadius());
 		modelTable.setWidthStroke(this.getWidthStroke());
 		modelTable.setColorStroke(this.getColorStroke().getRed(), this.getColorStroke().getGreen(), this.getColorStroke().getBlue());
-		modelTable.setHPosition(this.getHPosition());
 		
 		if(this.getColorFill() == null)
 			modelTable.setColorFill(-1, -1, -1);
 		else
 			modelTable.setColorFill(this.getColorFill().getRed(), this.getColorFill().getGreen(), this.getColorFill().getBlue());
 	
-		if(this.hasListFather())
-			modelTable.setListFather(this.getListFather().getNameXml());
-		else
-			modelTable.setListFather(null);
 	}
 	public int getColorFillRED() {
 		return colorFillRED;
@@ -240,6 +257,12 @@ public class GRRectangle extends GRShape {
 		}
 			
 	}
+	public void setRadius(int rad) {
+		this.raggio = rad;
+	}
+	public int getRadius() {
+		return raggio;
+	}
 	public void resize(int xStart,int yStart, int xEnd, int yEnd) {
 		super.resize(xStart,yStart,xEnd,yEnd);
 		
@@ -249,6 +272,16 @@ public class GRRectangle extends GRShape {
 		super.setLocation(x,y);
 		
 		refreshAnchor();
+	}
+	public boolean isIntersect(int coordX, int coordY) {
+		double catetoX = Math.abs((coordX - (x1 + raggio)));
+		double catetoY = Math.abs((coordY - (y1 + raggio)));
+		double d = Math.sqrt((catetoX * catetoX) + (catetoY * catetoY));
+		
+		if(d <= raggio)
+			return true;
+		
+		return false;
 	}
 	private void refreshAnchor() {
 		tsx.setBounds(x1-4,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
@@ -271,6 +304,7 @@ public class GRRectangle extends GRShape {
 	}
 	public String createCodeGRS() {
 		StringBuffer buff = new StringBuffer();
+		
 		int y1 = this.y1Original;
 		
 		if(section == GRObject.SECTION_BODY)
@@ -278,13 +312,12 @@ public class GRRectangle extends GRShape {
 		if(section == GRObject.SECTION_FOOTER) {
 			y1 = y1 - (grpage.getHeight() - grpage.getFooterSize());
 		}
+		
 		buff.append("<shape>\n");
-		buff.append("<type>rectangle</type>\n");
-		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(x1Original)+"</left>\n");
-		buff.append("<top>"+GRLibrary.fromPixelsToMillimeters(y1)+"</top>\n");
-		buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(widthOriginal)+"</width>\n");
-		buff.append("<height>"+GRLibrary.fromPixelsToMillimeters(heightOriginal)+"</height>\n");
-		buff.append("<hposition>"+getHPositionToString()+"</hposition>\n");
+		buff.append("<type>circle</type>\n");
+		buff.append("<x>"+GRLibrary.fromPixelsToMillimeters(x1Original+raggio)+"</x>\n");
+		buff.append("<y>"+GRLibrary.fromPixelsToMillimeters(y1+raggio)+"</y>\n");
+		buff.append("<radius>"+GRLibrary.fromPixelsToMillimeters(raggio)+"</radius>\n");
 		buff.append("<colorstroke>"+cStroke.getRed()+" "+cStroke.getGreen()+" "+cStroke.getBlue()+"</colorstroke>\n");
 		buff.append("<colorfill>");
 		if(cFill == null)

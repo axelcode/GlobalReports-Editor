@@ -58,6 +58,7 @@ import javax.swing.*;
 import javax.swing.text.StyleConstants;
 
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GREditor;
 
 @SuppressWarnings("serial")
@@ -98,11 +99,13 @@ public class GRToolBarStrumenti extends JToolBar implements ActionListener, Item
 		bGrid = new JToggleButton(ico_grid);
 		bGrid.setSelected(true);
 		bGrid.addActionListener(this);
+		bGrid.setToolTipText(GRLanguageMessage.messages.getString("tlbgridon"));
 		add(bGrid);
 		
 		bAnchorGrid = new JToggleButton(ico_anchorgrid);
 		bAnchorGrid.setSelected(true);
 		bAnchorGrid.addActionListener(this);
+		bAnchorGrid.setToolTipText(GRLanguageMessage.messages.getString("tlbanchoron"));
 		add(bAnchorGrid);
 		
 		addSeparator();
@@ -116,12 +119,12 @@ public class GRToolBarStrumenti extends JToolBar implements ActionListener, Item
 		addSeparator();
 		
 		bSpostaSotto = new JButton(ico_spostasotto);
-		bSpostaSotto.setToolTipText("Porta in secondo piano");
+		bSpostaSotto.setToolTipText(GRLanguageMessage.messages.getString("tlbdown"));
 		bSpostaSotto.addActionListener(this);
 		add(bSpostaSotto);
 		
 		bSpostaSopra = new JButton(ico_spostasopra);
-		bSpostaSopra.setToolTipText("Porta in primo piano");
+		bSpostaSopra.setToolTipText(GRLanguageMessage.messages.getString("tlbup"));
 		bSpostaSopra.addActionListener(this);
 		add(bSpostaSopra);
 		

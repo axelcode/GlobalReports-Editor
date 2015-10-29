@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.property.GRTableModel
+ * class name  : com.globalreports.editor.graphics.chart.GRChartVoice
  * Begin       : 
  * Last Update : 
  *
@@ -49,30 +49,59 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor.designer.property;
+package com.globalreports.editor.graphics.chart;
 
-import com.globalreports.editor.designer.swing.table.GRTable;
-import com.globalreports.editor.designer.swing.table.element.GRComboElement;
+import java.awt.Color;
 
-@SuppressWarnings("serial")
-public class GRTableModel extends GRTable {
-	protected GRTableProperty panelProperty;
+public class GRChartVoice {
+	public static final int TYPECOLOR_AUTOMATIC	= 1;
+	public static final int TYPECOLOR_ASSIGNED	= 2;
 	
-	protected GRComboElement listFather = new GRComboElement();
+	private String label;
+	private double value;
+	private Color colorFill;
+	private int typeColor;
+	private double percValue;
 	
-	public GRTableModel(String[] title) {
-		super(title);
+	public GRChartVoice() {
+		this(null,0.0);
+	}
+	public GRChartVoice(String label, double value) {
+		this(label, value, null);
+	}
+	public GRChartVoice(String label, double value, Color colorFill) {
+		this.label = label;
+		this.value = value;
+		this.colorFill = colorFill;
 		
-		// List Father
-	    listFather.addItem("--Nessuna--");
+		if(colorFill == null)
+			typeColor = TYPECOLOR_AUTOMATIC;
+		else
+			typeColor = TYPECOLOR_ASSIGNED;
 	}
- 	public void addListFather(String value) {
-		listFather.addItem(value);
+	
+	public String getLabel() {
+		return label;
 	}
- 	public void removeListFather(String value) {
- 		listFather.removeItem(value);
- 	}
- 	public void setHPosition(boolean value) {
-		this.setValueAt(1, 1, ""+value);
+	public double getValue() {
+		return value;
+	}
+	public void setColor(Color c) {
+		colorFill = c;
+	}
+	public Color getColor() {
+		return colorFill;
+	}
+	public String colorToString() {
+		if(typeColor == TYPECOLOR_AUTOMATIC)
+			return "automatic";
+		
+		return ""+colorFill.getRed()+" "+colorFill.getGreen()+" "+colorFill.getBlue();
+	}
+	public int getTypeColor() {
+		return typeColor;
+	}
+	public void setPercentage(double value) {
+		percValue = value;
 	}
 }

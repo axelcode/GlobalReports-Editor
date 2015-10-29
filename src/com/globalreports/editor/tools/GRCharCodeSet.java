@@ -56,6 +56,10 @@ public abstract class GRCharCodeSet {
 		switch(value) {
 			case 8217:
 				return 146;
+				
+			case 8220:
+			case 8221:
+				return 34;
 		}
 		
 		return 0;
@@ -65,6 +69,12 @@ public abstract class GRCharCodeSet {
 		switch(value) {
 			case 8217:
 				return new String(Character.toChars(39));
+			
+			case 8220:
+				return new String(Character.toChars(34));
+				
+			case 8221:
+				return new String(Character.toChars(34));
 				
 			case 8364:
 				return new String(Character.toChars(128));

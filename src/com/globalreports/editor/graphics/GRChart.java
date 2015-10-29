@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.graphics.GRImage
+ * class name  : com.globalreports.editor.graphics.GRChart
  * Begin       : 
  * Last Update : 
  *
@@ -48,69 +48,51 @@
  * this exception also makes it possible to release a modified version 
  * which carries forward this exception.
  * 
- */
-package com.globalreports.editor.graphics;
+ */package com.globalreports.editor.graphics;
 
+import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.MediaTracker;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.util.Vector;
 
 import com.globalreports.editor.designer.GRPage;
-import com.globalreports.editor.designer.property.GRTableModelImage;
-import com.globalreports.editor.designer.property.GRTableModelRectangle;
-import com.globalreports.editor.designer.resources.GRResImages;
+import com.globalreports.editor.designer.property.GRTableModelChart;
 import com.globalreports.editor.designer.swing.table.GRTable;
+import com.globalreports.editor.graphics.chart.GRChartData;
+import com.globalreports.editor.graphics.chart.GRChartLegend;
+import com.globalreports.editor.graphics.chart.GRChartModel;
+import com.globalreports.editor.graphics.chart.GRChartPie;
+import com.globalreports.editor.graphics.chart.GRChartVoice;
 import com.globalreports.editor.tools.GRLibrary;
 
-public class GRImage extends GRObject {
-	private Image imgOriginal;
-	private Image imgScaled;
+public class GRChart extends GRObject {
+	public static final int TYPECHART_NOTDEFINED	= 0;
+	public static final int TYPECHART_PIE			= 1;
+	public static final int TYPECHART_PIE_EXPLOSE	= 2;
 	
-	private String idImg;
-	private String pathFile;
-	private int widthFile;
-	private int heightFile;
+	public static final int CHARTVIEW_2D			= 1;
+	public static final int CHARTVIEW_3D			= 2;
 	
-	private MediaTracker tracker;
-	private GRResImages resImg;
+	private int typeChart;
+	private int view;
+	private GRChartLegend legend;
+	private boolean legendView;
+	private String nameXml;
 	
-	private GRTableModelImage modelTable;
+	private GRChartModel grchartModel;
+	private GRTableModelChart modelTable;
+	private GRChartData grchartdata;
 	
-	public GRImage(GRPage grpage, long id, GRResImages resImg) {
-		super(GRObject.TYPEOBJ_IMAGE,id,grpage);
-	
-		this.resImg = resImg;
+	public GRChart(GRPage grpage, long id, int xStart, int yStart, int xEnd, int yEnd) {
+		super(GRObject.TYPEOBJ_CHART,id,grpage);
 		
-		// Inizializza l'oggetto con valori predefiniti
-		x1 = 1;
-		y1 = 1;
-		width = 1;
-		height = 1;
-		hPosition = false;
+		nameXml = "chart"+id;
+		grchartdata = null;
 		
-		tracker = new MediaTracker(grpage);
-		imgOriginal = null;
-				
-		x1Original = x1;
-		y1Original = y1;
-		widthOriginal = width;
-		heightOriginal = height;
-		
-		// Crea le ancore
-		tsx = new Rectangle(x1-4,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
-		tdx = new Rectangle(x1+width,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
-		bsx = new Rectangle(x1-4,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
-		bdx = new Rectangle(x1+width,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
-	
-		this.refreshReferenceSection();	
-	}
-	
-	public GRImage(long id, GRPage grpage, String pathFile, int xStart, int yStart, int xEnd, int yEnd) {
-		super(GRObject.TYPEOBJ_IMAGE,id,grpage);
-		
-		this.pathFile = pathFile;
+		view = CHARTVIEW_3D;
+		legend = new GRChartLegend();
+		legendView = false;
 		
 		if(xStart < xEnd) {
 			x1 = xStart;
@@ -126,129 +108,100 @@ public class GRImage extends GRObject {
 			y1 = yEnd;
 			height = yStart - yEnd;
 		}
-		
-		tracker = new MediaTracker(grpage);
-		
-		imgOriginal = Toolkit.getDefaultToolkit().getImage(pathFile);
-		tracker.addImage(imgOriginal, 0);
-		try {
-			tracker.waitForID(0);
-		} catch(InterruptedException e) {}
-		
-		widthFile = imgOriginal.getWidth(null);
-		heightFile = imgOriginal.getHeight(null);
-		
+	
 		x1Original = x1;
 		y1Original = y1;
 		widthOriginal = width;
 		heightOriginal = height;
-		
-		scaledImage();
 		
 		// Crea le ancore
 		tsx = new Rectangle(x1-4,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		tdx = new Rectangle(x1+width,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		bsx = new Rectangle(x1-4,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		bdx = new Rectangle(x1+width,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
-	
+		
+		this.setTypeChart(TYPECHART_NOTDEFINED);
 		this.refreshReferenceSection();	
 	}
-	
-	private void scaledImage() {
-		if(imgOriginal == null)
-			return;
-		
-		imgScaled = imgOriginal.getScaledInstance(width,height,Image.SCALE_FAST);
-		
-		tracker.addImage(imgScaled,1);
-		try {
-			tracker.waitForID(1);
-		} catch(InterruptedException e) {}
-		
-	}
-	public Image getImage() {
-		return imgOriginal;
-	}
-	public String getPathFile() {
-		return pathFile;
-	}
-	public int getFileWidth() {
-		return widthFile;
-	}
-	public int getFileHeight() {
-		return heightFile;
-	}
-	public void setIdImage(String idImg) {
-		this.idImg = idImg;
-		
-	}
-	public void setIdImageFromGRS(String idImg) {
-		this.idImg = idImg;
-		
-		// Una volta che si conosce l'id si recupera il path dell'immagine
-		// dalle risorse.
-		pathFile = resImg.getResource(idImg).getPath();
-		
-		if(pathFile != null) {
-			imgOriginal = Toolkit.getDefaultToolkit().getImage(pathFile);
-			tracker.addImage(imgOriginal, 0);
-			try {
-				tracker.waitForID(0);
-			} catch(InterruptedException e) {}
-			
-			widthFile = imgOriginal.getWidth(null);
-			heightFile = imgOriginal.getHeight(null);
-			
-			scaledImage();
+
+	public void setTypeChart(int typeChart) {
+		if(typeChart == TYPECHART_NOTDEFINED)
+			this.typeChart = typeChart;
+		else {
+			if(typeChart != this.typeChart) {
+				switch(typeChart) {
+					case TYPECHART_PIE:
+						grchartModel = new GRChartPie(this);
+						break;
+				}
+				
+				this.typeChart = typeChart;
+			}
 		}
-	}
-	public String getIdImage() {
-		return idImg;
-	}
-	public void setWidth(int w) {
-		super.setWidth(w);
 		
-		scaledImage();
 	}
-	public void setHeight(int h) {
-		super.setHeight(h);
+	public void setView(int view) {
+		this.view = view;
+	}
+	public int getView() {
+		return view;
+	}
+	public void setChart(int typeChart, int view) {
+		this.typeChart = typeChart;
+		this.view = view;
+	}
+	public void setLegend(boolean value) {
+		this.legendView = value;
+	}
+	public boolean hasLegend() {
+		return legendView;
+	}
+	public GRChartLegend getLegend() {
+		return legend;
+	}
+	public void setWidth(int value) {
+		super.setWidth(value);
 		
-		scaledImage();
+		if(grchartModel != null)
+			grchartModel.refresh();
 	}
-	public void setZoom(float value) {
-		super.setZoom(value);
+	public void setHeight(int value) {
+		super.setHeight(value);
 		
-		scaledImage();
+		if(grchartModel != null)
+			grchartModel.refresh();
 	}
-	public GRImage clone(long id) {
-		return null;
+	public void addVoice(String label, double value, Color c) {
+		if(grchartdata == null)
+			grchartdata = new GRChartData();
+		
+		grchartdata.addVoice(label,  value, c);
+		
+	}
+	public void addDataStatic(Vector<GRChartVoice> grdata) {
+		if(grchartdata == null)
+			grchartdata = new GRChartData();
+		
+		grchartdata.addData(grdata);
+		grchartModel.refresh();
+	}
+	public GRChartData getStaticData() {
+		return grchartdata;
 	}
 	public void draw(Graphics g) {
-		int hGap = 0;
-		int y1 = this.y1;
+		Graphics2D g2d = (Graphics2D)g;
 		
-		if(hPosition) {
-			hGap = hGap + grpage.hPosition;
-			gapH = hGap;
-		}
-		
-		y1 = y1 + hGap;
-		
-		g.drawImage(imgScaled,x1,y1,null);
-		
-		grpage.hPosition = y1 + height;
-		
+		// Disegna il contorno esterno
 		if(selected) {
-			g.drawRect(x1,y1,width,height);
-			
-			g.fillRect(x1-4,y1-4,4,4);
-			g.fillRect(x1-4,y1+height,4,4);
-			g.fillRect(x1+width,y1-4,4,4);
-			g.fillRect(x1+width,y1+height,4,4);
+			g2d.setColor(Color.BLACK);
+			g2d.drawRect(x1,y1,width,height);
 		}
+		
+		if(grchartModel != null)
+			grchartModel.draw(g);
 	}
 	public void setProperty(GRTable model) {
-		this.modelTable = (GRTableModelImage)model;
+		this.modelTable = (GRTableModelChart)model;
 		modelTable.setGRObject(this);
 		
 		this.refreshProperty();
@@ -261,31 +214,75 @@ public class GRImage extends GRObject {
 		modelTable.setTop(this.getOriginalY());
 		modelTable.setWidth(this.getOriginalWidth());
 		modelTable.setHeight(this.getOriginalHeight());
-		modelTable.setHPosition(this.getHPosition());
 		
 	}
+	@Override
+	public GRObject clone(long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public String createCodeGRS() {
 		StringBuffer buff = new StringBuffer();
 		int y1 = this.y1Original;
 		
+		/*
 		if(section == GRObject.SECTION_BODY)
 			y1 = y1 - grpage.getHeaderSize();
 		if(section == GRObject.SECTION_FOOTER) {
 			y1 = y1 - (grpage.getHeight() - grpage.getFooterSize());
 		}
-		buff.append("<image>\n");
-		buff.append("<refid>"+idImg+"</refid>\n");
+		*/
+		
+		buff.append("<chart>\n");
+		buff.append("<type>");
+		switch(typeChart) {
+			case TYPECHART_PIE:
+				buff.append("pie");
+				break;
+		}
+		buff.append("</type>\n");
+		buff.append("<view>");
+		switch(view) {
+			case CHARTVIEW_2D:
+				buff.append("2d");
+				break;
+				
+			case CHARTVIEW_3D:
+				buff.append("3d");
+				break;
+		}
+		buff.append("</view>\n");
 		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(x1Original)+"</left>\n");
 		buff.append("<top>"+GRLibrary.fromPixelsToMillimeters(y1)+"</top>\n");
 		buff.append("<width>"+GRLibrary.fromPixelsToMillimeters(widthOriginal)+"</width>\n");
 		buff.append("<height>"+GRLibrary.fromPixelsToMillimeters(heightOriginal)+"</height>\n");
-		buff.append("<hposition>");
-		if(hPosition)
-			buff.append("relative");
-		else
-			buff.append("absolute");
-		buff.append("</hposition>\n");
-		buff.append("</image>");
+		
+		if(legendView) {
+			buff.append("<legend>\n");
+			buff.append("<title>"+legend.getTitle()+"</title>\n");
+			buff.append("<position>"+legend.getPositionToString()+"</position>\n");
+			buff.append("</legend>\n");
+		}
+		
+		if(grchartdata != null) {
+			buff.append("<data>\n");
+			
+			grchartdata.first();
+			GRChartVoice refVoice;
+			while((refVoice = grchartdata.next()) != null) {
+				
+				buff.append("<voice>\n");
+				buff.append("<label>"+refVoice.getLabel()+"</label>\n");
+				buff.append("<value>"+refVoice.getValue()+"</value>\n");
+				buff.append("<colorfill>"+refVoice.getColor()+"</colorfill>\n");
+				buff.append("</voice>\n");
+			}
+			
+			buff.append("</data>\n");
+		}
+		buff.append("</chart>");
 		
 		return buff.toString();
 	}

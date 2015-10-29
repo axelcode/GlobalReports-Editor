@@ -118,6 +118,12 @@ public class GRTableSeparator extends JPanel {
 		g2d.setPaint(gp);
 		g2d.fillRect(0,0,this.getWidth(),this.getHeight());
 		
+		g2d.setColor(Color.white);
+		g2d.drawLine(0,this.getHeight()-2,this.getWidth(),this.getHeight()-2);
+		
+		g2d.setColor(new Color(151,153,157));
+		g2d.drawLine(0,this.getHeight()-1,this.getWidth(),this.getHeight()-1);
+		
 		g2d.setFont(f);
 		
 		g2d.setColor(cSeparator2);

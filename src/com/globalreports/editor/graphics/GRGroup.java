@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.property.GRTableModel
+ * class name  : com.globalreports.editor.graphics.GRGroup
  * Begin       : 
  * Last Update : 
  *
@@ -49,30 +49,40 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor.designer.property;
+package com.globalreports.editor.graphics;
 
-import com.globalreports.editor.designer.swing.table.GRTable;
-import com.globalreports.editor.designer.swing.table.element.GRComboElement;
+import java.awt.AlphaComposite;
 
-@SuppressWarnings("serial")
-public class GRTableModel extends GRTable {
-	protected GRTableProperty panelProperty;
+import com.globalreports.editor.designer.GRPage;
+
+public class GRGroup extends GRObject {
+	private AlphaComposite composite;	// Canale Alpha per la trasparenza degli oggetti
 	
-	protected GRComboElement listFather = new GRComboElement();
-	
-	public GRTableModel(String[] title) {
-		super(title);
+	public GRGroup(GRPage grpage, long id, int yStart, int yEnd) {
+		super(GRObject.TYPEOBJ_GROUP,id,grpage);
 		
-		// List Father
-	    listFather.addItem("--Nessuna--");
+		width = grpage.getWidth();
+		
+		if(yStart < yEnd) {
+			y1 = yStart;
+			height = yEnd - yStart;
+		} else {
+			y1 = yEnd;
+			height = yStart - yEnd;
+		}
+		
+		y1Original = y1;
+		heightOriginal = height;
+		
+		composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f);
+		this.refreshReferenceSection();		
+		
 	}
- 	public void addListFather(String value) {
-		listFather.addItem(value);
+
+	public GRList clone(long id) {
+		return null;
 	}
- 	public void removeListFather(String value) {
- 		listFather.removeItem(value);
- 	}
- 	public void setHPosition(boolean value) {
-		this.setValueAt(1, 1, ""+value);
+	public String createCodeGRS() {
+		return null;
 	}
 }

@@ -66,6 +66,8 @@ public class GRTableProperty  {
 	public static final int TYPEMODEL_TEXT				= 4;
 	public static final int TYPEMODEL_LIST				= 5;
 	public static final int TYPEMODEL_TABLELIST			= 6;
+	public static final int TYPEMODEL_CHART				= 7;
+	public static final int TYPEMODEL_CIRCLE			= 8;
 	
 	private JPanel panelProperty;
 	private GRTableModel grtable;
@@ -76,10 +78,12 @@ public class GRTableProperty  {
 	private GRTableModel grtablePage;
 	private GRTableModel grtableRectangle;
 	private GRTableModel grtableLine;
+	private GRTableModel grtableCircle;
 	private GRTableModel grtableImage;
 	private GRTableModel grtableText;
 	private GRTableModel grtableList;
 	private GRTableModel grtableTableList;
+	private GRTableModel grtableChart;
 	
 	public GRTableProperty() {
 		String[] title = {"Proprietà","Valore"};
@@ -92,10 +96,12 @@ public class GRTableProperty  {
 		grtablePage = new GRTableModelPage(this,title);
 		grtableRectangle = new GRTableModelRectangle(this,title);
 		grtableLine = new GRTableModelLine(this,title);
+		grtableCircle = new GRTableModelCircle(this,title);
 		grtableImage = new GRTableModelImage(this,title);
 		grtableText = new GRTableModelText(this,title);
 		grtableList = new GRTableModelList(this,title);
 		grtableTableList = new GRTableModelTableList(this,title);
+		grtableChart = new GRTableModelChart(this,title);
 		
 		panelProperty = new JPanel(new GridLayout(0,1));
 		panelProperty.setBackground(Color.white);
@@ -137,6 +143,12 @@ public class GRTableProperty  {
 				panelProperty.removeAll();
 				
 				break;
+			
+			case TYPEMODEL_CIRCLE:
+				grtable = grtableCircle;
+				panelProperty.removeAll();
+				
+				break;
 				
 			case TYPEMODEL_IMAGE:
 				grtable = grtableImage;
@@ -158,6 +170,12 @@ public class GRTableProperty  {
 				
 			case TYPEMODEL_TABLELIST:
 				grtable = grtableTableList;
+				panelProperty.removeAll();
+				
+				break;
+				
+			case TYPEMODEL_CHART:
+				grtable = grtableChart;
 				panelProperty.removeAll();
 				
 				break;

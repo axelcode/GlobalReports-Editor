@@ -60,6 +60,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
@@ -78,22 +79,16 @@ public class GRTableHeader extends JPanel {
 	public GRTableHeader() {
 		this(null);
 	}
+	
 	public GRTableHeader(String[] head) {
 		numColumns = head.length;
 		this.head = head;
 		
 		JPanel panelHead = new JPanel();
 		panelHead.setLayout(new GridLayout(0,head.length));
+		//panelHead.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		
 		for(int i = 0;i < head.length;i++) {
-			/*
-			JPanel p = new JPanel();
-			p.setLayout(new FlowLayout());
-			p.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
-			
-			JLabel l = new JLabel(head[i]);
-			p.add(l);
-			*/
 			
 			GRTableCellHeader p = new GRTableCellHeader(head[i]);
 			
@@ -124,6 +119,8 @@ class GRTableCellHeader extends JPanel {
 		
 		f = new Font("Tahoma",Font.BOLD,12);
 		setPreferredSize(new Dimension(100,24));
+		//setMaximumSize(new Dimension(50,24));
+		
 	}
 	
 	public void paint(Graphics g) {

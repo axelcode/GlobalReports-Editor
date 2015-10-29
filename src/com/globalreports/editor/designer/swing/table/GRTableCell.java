@@ -140,11 +140,13 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 			
 			chkDefault = new JCheckBox();
 			chkDefault.setOpaque(false);
+			chkDefault.addItemListener(this);
 			pDefault.setLayout(new FlowLayout(FlowLayout.CENTER));
 			pDefault.add(chkDefault);
 						
 			chkSelected = new JCheckBox();
 			chkSelected.setOpaque(false);
+			chkSelected.addItemListener(this);
 			pSelected.setLayout(new FlowLayout(FlowLayout.CENTER));
 			pSelected.setBackground(Color.white);
 			pSelected.add(chkSelected);
@@ -218,6 +220,7 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 		}
 		
 		//addFocusListener(this);
+		pDefault.addMouseListener(this);
 		
 		add(pDefault);
 		add(pSelected);
@@ -262,7 +265,12 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 				}
 				labelValue.setText(txtValue.getText());
 			} else if(typeCell == TYPECELL_CHECKBOX) {
-				chkDefault.setSelected(chkSelected.isSelected());
+				cellValue = ""+chkSelected.isSelected();
+				
+				if(chkSelected.isSelected() != chkDefault.isSelected()) {
+					grtable.activateTableEvent(this);
+				}
+				chkDefault.setSelected(chkSelected.isSelected());				
 			} else if(typeCell == TYPECELL_COMBOBOX) {
 				cellValue = ""+cmbValue.getSelectedItem();
 				
@@ -286,6 +294,7 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 	public String getValue() {
 		return cellValue;
 	}
+	
 	public void setValue(String value) {
 		cellValue = value;
 		if(typeCell == TYPECELL_TEXTFIELD) {
@@ -294,6 +303,11 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 		} else if(typeCell == TYPECELL_COMBOBOX) {
 			labelValueCombo.setText(value);
 			//cmbValue.setSelectedItem(value);
+		} else if(typeCell == TYPECELL_CHECKBOX) {
+			if(value.equals("true"))
+				chkDefault.setSelected(true);
+			else
+				chkDefault.setSelected(false);
 		}
 	}
 	public void setValue(Object value) {
@@ -328,11 +342,12 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 	@Override
 	public void focusLost(FocusEvent arg0) {
 		// TODO Auto-generated method stub
+		setSelected(false);
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-	
+		grtable.selectCell(this);
 	}
 
 	@Override
@@ -361,8 +376,14 @@ public class GRTableCell extends JPanel implements MouseListener, FocusListener,
 
 	@Override
 	public void itemStateChanged(ItemEvent e) {
-		cellValue = ""+cmbValue.getSelectedItem();
-		grtable.activateTableEvent(this);
+		if(e.getSource() == cmbValue) {
+			cellValue = ""+cmbValue.getSelectedItem();
+			grtable.activateTableEvent(this);
+		} else {
+			JCheckBox check = (JCheckBox)e.getSource();
+			cellValue = ""+check.isSelected();
+			grtable.activateTableEvent(this);
+		}
 	}
 
 	@Override

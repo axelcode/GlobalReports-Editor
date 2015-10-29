@@ -59,6 +59,7 @@ import com.globalreports.editor.graphics.GRText;
 
 
 public interface GRSetting {
+	
 	// Percorsi
 	public final String PATHIMAGE 		= "resources/images/";
 	public final String PATHTEMP		= "temp/";

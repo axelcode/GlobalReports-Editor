@@ -87,9 +87,9 @@ public abstract class GRLibrary {
 	}
 	
 	public static Color ColorText(Color background) {
-		// Ritorna il colore pi� appropriato del testo a seconda del colore di sfondo.
+		// Ritorna il colore più appropriato del testo a seconda del colore di sfondo.
 		// Utilizza la formula sulla luminanza - costante: 500
-		// Calcola se conviene di pi� utilizzare il nero oppure il bianco
+		// Calcola se conviene di più utilizzare il nero oppure il bianco
 		
 		if(background == null)
 			return Color.BLACK;
@@ -160,6 +160,10 @@ public abstract class GRLibrary {
 			return new String(Character.toChars(40));
 		else if(value.equals("051"))
 			return new String(Character.toChars(41));
+		else if(value.equals("052"))
+			return new String(Character.toChars(42));
+		else if(value.equals("053"))
+			return new String(Character.toChars(43));
 		else if(value.equals("057"))
 			return new String(Character.toChars(47));
 		else if(value.equals("074"))
@@ -168,14 +172,18 @@ public abstract class GRLibrary {
 			return new String(Character.toChars(61));
 		else if(value.equals("076"))
 			return new String(Character.toChars(62));
+		else if(value.equals("100"))
+			return new String(Character.toChars(64));
+		else if(value.equals("137"))
+			return new String(Character.toChars(95));
 		else if(value.equals("173"))
 			return new String(Character.toChars(123));
 		else if(value.equals("174"))
 			return new String(Character.toChars(124));
 		else if(value.equals("175"))
 			return new String(Character.toChars(125));
-		else if(value.equals("200"))
-			return new String(Character.toChars(128));
+		else if(value.equals("200")) 
+			return "€";	// Il carattere 128 stampa a video un quadratino
 		else if(value.equals("260"))
 			return new String(Character.toChars(176));
 		else if(value.equals("272"))
@@ -196,9 +204,11 @@ public abstract class GRLibrary {
 			return new String(Character.toChars(249));
 		else if(value.equals("372"))
 			return new String(Character.toChars(250));
+		
 		return null;
 	}
 	public static String lineASCIIToOct(String value) {
+		
 		StringBuffer buffer = new StringBuffer();
 		boolean parentesiGraffa = false;
 		
@@ -238,6 +248,12 @@ public abstract class GRLibrary {
 			case 41:
 				return "\\051";
 				
+			case 42:
+				return "\\052";
+				
+			case 43:
+				return "\\053";
+			
 			case 47:
 				return "\\057";
 				
@@ -249,6 +265,12 @@ public abstract class GRLibrary {
 				
 			case 62:
 				return "\\076";
+			
+			case 64:
+				return "\\100";
+				
+			case 95:
+				return "\\137";
 				
 			case 124:
 				return "\\174";
@@ -294,6 +316,10 @@ public abstract class GRLibrary {
 				
 			case 8217:
 				return "\\222";
+			
+			case 8220:
+			case 8221:
+				return "\042";
 				
 			case 8364:
 				return "\\200";

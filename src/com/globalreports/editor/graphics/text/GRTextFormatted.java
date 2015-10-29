@@ -203,6 +203,7 @@ public class GRTextFormatted {
 		boolean fBold = false;
 		boolean fItalic = false;
 		
+		this.value = testo;
 		if(fStyle == GRText.STYLETEXT_BOLD || fStyle == GRText.STYLETEXT_BOLDITALIC)
 			fBold = true;
 		

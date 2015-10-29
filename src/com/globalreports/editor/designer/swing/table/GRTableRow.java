@@ -112,6 +112,17 @@ public class GRTableRow extends JPanel {
 	public void setValue(int indexColumn, Object value) {
 		grcell.get(indexColumn).setValue(value);
 	}
+	public void setSelected(int column, boolean value) {
+		selected = value;
+		
+		if(value) {
+			grcell.get(column).setSelected(selected);
+		} else {
+			for(int i = 0;i < grcell.size();i++) {
+				grcell.get(i).setSelected(selected);
+			}
+		}
+	}
 	public void setSelected(boolean value) {
 		selected = value;
 		

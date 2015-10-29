@@ -71,6 +71,7 @@ public class GRList extends GRObject {
 	private AlphaComposite composite;	// Canale Alpha per la trasparenza degli oggetti
 	
 	private String nameXml;
+	private int yRelative;
 	
 	private GRTableModelList modelTable;
 	
@@ -108,7 +109,7 @@ public class GRList extends GRObject {
 		y1Original = y1;
 		heightOriginal = height;
 		
-		composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f);
+		composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f);
 		this.refreshReferenceSection();		
 		
 	}
@@ -132,6 +133,16 @@ public class GRList extends GRObject {
 	public void draw(Graphics g) {
 		Graphics2D g2d = (Graphics2D)g;
 		
+		int hGap = 0;
+		int y1 = this.y1;
+		
+		if(hPosition) {
+			hGap = hGap + grpage.hPosition;
+			gapH = hGap;
+		}
+		
+		y1 = y1 + hGap;
+		
 		Color oldC = g2d.getColor();
 		Stroke oldStroke = g2d.getStroke();
 		
@@ -151,6 +162,7 @@ public class GRList extends GRObject {
 		g2d.setColor(oldC);
 		g2d.setStroke(oldStroke);
 		
+		yRelative = y1;
 		grpage.hPosition = y1 + height;
 	}
 	public void setProperty(GRTable model) {
@@ -182,10 +194,15 @@ public class GRList extends GRObject {
 		
 		buff.append("<list>\n");
 		buff.append("<id>"+nameXml+"</id>\n");
-		buff.append("<left>"+GRLibrary.fromPixelsToMillimeters(x1Original)+"</left>\n");
 		buff.append("<top>"+GRLibrary.fromPixelsToMillimeters(y1)+"</top>\n");
 		buff.append("<height>"+GRLibrary.fromPixelsToMillimeters(heightOriginal)+"</height>\n");
-
+		buff.append("<hposition>");
+		if(hPosition)
+			buff.append("relative");
+		else
+			buff.append("absolute");
+		buff.append("</hposition>\n");
+		
 		buff.append("<row>\n");
 		
 		for(int i = 0;i < child.size();i++)
@@ -196,5 +213,9 @@ public class GRList extends GRObject {
 		buff.append("</list>");
 		
 		return buff.toString();
+	}
+	public int getTopPosition() {
+		
+		return yRelative;
 	}
 }

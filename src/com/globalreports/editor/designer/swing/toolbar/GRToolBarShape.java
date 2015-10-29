@@ -64,6 +64,7 @@ import javax.swing.JToolBar;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.dialog.GRDialogColorChooser;
 import com.globalreports.editor.designer.resources.GRColor;
 
@@ -87,9 +88,11 @@ public class GRToolBarShape extends JToolBar implements ActionListener {
 		
 		bColorStroke = new JButton(ico_colorstroke);
 		bColorStroke.addActionListener(this);
+		bColorStroke.setToolTipText(GRLanguageMessage.messages.getString("tlbcolorstroke"));
 		add(bColorStroke);
 		bColorFill = new JButton(ico_colorfill);
 		bColorFill.addActionListener(this);
+		bColorFill.setToolTipText(GRLanguageMessage.messages.getString("tlbcolorfill"));
 		add(bColorFill);
 		
 		//setLayout(new GridLayout(1,3));

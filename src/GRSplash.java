@@ -67,6 +67,7 @@ import javax.swing.JPanel;
 import com.globalreports.editor.GRAbout;
 import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.configuration.font.GRFontProperty;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.configuration.template.GRTemplate;
 import com.globalreports.editor.designer.GREditor;
 import com.globalreports.editor.designer.dialog.GRDialogTemplate;
@@ -81,6 +82,7 @@ public class GRSplash extends JFrame {
 	}
 	
 	private GRSplash() {
+		GRLanguageMessage.createLanguage("it","IT");
 		this.initGraphics();
 		
 		GRFontProperty.createFontProperty();

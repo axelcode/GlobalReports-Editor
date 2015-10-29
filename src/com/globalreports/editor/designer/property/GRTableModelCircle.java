@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.property.GRTableModelList
+ * class name  : com.globalreports.editor.designer.property.GRTableModelCircle
  * Begin       : 
  * Last Update : 
  *
@@ -51,34 +51,36 @@
  */
 package com.globalreports.editor.designer.property;
 
+import java.awt.Color;
+
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 
-import com.globalreports.editor.designer.GRPage;
-import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.designer.swing.table.GRTableCell;
 import com.globalreports.editor.designer.swing.table.GRTableSeparator;
+import com.globalreports.editor.designer.swing.table.element.GRColorElement;
 import com.globalreports.editor.designer.swing.table.event.GRTableEvent;
 import com.globalreports.editor.designer.swing.table.event.GRTableListener;
-import com.globalreports.editor.graphics.GRList;
-import com.globalreports.editor.graphics.GRRectangle;
+import com.globalreports.editor.graphics.GRCircle;
 import com.globalreports.editor.tools.GRLibrary;
 
 @SuppressWarnings("serial")
-public class GRTableModelList extends GRTableModel implements GRTableListener {
+public class GRTableModelCircle extends GRTableModel implements GRTableListener {
 	
-	private Object[][] element = {{"Oggetto","Lista"},
+	private Object[][] element = {{"Oggetto","Cerchio"},
 								  {new GRTableSeparator("Posizione"), null},
-								  {"Posizione relativa",new JCheckBox()},
-								  {"Identificativo", new JTextField()},
-								  {"Asse Y", new JTextField()},
-								  {"Altezza", new JTextField()}};
-			  
-	private GRList objList;	// Riferimento all'oggetto per poterne modificare le proprietà
-
-	public GRTableModelList(GRTableProperty panelProperty, String[] title) {
+								  {"Posizione relativa", new JCheckBox()},
+								  {"X", new JTextField()},
+								  {"Y", new JTextField()},
+								  {"Raggio", new JTextField()},
+								  {new GRTableSeparator("Aspetto"), null},
+								  {"Dimensione tratto", new JTextField()},
+								  {"Colore tratto", new GRColorElement(Color.BLACK)},
+								  {"Colore riempimento", new GRColorElement()}};
+	
+	private GRCircle objCircle;	// Riferimento all'oggetto per poterne modificare le proprietà
+	
+	public GRTableModelCircle(GRTableProperty panelProperty, String[] title) {
 		super(title);
 		this.panelProperty = panelProperty;
 		
@@ -86,17 +88,33 @@ public class GRTableModelList extends GRTableModel implements GRTableListener {
 		addGRTableListener(this);
 	}
 	
-	public void setGRObject(GRList ref) {
-		this.objList = ref;
+	public void setGRObject(GRCircle ref) {
+		this.objCircle = ref;
 	}
-	public void setNameXml(String value) {
-		this.setValueAt(2,1,value);
+	public void setHPosition(boolean value) {
+		this.setValueAt(1, 1, ""+value);
 	}
-	public void setTop(int value) {
+	public void setX(int value) {
+		this.setValueAt(2,1,""+GRLibrary.fromPixelsToMillimeters(value));
+	}
+	public void setY(int value) {
 		this.setValueAt(3,1,""+GRLibrary.fromPixelsToMillimeters(value));
 	}
-	public void setHeight(int value) {
+	public void setRadius(int value) {
 		this.setValueAt(4,1,""+GRLibrary.fromPixelsToMillimeters(value));
+	}
+	public void setWidthStroke(double value) {
+		this.setValueAt(5, 1, ""+value);
+	}
+	public void setColorStroke(int red, int green, int blue) {
+		this.setValueAt(6,1,new Color(red, green, blue));
+	}
+	public void setColorFill(int red, int green, int blue) {
+		if(red == -1 || green == -1 || blue == -1)
+			this.setValueAt(7,1,new GRColorElement());
+		else
+			this.setValueAt(7, 1, new GRColorElement(new Color(red, green, blue)));
+		
 	}
 
 	@Override
@@ -106,23 +124,35 @@ public class GRTableModelList extends GRTableModel implements GRTableListener {
 		switch(e.getRow()) {
 			case 1:	// hposition
 				if(e.getValue().equals("true"))
-					objList.setHPosition(true);
+					objCircle.setHPosition(true);
 				else
-					objList.setHPosition(false);
+					objCircle.setHPosition(false);
 				break;
 			
-			case 2:	// id
-				objList.setNameXml(e.getValue());
+			case 2:	// X
+				objCircle.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
 				break;
 				
-			case 3:	// top
-				objList.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+			case 3:	// Y
+				objCircle.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
 				break;
 				
-			case 4:	// height
-				objList.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+			case 4:	// Radius
+				objCircle.setRadius(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
 				break;
-								
+				
+			case 5:	// widthstroke
+				objCircle.setWidthStroke(Double.parseDouble(e.getValue()));
+				break;
+			
+			case 6:	// colorstroke
+				objCircle.setColorStroke(((GRColorElement)cell.getObjectValue()).getColor());
+				break;
+				
+			case 7:	// colorfill
+				objCircle.setColorFill(((GRColorElement)cell.getObjectValue()).getColor());
+				break;
+				
 		}
 	
 		panelProperty.getPage().repaint();

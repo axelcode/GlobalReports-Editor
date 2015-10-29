@@ -132,6 +132,7 @@ public class GRTableModelText extends GRTableModel implements GRTableListener {
 		
 	}
 	public void setHPosition(boolean value) {
+		this.setValueAt(1, 1, ""+value);
 		//this.setValueAt(new Boolean(value),2,1);
 	}
 	public void setLeft(int value) {
@@ -171,7 +172,10 @@ public class GRTableModelText extends GRTableModel implements GRTableListener {
 		
 		switch(e.getRow()) {
 			case 1:	// hposition
-				//objText.setHPosition((Boolean)getValueAt(2,1));
+				if(e.getValue().equals("true"))
+					objText.setHPosition(true);
+				else
+					objText.setHPosition(false);
 				break;
 				
 			case 2:	// X

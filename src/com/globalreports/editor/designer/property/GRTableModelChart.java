@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.property.GRTableModelRectangle
+ * class name  : com.globalreports.editor.designer.property.GRTableModelChart
  * Begin       : 
  * Last Update : 
  *
@@ -59,7 +59,7 @@ import javax.swing.JTextField;
 import javax.swing.event.*;
 
 import com.globalreports.editor.tools.GRLibrary;
-import com.globalreports.editor.graphics.GRRectangle;
+import com.globalreports.editor.graphics.GRChart;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.combo.GRComboFontName;
 import com.globalreports.editor.designer.property.combo.GRComboListFather;
@@ -72,25 +72,20 @@ import com.globalreports.editor.designer.swing.table.event.GRTableEvent;
 import com.globalreports.editor.designer.swing.table.event.GRTableListener;
 
 @SuppressWarnings("serial")
-public class GRTableModelRectangle extends GRTableModel implements GRTableListener {
+public class GRTableModelChart extends GRTableModel implements GRTableListener {
 	
-	private Object[][] element = {{"Oggetto","Rettangolo"},
+	private Object[][] element = {{"Oggetto","Grafico"},
 								  {new GRTableSeparator("Posizione"), null},
 								  {"Posizione relativa", new JCheckBox()},
 								  {"Asse X", new JTextField()},
 								  {"Asse Y",  new JTextField()},
 								  {"Larghezza",  new JTextField()},
 								  {"Altezza",  new JTextField()},
-								  {new GRTableSeparator("Aspetto"), null},
-								  {"Dimensione tratto", new JTextField("0.25")},
-								  {"Colore tratto", new GRColorElement(Color.BLACK)},
-								  {"Colore riempimento", new GRColorElement()},
-								  {new GRTableSeparator("Oggetti dinamici"), null},
-								  {"Lista", listFather}};
+								  {new GRTableSeparator("Aspetto"), null}};
 								  
-	private GRRectangle objRectangle;	// Riferimento all'oggetto per poterne modificare le propriet���
+	private GRChart objChart;	// Riferimento all'oggetto per poterne modificare le propriet���
 	
-	public GRTableModelRectangle(GRTableProperty panelProperty, String[] title) {
+	public GRTableModelChart(GRTableProperty panelProperty, String[] title) {
 		super(title);
 		this.panelProperty = panelProperty;
 		
@@ -98,53 +93,30 @@ public class GRTableModelRectangle extends GRTableModel implements GRTableListen
 		addGRTableListener(this);
 	}
 	
-	public void setGRObject(GRRectangle ref) {
-		this.objRectangle = ref;
+	public void setGRObject(GRChart ref) {
+		this.objChart = ref;
 	}
 	@Override
 	public void valueChanged(GRTableEvent e) {
 		GRTableCell cell = (GRTableCell)e.getSource();
 		
 		switch(e.getRow()) {
-			case 1:	// hposition
-				if(e.getValue().equals("true"))
-					objRectangle.setHPosition(true);
-				else
-					objRectangle.setHPosition(false);
-				break;
-			
 			case 2:	// X
-				objRectangle.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				objChart.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
 				break;
 				
 			case 3:	// Y
-				objRectangle.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				objChart.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
 				break;
 				
 			case 4:	// width
-				objRectangle.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				objChart.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
 				break;
 				
 			case 5:	// height
-				objRectangle.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
+				objChart.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
 				break;
 			
-			case 6:	// widthstroke
-				objRectangle.setWidthStroke(Double.parseDouble(e.getValue()));
-				break;
-			
-			case 7:	// colorstroke
-				objRectangle.setColorStroke(((GRColorElement)cell.getObjectValue()).getColor());
-				//panelProperty.getPage().refreshHeader(GRLibrary.fromMillimetersToPixels(Double.parseDouble(e.getValue())));
-				break;
-				
-			case 8:	// colorfill
-				objRectangle.setColorFill(((GRColorElement)cell.getObjectValue()).getColor());
-				break;
-				
-			case 9:	// listfather
-				objRectangle.setListFather(e.getValue());
-				break;
 		}
 	
 		panelProperty.getPage().repaint();
@@ -166,20 +138,5 @@ public class GRTableModelRectangle extends GRTableModel implements GRTableListen
 	public void setWidthStroke(double value) {
 		this.setValueAt(6, 1, ""+value);
 	}
-	public void setColorStroke(int red, int green, int blue) {
-		this.setValueAt(7,1,new Color(red, green, blue));
-	}
-	public void setColorFill(int red, int green, int blue) {
-		if(red == -1 || green == -1 || blue == -1)
-			this.setValueAt(8,1,new GRColorElement());
-		else
-			this.setValueAt(8, 1, new GRColorElement(new Color(red, green, blue)));
-		
-	}
-	public void setListFather(String value) {
-		if(value == null)
-			this.setValueAt(9, 1, "--Nessuna--");
-		else
-			this.setValueAt(9,1,value);
-	}
+	
 }

@@ -92,14 +92,12 @@ import javax.swing.UIManager;
 public class GRDialogTemplate extends JDialog implements ActionListener,ListSelectionListener {
 	public static Vector<GRTemplate> grtemplate = new Vector<GRTemplate>();
 	
+	public static final int TYPECALL_NEWDOC		= 1;
+	public static final int TYPECALL_ADDPAGE	= 2;
+	
 	private String nameTemplate = "Modello vuoto";
 	private String descriptionTemplate = "<html><body>Template bianco da disegnare a piacere</body></html>";
 	private String fileTemplate = "";
-	//private String[] nameTemplate = {"Modello vuoto","Modello Base CNP Vita","Modello Generico CNP Vita"};
-	//private String[] descriptionTemplate = {"<html><body>Template bianco da disegnare a piacere</body></html>",
-	//										"<html><body>Template con riferimenti di base per tutte le cover relative alle lettere di CNP Vita</body></html>",
-	//										"<html><body>Template contenente le informazioni di polizza e prodotto in forma tabellare.<br><br>Utilizzato nella maggior parte delle comunicazioni giornaliere di CNP Vita</body></html>"};
-	//private String[] fileTemplate = {"","ModelloBaseCNP.grs","ModelloPolizzaCNP.grs"};
 	
 	private JList titTemplate;
 	private JButton okButton;
@@ -111,15 +109,19 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 	private GRImageTemplate imgTemplate;
 	
 	private GREditor grfather;
-	
+	private int typeCall;
 	
 	/**
 	 * Create the dialog.
 	 */
 	public GRDialogTemplate(GREditor father) {
+		this(father, TYPECALL_NEWDOC);
+	}
+	public GRDialogTemplate(GREditor father, int typeCall) {
 		super(father,"Template");
 		
 		this.grfather = father;
+		this.typeCall = typeCall;
 		setResizable(false);
 		
 		Container c = getContentPane();
@@ -192,12 +194,18 @@ public class GRDialogTemplate extends JDialog implements ActionListener,ListSele
 
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == okButton) {
-			if(imgTemplate.getIndexTemplate() == -1) 
-				grfather.newDocument((int)GRLibrary.fromPixelsToMillimeters(GRSetting.WIDTHPAGE),(int)GRLibrary.fromPixelsToMillimeters(GRSetting.HEIGHTPAGE));
-			else {
+			if(imgTemplate.getIndexTemplate() == -1) {
+				if(typeCall == TYPECALL_NEWDOC)
+					grfather.newDocument((int)GRLibrary.fromPixelsToMillimeters(GRSetting.WIDTHPAGE),(int)GRLibrary.fromPixelsToMillimeters(GRSetting.HEIGHTPAGE));
+				else if(typeCall == TYPECALL_ADDPAGE)
+					grfather.addPageDocument();
+			} else {
 				File f = new File(grtemplate.get(imgTemplate.getIndexTemplate()).getNameTemplate());
-				grfather.openDoc(f);
-				
+				System.out.println(typeCall);
+				if(typeCall == TYPECALL_NEWDOC)
+					grfather.openDoc(f);
+				else if(typeCall == TYPECALL_ADDPAGE)
+					grfather.addPageFromTemplate(f);
 			}
 			this.dispose();
 		} else if(e.getSource() == cancelButton) {

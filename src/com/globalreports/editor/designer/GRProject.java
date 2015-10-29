@@ -134,6 +134,7 @@ public class GRProject extends JPanel implements TreeSelectionListener, ActionLi
 				
 		totalePagine++;
 		grtree.setSelectionRow(totalePagine);
+		
 	}
 	public int getTotalePagine() {
 		return totalePagine;

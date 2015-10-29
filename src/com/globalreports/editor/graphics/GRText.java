@@ -192,15 +192,17 @@ public class GRText extends GRObject {
 		modelTable.setFontStyle(this.getFontStyleToString());
 		modelTable.setFontSize(this.getFontSize());
 		modelTable.setFontAlignment(this.getFontAlignmentToString());
-		/*
+		modelTable.setLineSpacing(this.getLineSpacing());
+		modelTable.setHPosition(this.getHPosition());
+		
+		
 		if(this.hasListFather())
 			modelTable.setListFather(this.getListFather().getNameXml());
 		else
 			modelTable.setListFather(null);
-		*/
+		
 		/*
 		modelTable.setHPosition(this.getHPosition());
-		modelTable.setLineSpacing(this.getLineSpacing());
 		
 		 * 
 		 */
@@ -238,7 +240,7 @@ public class GRText extends GRObject {
 			fontStyle = GRLibrary.getFontStyleFromFontPDF(idFont);
 								
 			grtextFormatted.addElement(fontName, fontSize, fontStyle, fontColor, this.value);
-							
+				
 		}
 		
 	}
@@ -321,16 +323,16 @@ public class GRText extends GRObject {
 	public String getFontAlignmentToString() {
 		switch(alignment) {
 			case GRText.ALIGNTEXT_LEFT:
-				return "Left";
+				return "Sinistra";
 				
 			case GRText.ALIGNTEXT_CENTER:
-				return "Center";
+				return "Centrato";
 				
 			case GRText.ALIGNTEXT_RIGHT:
-				return "Right";
+				return "Destra";
 				
 			case GRText.ALIGNTEXT_JUSTIFY:
-				return "Justify";
+				return "Giustificato";
 		}
 		
 		return null;
@@ -605,8 +607,10 @@ public class GRText extends GRObject {
 			gapH = gapH + grpage.hPosition;
 		}
 		if(grlistFather != null) {
-			y1 = y1 + grlistFather.getY();
-			g2.setClip(0,grlistFather.getY(),grpage.getWidth(),grlistFather.getHeight()+1);
+			y1 = y1 + grlistFather.getTopPosition();
+			g2.setClip(0,grlistFather.getTopPosition(),grpage.getWidth(),grlistFather.getHeight()+1);
+		} else {
+			//g2.setClip(x1,y1,width,height);
 		}
 		
 		for(int i = 0;i < gpar.getTotaleRow();i++) {
@@ -645,11 +649,14 @@ public class GRText extends GRObject {
 		
 		//this.insertText();
 	}
-	
+	public String toString() {
+		return value;
+	}
 	public GRTextFormatted getTextFormatted() {
 		return grtextFormatted;
 	}
 	public Vector<String> getVariables() {
+		
 		Vector<String> listVariables = new Vector<String>();
 		
 		Pattern pattern = Pattern.compile(REG_VARIABLE);

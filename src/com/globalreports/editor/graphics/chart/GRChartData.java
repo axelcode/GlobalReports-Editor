@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.property.GRTableModel
+ * class name  : com.globalreports.editor.graphics.chart.GRChartData
  * Begin       : 
  * Last Update : 
  *
@@ -49,30 +49,41 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor.designer.property;
+package com.globalreports.editor.graphics.chart;
 
-import com.globalreports.editor.designer.swing.table.GRTable;
-import com.globalreports.editor.designer.swing.table.element.GRComboElement;
+import java.awt.Color;
+import java.util.Vector;
 
-@SuppressWarnings("serial")
-public class GRTableModel extends GRTable {
-	protected GRTableProperty panelProperty;
+public class GRChartData {
+	private Vector<GRChartVoice> grvoice;
+	private int index;
 	
-	protected GRComboElement listFather = new GRComboElement();
+	public GRChartData() {
+		grvoice = new Vector<GRChartVoice>();
+		index = 0;
+	}
 	
-	public GRTableModel(String[] title) {
-		super(title);
+	public void addData(Vector<GRChartVoice> grdata) {
+		grvoice = grdata;
+	}
+	public void addVoice(String label, double value, Color c) {
+		if(grvoice == null)
+			grvoice = new Vector<GRChartVoice>();
 		
-		// List Father
-	    listFather.addItem("--Nessuna--");
+		grvoice.add(new GRChartVoice(label, value, c));
 	}
- 	public void addListFather(String value) {
-		listFather.addItem(value);
+	public void first() {
+		index = 0;
 	}
- 	public void removeListFather(String value) {
- 		listFather.removeItem(value);
- 	}
- 	public void setHPosition(boolean value) {
-		this.setValueAt(1, 1, ""+value);
+	public GRChartVoice next() {
+		if(grvoice == null)
+			return null;
+		
+		try {
+			return grvoice.get(index++);
+		} catch(ArrayIndexOutOfBoundsException e) {
+			return null;
+		}
 	}
+	
 }

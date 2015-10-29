@@ -61,6 +61,8 @@ import java.beans.PropertyVetoException;
 import java.io.*;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.zip.ZipOutputStream;
 
@@ -77,16 +79,17 @@ import com.globalreports.engine.manage.err.GRPdfPathNotFoundException;
 import com.globalreports.engine.manage.err.GRValidateException;
 import com.globalreports.editor.GRAbout;
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.dialog.GRDialogAnteprimaXml;
 import com.globalreports.editor.designer.dialog.GRDialogImpostaValoriGriglia;
 import com.globalreports.editor.designer.dialog.GRDialogNewDocument;
+import com.globalreports.editor.designer.dialog.GRDialogStoryBook;
 import com.globalreports.editor.designer.dialog.GRDialogTemplate;
 import com.globalreports.editor.designer.property.*;
 import com.globalreports.editor.designer.resources.GRFontResource;
 import com.globalreports.editor.designer.resources.GRImageResource;
 import com.globalreports.editor.designer.resources.GRResFonts;
 import com.globalreports.editor.designer.resources.GRResImages;
-import com.globalreports.editor.designer.GRDocumentNew;
 import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.designer.swing.toolbar.GRToolBar;
 import com.globalreports.editor.designer.swing.toolbar.GRToolBarDesigner;
@@ -118,6 +121,7 @@ public class GREditor extends JFrame implements ActionListener {
 	private JMenuItem menuFileNewFromTemplate;
 	private JMenuItem menuFileOpen;
 	private JMenuItem menuFileAdd;
+	private JMenuItem menuFileAddPageFromTemplate;
 	private JMenuItem menuFileSave;
 	private JMenuItem menuFileSaveAs;
 	private JMenuItem menuFileSaveSingle;
@@ -136,6 +140,7 @@ public class GREditor extends JFrame implements ActionListener {
 	private JMenu menuStrumentiGriglia;
 	private JMenuItem menuStrumentiGrigliaImpostaValori;
 	private JMenuItem menuArchivioImmagini;
+	private JMenuItem menuStrumentiStoryBook;
 		
 	private JPanel panelToolBar;
 	private GRToolBar grtoolbar;
@@ -146,6 +151,7 @@ public class GREditor extends JFrame implements ActionListener {
 	private GRProject grproject;
 	
 	private GRDocument doc;
+	private GRPanelFooter grfoot;
 	
 	private JSplitPane split;
 	private JSplitPane splitProperty;
@@ -184,39 +190,40 @@ public class GREditor extends JFrame implements ActionListener {
 		menuBar = new JMenuBar();
 		
 		// MENU FILE
-		menuFile = new JMenu("File");
+		menuFile = new JMenu(GRLanguageMessage.messages.getString("menufile"));
 		menuBar.add(menuFile);
 		
-		menuFileNew = new JMenuItem("Nuovo documento...");
+		menuFileNew = new JMenuItem(GRLanguageMessage.messages.getString("menufilenew"));
 		menuFileNew.addActionListener(this);
-		menuFileNewFromTemplate = new JMenuItem("Nuovo documento da template...");
+		menuFileNewFromTemplate = new JMenuItem(GRLanguageMessage.messages.getString("menufilenewfromtemplate"));
 		menuFileNewFromTemplate.addActionListener(this);
-		menuFileOpen = new JMenuItem("Apri documento...");
+		menuFileOpen = new JMenuItem(GRLanguageMessage.messages.getString("menufileopen"));
 		menuFileOpen.addActionListener(this);
-		menuFileAdd = new JMenuItem("Aggiungi pagina");
+		menuFileAdd = new JMenuItem(GRLanguageMessage.messages.getString("menufileadd"));
 		menuFileAdd.addActionListener(this);
-		menuFileSave = new JMenuItem("Salva");
-		menuFileSaveAs = new JMenuItem("Salva come...");
-		menuFileSaveSingle = new JMenuItem("Salva pagina singola...");
+		menuFileAddPageFromTemplate = new JMenuItem(GRLanguageMessage.messages.getString("menufileaddpagefromtemplate"));
+		menuFileAddPageFromTemplate.addActionListener(this);
+		menuFileSave = new JMenuItem(GRLanguageMessage.messages.getString("menufilesave"));
+		menuFileSaveAs = new JMenuItem(GRLanguageMessage.messages.getString("menufilesaveas"));
+		menuFileSaveSingle = new JMenuItem(GRLanguageMessage.messages.getString("menufilesavesingle"));
 		menuFileSaveSingle.addActionListener(this);
-		menuFileSaveProject = new JMenuItem("Salva intero progetto...");
+		menuFileSaveProject = new JMenuItem(GRLanguageMessage.messages.getString("menufilesaveproject"));
 		menuFileSaveProject.addActionListener(this);
-		menuFileAnteprimaPDF = new JMenuItem("Anteprima pagina corrente");
+		menuFileAnteprimaPDF = new JMenuItem(GRLanguageMessage.messages.getString("menufileanteprimapdf"));
 		menuFileAnteprimaPDF.addActionListener(this);
-		menuFileAnteprimaPDFDocument = new JMenuItem("Anteprima intero documento");
+		menuFileAnteprimaPDFDocument = new JMenuItem(GRLanguageMessage.messages.getString("menufileanteprimapdfdocument"));
 		menuFileAnteprimaPDFDocument.addActionListener(this);
-		menuFileAnteprimaPDFXml = new JMenuItem("Anteprima con xml dati");
+		menuFileAnteprimaPDFXml = new JMenuItem(GRLanguageMessage.messages.getString("menufileanteprimapdfxml"));
 		menuFileAnteprimaPDFXml.addActionListener(this);
-		menuFileExportXml = new JMenuItem("Esporta xml dati...");
+		menuFileExportXml = new JMenuItem(GRLanguageMessage.messages.getString("menufileexportxml"));
 		menuFileExportXml.addActionListener(this);
 		menuFileExportXml.setEnabled(false);
-		menuFileDebug = new JMenuItem("Debug...");
-		menuFileDebug.addActionListener(this);
 		
 		menuFile.add(menuFileNew);
 		menuFile.add(menuFileNewFromTemplate);
 		menuFile.add(menuFileOpen);
 		menuFile.add(menuFileAdd);
+		menuFile.add(menuFileAddPageFromTemplate);
 		menuFile.addSeparator();
 		menuFile.add(menuFileSave);
 		menuFile.add(menuFileSaveAs);
@@ -231,19 +238,19 @@ public class GREditor extends JFrame implements ActionListener {
 		//menuFile.add(menuFileDebug);
 		
 		// MENU MODIFICA
-		menuModifica = new JMenu("Modifica");
+		menuModifica = new JMenu(GRLanguageMessage.messages.getString("menuedit"));
 		menuBar.add(menuModifica);
 		
-		menuModificaAnnulla = new JMenuItem("Annulla");
+		menuModificaAnnulla = new JMenuItem(GRLanguageMessage.messages.getString("menueditclear"));
 		menuModificaAnnulla.setEnabled(false);
 		menuModificaAnnulla.addActionListener(this);
-		menuModificaCancella = new JMenuItem("Cancella");
+		menuModificaCancella = new JMenuItem(GRLanguageMessage.messages.getString("menueditdelete"));
 		menuModificaCancella.setEnabled(false);
 		menuModificaCancella.addActionListener(this);
-		menuModificaCopia = new JMenuItem("Copia");
+		menuModificaCopia = new JMenuItem(GRLanguageMessage.messages.getString("menueditcopy"));
 		menuModificaCopia.setEnabled(false);
 		menuModificaCopia.addActionListener(this);
-		menuModificaIncolla = new JMenuItem("Incolla");
+		menuModificaIncolla = new JMenuItem(GRLanguageMessage.messages.getString("menueditpaste"));
 		menuModificaIncolla.setEnabled(false);
 		menuModificaIncolla.addActionListener(this);
 		
@@ -254,12 +261,12 @@ public class GREditor extends JFrame implements ActionListener {
 		menuModifica.add(menuModificaIncolla);
 		
 		// MENU STRUMENTI
-		menuStrumenti = new JMenu("Strumenti");
+		menuStrumenti = new JMenu(GRLanguageMessage.messages.getString("menutools"));
 		menuBar.add(menuStrumenti);
 		
-		menuStrumentiGriglia = new JMenu("Griglia...");
+		menuStrumentiGriglia = new JMenu(GRLanguageMessage.messages.getString("menutoolsgrid"));
 		menuStrumenti.add(menuStrumentiGriglia);
-		menuStrumentiGrigliaImpostaValori = new JMenuItem("Imposta valori...");
+		menuStrumentiGrigliaImpostaValori = new JMenuItem(GRLanguageMessage.messages.getString("menutoolsgridmanagevalue"));
 		menuStrumentiGrigliaImpostaValori.addActionListener(this);
 		menuStrumentiGriglia.add(menuStrumentiGrigliaImpostaValori);
 		
@@ -267,7 +274,10 @@ public class GREditor extends JFrame implements ActionListener {
 		menuArchivioImmagini = new JMenuItem("Archivio immagini...");
 		menuArchivioImmagini.addActionListener(this);
 		menuArchivioImmagini.setEnabled(false);
-		menuStrumenti.add(menuArchivioImmagini);
+		//menuStrumenti.add(menuArchivioImmagini);
+		menuStrumentiStoryBook = new JMenuItem("Story Book...");
+		menuStrumentiStoryBook.addActionListener(this);
+		menuStrumenti.add(menuStrumentiStoryBook);
 		
 		setJMenuBar(menuBar);
 		
@@ -302,9 +312,13 @@ public class GREditor extends JFrame implements ActionListener {
 		/* Footer
 		 * Contiene le info relative all'oogetto selezionato
 		 */
+		/*
 		JPanel grfoot = new JPanel();
 		grfoot.setPreferredSize(new Dimension(0,40));
 		c.add(grfoot,BorderLayout.SOUTH);
+		*/
+		grfoot = new GRPanelFooter();
+		c.add(grfoot, BorderLayout.SOUTH);
 		
 		setSize(800,600);
 		setExtendedState(Frame.MAXIMIZED_BOTH);
@@ -359,6 +373,7 @@ public class GREditor extends JFrame implements ActionListener {
 		doc = null;
 	}
 	public void actionToolBar(int type) {
+		grfoot.setObject(type);
 		
 		doc.setAction(type);
 	}
@@ -501,6 +516,8 @@ public class GREditor extends JFrame implements ActionListener {
 			grtoolbarStrumenti.setVisible(true);
 			grtoolbar.activeButton(true, true, true, true, true);
 			
+			
+			
 		} catch(PropertyVetoException pve) {
 			System.out.println("GRDocument::init::PropertyVetoException: "+pve.getMessage());
 		} catch(JDOMException jde) {
@@ -527,6 +544,55 @@ public class GREditor extends JFrame implements ActionListener {
 		}
 		
 		
+	}
+	public void addPageFromTemplate(File f) {
+		/* Decomprime il file GRS */
+		String dirTemp = GRFile.decomprimi(new File(PATH_TEMP),f);
+		
+		if(dirTemp == null) {
+			JOptionPane.showMessageDialog(this,"Si sono verificati problemi nell'apertura del file selezionato. Si prega di riprovare!","GREditor::addPageFromTemplate::decomprimi is null",JOptionPane.ERROR_MESSAGE);
+			
+			System.out.println("Errore nella decompressione del file GRS");
+			
+			return;
+		}
+		
+		path_dirTemp = PATH_TEMP+dirTemp+"//";
+		
+		int totPagineGiaPresenti = grproject.getTotalePagine();
+		
+		try {
+			/* Legge il file .main */
+			this.readSource(new File(path_dirTemp+"grmain.xml"));
+			
+			/* Cicla per tutti le pagine presenti nel documento */
+			for(int i = (0 + totPagineGiaPresenti);i < grproject.getTotalePagine();i++) {
+				doc = grproject.getDocument(i);
+				
+				this.readSource(new File(PATH_TEMP+dirTemp+"//"+grproject.getDocument(i).getOldNameDocument()+".xml"));
+			
+				desk.add(doc);
+				doc.setMaximum(true);
+			}
+			/*
+			splitProperty.setBottomComponent(grproject);
+			splitProperty.setDividerLocation(360);
+			
+			grproject.expand();
+			
+			grtoolbarStrumenti.setVisible(true);
+			grtoolbar.activeButton(true, true, true, true, true);
+			*/
+			
+			
+		} catch(PropertyVetoException pve) {
+			System.out.println("GRDocument::init::PropertyVetoException: "+pve.getMessage());
+		} catch(JDOMException jde) {
+			JOptionPane.showMessageDialog(this,jde.getMessage(),"GREditor::openDocument::JDOMException",JOptionPane.ERROR_MESSAGE);
+			
+			grtoolbar.remove(grtoolbarDesigner);
+							
+		}
 	}
 	public void addPageExists() {
 		JFileChooser fc = new JFileChooser();
@@ -759,6 +825,8 @@ public class GREditor extends JFrame implements ActionListener {
 			this.openDocument();
 		} else if(e.getSource() == menuFileAdd) {
 			this.addPageDocument();
+		} else if(e.getSource() == menuFileAddPageFromTemplate) {
+			new GRDialogTemplate(this, GRDialogTemplate.TYPECALL_ADDPAGE);
 		} else if(e.getSource() == menuFileSave) {
 			this.saveProject(true,false);
 		} else if(e.getSource() == menuFileSaveAs) {
@@ -789,6 +857,8 @@ public class GREditor extends JFrame implements ActionListener {
 			new GRDialogImpostaValoriGriglia(this, doc.getGapGrid());
 		} else if(e.getSource() == menuArchivioImmagini) {
 			new GRImageArchive();
+		} else if(e.getSource() == menuStrumentiStoryBook) {
+			new GRDialogStoryBook(doc);
 		}
 	}
 	public void setGapGrid(int x, int y) {
@@ -1134,10 +1204,13 @@ public class GREditor extends JFrame implements ActionListener {
 			if(element.getName().equals("grpage")) {
 				if(((Element)element.getParent()).getName().equals("grpages")) {
 					doc = new GRDocument(this,element.getValue());
+					
 					grproject.addPage(doc);
 				}
 			} 
 		}
+		
+		System.out.println("FATTO");
 	}
 	private void readChild(Element element) {
 		if(element.getName().equals("grinfo")) {

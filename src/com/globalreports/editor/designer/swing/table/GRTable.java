@@ -251,10 +251,31 @@ public class GRTable extends JPanel implements MouseListener {
 	public int getHeight() {
 		return (numElements + 1) * 28;
 	}
-	
+	public void selectCell(GRTableCell grcell) {
+		// Cerca la riga di appartenenza della cella selezionata
+		for(int i = 0;i < grrow.size();i++) {
+			GRTableRow refRow = grrow.get(i);
+			
+			for(int x = 0;x < numColumns;x++) {
+				if(refRow.getCell(x) == grcell) {
+					// Ho trovato la riga. Eseguo le operazioni di selezione
+					if(rowSelected != null)
+						rowSelected.setSelected(false);
+					
+					refRow.setSelected(x,true);
+					rowSelected = refRow;
+							
+					break;
+				}
+			}
+			
+		}
+		
+	}
 	private void createHead(String[] head) {
 		
 		header = new GRTableHeader(head);
+		
 		panelContainer.add(header);
 		
 		numColumns = header.getNumColumns();
