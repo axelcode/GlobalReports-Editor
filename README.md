@@ -6,6 +6,12 @@ Ma GlobalReports Editor può essere usato anche come editor per creare documenti
 Elenco dei rilasci 
 ==================
 
+**V.0.7.0 - 14/11/2015**
+
+- Aggiunta selezione e trascinamento multiplo di oggetti 
+- Aggiunto raggruppamento di oggetti eterogenei. Questo segue le specifiche di GRGROUP
+- Iniziato lo sviluppo dell'oggetto di testo condizionato (work in progress)
+- 
 **V.0.6.0 - 29/10/2015**
 
 - Rilasciato il nuovo compilatore e la nuova release dell'engine
