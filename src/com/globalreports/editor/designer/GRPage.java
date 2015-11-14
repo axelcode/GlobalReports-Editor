@@ -66,10 +66,13 @@ import java.util.Vector;
 
 import org.jdom.*;
 
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.dialog.GRDialogCreateChart;
 import com.globalreports.editor.designer.dialog.GRDialogCreateTableList;
+import com.globalreports.editor.designer.dialog.GRDialogEditText;
 import com.globalreports.editor.designer.dialog.GRDialogPropertyCell;
 import com.globalreports.editor.designer.dialog.GRDialogPropertyTableList;
+import com.globalreports.editor.designer.dialog.GRDialogTextCondition;
 import com.globalreports.editor.designer.property.*;
 import com.globalreports.editor.designer.swing.toolbar.GRToolBar;
 import com.globalreports.editor.designer.swing.toolbar.GRToolBarDesigner;
@@ -85,23 +88,24 @@ import com.globalreports.editor.tools.GRLibrary;
 @SuppressWarnings("serial")
 public class GRPage extends JPanel implements ActionListener, MouseListener, MouseMotionListener, KeyListener {
 	
-	private final static int ACTION_NULL			= 0;
-	private final static int ACTION_SELECT			= 1;
-	private final static int ACTION_RESIZE_TSX		= 3;
-	private final static int ACTION_RESIZE_TDX		= 4;
-	private final static int ACTION_RESIZE_BSX		= 5;
-	private final static int ACTION_RESIZE_BDX		= 6;
-	private final static int ACTION_MULTISELECT		= 7;
+	private final static int ACTION_NULL				= 0;
+	private final static int ACTION_SELECT				= 1;
+	private final static int ACTION_RESIZE_TSX			= 3;
+	private final static int ACTION_RESIZE_TDX			= 4;
+	private final static int ACTION_RESIZE_BSX			= 5;
+	private final static int ACTION_RESIZE_BDX			= 6;
+	private final static int ACTION_MULTISELECT			= 7;
 	
-	private final static int ACTION_DRAWLINE		= 11;
-	private final static int ACTION_DRAWRECTANGLE	= 12;
-	private final static int ACTION_DRAWTEXT		= 13;
-	private final static int ACTION_DRAWIMAGE		= 14;
-	private final static int ACTION_DRAWLIST		= 15;
-	private final static int ACTION_DRAWTABLELIST	= 16;
-	private final static int ACTION_DRAWCHART		= 17;
-	private final static int ACTION_DRAWCIRCLE		= 18;
-	
+	private final static int ACTION_DRAWLINE			= 11;
+	private final static int ACTION_DRAWRECTANGLE		= 12;
+	private final static int ACTION_DRAWTEXT			= 13;
+	private final static int ACTION_DRAWIMAGE			= 14;
+	private final static int ACTION_DRAWLIST			= 15;
+	private final static int ACTION_DRAWTABLELIST		= 16;
+	private final static int ACTION_DRAWCHART			= 17;
+	private final static int ACTION_DRAWCIRCLE			= 18;
+	private final static int ACTION_DRAWGROUP			= 19;
+	private final static int ACTION_DRAWTEXTCONDITION	= 20;
 	// Default 1mm --> 3 pixel
 	
 	// Griglia
@@ -128,19 +132,14 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	
 	private long idObj;
 	private GRDocument grdoc;
-	private int idObjSelected;		// ID oggetto selezionato
 	private Vector<GRObject> grobj;
 	private GRObject refObj;		// Riferimento all'oggetto corrente selezionato
 	private GRObject refObjCopy;	// Riferimento all'oggetto da copiare
 	private GRUndo grUndo;			// Oggetto che viene riempito con l'action da annullare
-	private Vector<GRObject> grobjMultiSelect;
+	private Vector<GRObject> grobjSelected;
+	private Vector<GRObject> grobjCopy;
 	
 	// Riferimenti agli oggetti utilizzati durante l'apertura di un documento preesistente
-	GRText refText;
-	GRRectangle refRect;
-	GRLine refLine;
-	GRImage refImage;
-	GRList refList;
 	GRTableListCell refCell;
 	
 	// Tabella delle proprietà degli oggetti
@@ -173,6 +172,9 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	
 	private JPopupMenu menuRectangle;
 	private JMenuItem menuRectangleInsertText;
+	
+	private JPopupMenu menuObjSelected;
+	private JMenuItem menuObjSelectedRaggruppa;
 	
 	// Riferimenti per gli oggetti che hanno finestre di proprietà Dialog
 	private GRTableListCell grcellSelected;
@@ -211,6 +213,8 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		grobj = new Vector<GRObject>();
 		refObj = null;
 		refObjCopy = null;
+		grobjSelected = null;
+		grobjCopy = null;
 		
 		// Istanzio i cursori che andrò ad utilizzare
 		defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -226,7 +230,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		hPosition = 0;
 		
 		idObj = 1;
-		idObjSelected = -1;
+		
 		grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, false);
 		
 		restoreToolBar();
@@ -238,26 +242,33 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		/* POPUP CELLA DELLA TABLELIST */
 		menuCell = new JPopupMenu();
 		
-		menuCellUnisciCella = new JMenuItem("Unisci celle");
+		menuCellUnisciCella = new JMenuItem(GRLanguageMessage.messages.getString("menupopupcellunion"));
 		menuCellUnisciCella.addActionListener(this);
 		menuCell.add(menuCellUnisciCella);
 		
 		menuCell.addSeparator();
 		
-		menuCellPropertyCell = new JMenuItem("Proprietà cella...");
+		menuCellPropertyCell = new JMenuItem(GRLanguageMessage.messages.getString("menupopupcellproperty"));
 		menuCellPropertyCell.addActionListener(this);
 		menuCell.add(menuCellPropertyCell);
 		
-		menuCellPropertyTableList = new JMenuItem("Proprietà...");
+		menuCellPropertyTableList = new JMenuItem(GRLanguageMessage.messages.getString("menupopuptableproperty"));
 		menuCellPropertyTableList.addActionListener(this);
 		menuCell.add(menuCellPropertyTableList);
 		
 		/* POPUP RECTANGLE */
 		menuRectangle = new JPopupMenu();
 		
-		menuRectangleInsertText = new JMenuItem("Inserisci testo...");
+		menuRectangleInsertText = new JMenuItem(GRLanguageMessage.messages.getString("menupopuprectangleinserttext"));
 		menuRectangleInsertText.addActionListener(this);
 		menuRectangle.add(menuRectangleInsertText);
+		
+		/* POPUP OGGETTI SELEZIONATI */
+		menuObjSelected = new JPopupMenu();
+		
+		menuObjSelectedRaggruppa = new JMenuItem(GRLanguageMessage.messages.getString("menupopupobjselectedgroups"));
+		menuObjSelectedRaggruppa.addActionListener(this);
+		menuObjSelected.add(menuObjSelectedRaggruppa);
 	}
 	
 	public void paint(Graphics g) {
@@ -301,116 +312,66 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				flagAzione != GRPage.ACTION_RESIZE_BDX) || refObj != grobj.get(i)) { 
 				int type = grobj.get(i).getType();
 				
-				/* Se un oggetto è associato ad una lista lo disegna in coda.
-				 * Questo perchè altrimenti se l'oggetto nello stack viene prima
-				 * della lista, esso viene visto in trasparenza e non è possibile
-				 * selezionarne la parte interna
-				 */
-				if(grobj.get(i).getListFather() == null) {
-					switch(type) {
-						case GRObject.TYPEOBJ_TEXT:
-							GRText refText = (GRText)grobj.get(i);
-							refText.draw(g);
-							
-							break;
+				switch(type) {
+					case GRObject.TYPEOBJ_TEXT:
+						GRText refText = (GRText)grobj.get(i);
+						refText.draw(g);
 						
-						case GRObject.TYPEOBJ_LINE:
-							GRLine refLine = (GRLine)grobj.get(i);
-							refLine.draw(g);
-							
-							break;
-							 
-						case GRObject.TYPEOBJ_RECTANGLE:
-							GRRectangle refRect = (GRRectangle)grobj.get(i);
-							if(refRect.getListFather() == null)
-								refRect.draw(g);
-							
-							break;
+						break;
+					
+					case GRObject.TYPEOBJ_LINE:
+						GRLine refLine = (GRLine)grobj.get(i);
+						refLine.draw(g);
 						
-						case GRObject.TYPEOBJ_CIRCLE:
-							GRCircle refCircle = (GRCircle)grobj.get(i);
-							if(refCircle.getListFather() == null)
-								refCircle.draw(g);
-							
-							break;
-						case GRObject.TYPEOBJ_IMAGE:
-							GRImage refImage = (GRImage)grobj.get(i);
-							refImage.draw(g);
-							break;
-							
-						case GRObject.TYPEOBJ_LIST:
-							GRList refList = (GRList)grobj.get(i);
-							refList.draw(g);
-							break;
-							
-						case GRObject.TYPEOBJ_TABLELIST:
-							GRTableList refTableList = (GRTableList)grobj.get(i);
-							refTableList.draw(g);
-							break;
-							
-						case GRObject.TYPEOBJ_CHART:
-							GRChart refChart = (GRChart)grobj.get(i);
-							refChart.draw(g);
-							break;
-							
-					}
+						break;
+						 
+					case GRObject.TYPEOBJ_RECTANGLE:
+						GRRectangle refRect = (GRRectangle)grobj.get(i);
+						refRect.draw(g);
+						
+						break;
+					
+					case GRObject.TYPEOBJ_CIRCLE:
+						GRCircle refCircle = (GRCircle)grobj.get(i);
+						refCircle.draw(g);
+						
+						break;
+					
+					case GRObject.TYPEOBJ_IMAGE:
+						GRImage refImage = (GRImage)grobj.get(i);
+						refImage.draw(g);
+						
+						break;
+						
+					case GRObject.TYPEOBJ_LIST:
+						GRList refList = (GRList)grobj.get(i);
+						refList.draw(g);
+						
+						break;
+						
+					case GRObject.TYPEOBJ_TABLELIST:
+						GRTableList refTableList = (GRTableList)grobj.get(i);
+						refTableList.draw(g);
+						
+						break;
+						
+					case GRObject.TYPEOBJ_CHART:
+						GRChart refChart = (GRChart)grobj.get(i);
+						refChart.draw(g);
+						
+						break;
+					
+					case GRObject.TYPEOBJ_GROUP:
+						GRGroup refGroup = (GRGroup)grobj.get(i);
+						refGroup.draw(g);
+						
+						break;
 				}
+				
 			}			
 		}
 		
-		/* Disegna gli oggetti aderenti alla lista */
-		for(int i = 0;i < grobj.size();i++) {
-			if((flagAzione != GRPage.ACTION_RESIZE_TSX &&
-					flagAzione != GRPage.ACTION_RESIZE_TDX &&
-					flagAzione != GRPage.ACTION_RESIZE_BSX &&
-					flagAzione != GRPage.ACTION_RESIZE_BDX) || refObj != grobj.get(i)) { 
-					int type = grobj.get(i).getType();
-					
-					if(grobj.get(i).getListFather() != null) {
-						switch(type) {
-							case GRObject.TYPEOBJ_TEXT:
-								GRText refText = (GRText)grobj.get(i);
-								refText.draw(g);
-								
-								break;
-							
-							case GRObject.TYPEOBJ_LINE:
-								GRLine refLine = (GRLine)grobj.get(i);
-								refLine.draw(g);
-								
-								break;
-								 
-							case GRObject.TYPEOBJ_RECTANGLE:
-								GRRectangle refRect = (GRRectangle)grobj.get(i);
-								refRect.draw(g);
-								
-								break;
-							
-							case GRObject.TYPEOBJ_CIRCLE:
-								GRCircle refCircle = (GRCircle)grobj.get(i);
-								refCircle.draw(g);
-								
-								break;
-								
-							case GRObject.TYPEOBJ_IMAGE:
-								GRImage refImage = (GRImage)grobj.get(i);
-								refImage.draw(g);
-								break;
-								
-							case GRObject.TYPEOBJ_LIST:
-								GRList refList = (GRList)grobj.get(i);
-								refList.draw(g);
-								break;
-								
-							case GRObject.TYPEOBJ_TABLELIST:
-								GRTableList refTableList = (GRTableList)grobj.get(i);
-								refTableList.draw(g);
-								break;
-								
-						}
-					}
-				}	
-		}
+		
 		/*
 		if(flagAzione == GRPage.ACTION_SELECT && refObj == null) {
 			drawSelection(g);
@@ -464,6 +425,24 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				return;
 			}
 			drawRectangle(g);
+		} else if(flagAzione == GRPage.ACTION_DRAWGROUP) {
+			if(!flagPartito) {
+				flagPartito = true;
+				return;
+			}
+			drawGroup(g);
+		} else if(flagAzione == GRPage.ACTION_DRAWTEXTCONDITION) {
+			if(!flagPartito) {
+				flagPartito = true;
+				return;
+			}
+			drawText(g);
+		} else if(flagAzione == ACTION_MULTISELECT) {
+			if(!flagPartito) {
+				flagPartito = true;
+				return;
+			}
+			drawSelection(g);
 		} else if(flagAzione == GRPage.ACTION_RESIZE_TSX || 
 				  flagAzione == GRPage.ACTION_RESIZE_BDX ||
 				  flagAzione == GRPage.ACTION_RESIZE_TDX ||
@@ -636,6 +615,34 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		g2d.setComposite(compositeOld);
 		g.setColor(oldC);
 	}
+	private void drawGroup(Graphics g) {
+		Graphics2D g2d = (Graphics2D)g;
+		int y1,y2;
+		int height;
+		
+		if(yStart > yEnd) {
+			y1 = yEnd;
+			y2 = yStart;
+		} else {
+			y1 = yStart;
+			y2 = yEnd;
+		}
+		height = y2 - y1;
+		
+		Color oldC = g.getColor();
+		Color newC = new Color(140,9,9);
+		g.setColor(newC);
+		Composite compositeOld = g2d.getComposite();
+		
+		g.drawRect(0,y1,630,height);
+		
+		g2d.setComposite(composite);
+		g2d.setPaint(newC);
+		g2d.fill(new Rectangle(0,y1,630,height));
+		
+		g2d.setComposite(compositeOld);
+		g.setColor(oldC);
+	}
 	private void clearAction() {
 		clearSelected();
 		
@@ -647,20 +654,22 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			grobj.get(i).setSelected(false);
 			
 		refObj = null;
-		idObjSelected = -1;
+		grobjSelected = null;
 		grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, false);
 		grtoolbarStrumenti.setBackwardEnabled(false);
 		grtoolbarStrumenti.setForwardEnabled(false);
 		
+		this.setPageProperty();
+		
+	}
+	private void setPageProperty() {
 		panelProperty.setPage(this);
 		
 		panelProperty.setModel(GRTableProperty.TYPEMODEL_PAGE);
 		GRTableModelPage modelPage = (GRTableModelPage)panelProperty.getTable();
 		modelPage.setHeader(heightHeader);
 		modelPage.setFooter(heightFooter);
-		
 	}
-	
 	public void setAction(int value) {
 		clearAction();
 		
@@ -699,6 +708,14 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				
 			case GRToolBar.TYPEBUTTON_CHART:
 				flagAzione = GRPage.ACTION_DRAWCHART;
+				break;
+				
+			case GRToolBar.TYPEBUTTON_GROUP:
+				flagAzione = GRPage.ACTION_DRAWGROUP;
+				break;
+			
+			case GRToolBar.TYPEBUTTON_TEXTCONDITION:
+				flagAzione = GRPage.ACTION_DRAWTEXTCONDITION;
 				break;
 		}
 		
@@ -787,6 +804,34 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	public double getFooterSizeToMM() {
 		return heightFooter / 3;
 	}
+	private GRGroup isGroup(int x, int y) {
+		// Verifica se le coordinate passate sono interne ad un oggetto GRGROUP
+		// Se le trova ritorna l'oggetto altrimenti null
+		
+		for(int i = (grobj.size()-1);i >= 0;i--) {
+			if(grobj.get(i).getType() == GRObject.TYPEOBJ_GROUP) {
+				if(grobj.get(i).isIntersect(x, y))
+					return (GRGroup)grobj.get(i);
+			}
+		}
+		
+		return null;
+	}
+	private void selectObj(GRObject grobj) {
+		if(grobjSelected == null) 
+			grobjSelected = new Vector<GRObject>();
+		
+		grobjSelected.add(grobj);
+		
+		grobj.setSelected(true);
+		if(grobjSelected.size() == 1) {
+			panelProperty.setModel(grobj.getTypeModel());
+			grobj.setProperty(panelProperty.getTable());
+		} else {
+			this.setPageProperty();
+		}
+	}
+	/* OLD VERSION
 	private void selectObj(GRObject grObj, int x, int y) {
 		
 		refObj = grObj;
@@ -849,6 +894,13 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			grchart.setProperty(panelProperty.getTable());
 			
 			grchart.setLocation(grchart.getX(),grchart.getY());
+		} else if(refObj instanceof GRGroup) {
+			GRGroup grgroup = (GRGroup)refObj;
+			
+			panelProperty.setModel(GRTableProperty.TYPEMODEL_GROUP);
+			grgroup.setProperty(panelProperty.getTable());
+			
+			grgroup.setLocation(grgroup.getX(),grgroup.getY());	
 		}
 		
 		if(grobj.size() > 1) {
@@ -857,46 +909,33 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		}
 		
 	}
+	*/
 	public void mouseClicked(MouseEvent me) {
 		if(me.getClickCount() == 2) {
-			if(refObj instanceof GRText) {
-				GRText refText = (GRText)refObj;
-				GREditText et = new GREditText(this, new Rectangle(xStart, yStart, xEnd-xStart, yEnd-yStart));
-				
-				et.setData(refObj.getId(), refText.getTextFormatted());
-				et.showDialog(GREditText.MODIFYTEXT);
-			} else if(refObj instanceof GRTableList) {
-				GRTableList refTable = (GRTableList)refObj;
+			if(grobjSelected != null && grobjSelected.size() == 1) {
+				if(grobjSelected.get(0) instanceof GRText) {
+					GRText refText = (GRText)grobjSelected.get(0);
+					GREditText et = new GREditText(this, new Rectangle(xStart, yStart, xEnd-xStart, yEnd-yStart));
 					
-				if(refTable.isCellIntersect(me.getX(),me.getY())) {
-					refCell = refTable.getCellSelected();
-					Rectangle r = refCell.getCellArea();
+					et.setData(refText.getId(), refText.getTextFormatted());
+					et.showDialog(GREditText.MODIFYTEXT);
+				} else if(grobjSelected.get(0) instanceof GRTableList) {
+					GRTableList refTable = (GRTableList)grobjSelected.get(0);
 					
-					GREditText et = new GREditText(this, r, GREditText.CONTEXT_TABLELIST);
-					
-					if(refCell.getText() == null)
-						et.setFont(grtoolbarStrumenti.getFontName(),grtoolbarStrumenti.getFontSize(),grtoolbarStrumenti.getFontStyle());
-					else
-						et.setData(refObj.getId(),refCell.getText().getTextFormatted());
-					et.showDialog(GREditText.NEWTEXT);
-					
+					if(refTable.isCellIntersect(me.getX(),me.getY())) {
+						refCell = refTable.getCellSelected();
+						Rectangle r = refCell.getCellArea();
+						
+						GREditText et = new GREditText(this, r, GREditText.CONTEXT_TABLELIST);
+						
+						if(refCell.getText() == null)
+							et.setFont(grtoolbarStrumenti.getFontName(),grtoolbarStrumenti.getFontSize(),grtoolbarStrumenti.getFontStyle());
+						else
+							et.setData(refTable.getId(),refCell.getText().getTextFormatted());
+						et.showDialog(GREditText.NEWTEXT);
+						
+					}
 				}
-			} else {
-				
-				/*
-				GRObject grtemp = grobj.get(0);
-				grobj.remove(0);
-				grobj.insertElementAt(grtemp, 1);
-				*/
-				/*
-				for(int i = 0;i < grobj.size();i++) {
-					GRText t = (GRText)grobj.get(i);
-					
-					System.out.println("OGGETTO "+i+" - "+t.getId()+": "+t.createCodeGRS());
-					System.out.println("\n\n");
-				}
-				*/
-				
 			}
 		}
 		
@@ -922,23 +961,26 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			}
 		}
 		
-		if(flagAzione == GRPage.ACTION_SELECT) {
+		if(flagAzione == ACTION_SELECT) {
 			boolean flagSelected = false;
 			
-			clearSelected();
+			if(!CTRL_PRESS)
+				clearSelected();
+			
 			// Cicla per tutti gli oggetti in memoria.
 			// Il primo oggetto che viene intersecato, lo seleziona. Parte dall'ultimo inserito
 			for(int i = (grobj.size()-1);i >= 0;i--) {
-				
-				if(grobj.get(i).isIntersect(me.getX(),me.getY())) {
-					
-					this.selectObj(grobj.get(i), me.getX(), me.getY());
-					idObjSelected = i;
-					grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, true);
-					grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 3, true);
-					grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 4, true);
-					flagSelected = true;
-					break;
+				if(!grobj.get(i).getSelected()) {
+					if(grobj.get(i).isIntersect(me.getX(),me.getY())) {
+						
+						this.selectObj(grobj.get(i));
+						
+						grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, true);
+						grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 3, true);
+						grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 4, true);
+						flagSelected = true;
+						break;
+					}
 				}
 			}
 			
@@ -947,6 +989,9 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				
 				xEnd = xStart;
 				yEnd = yStart;
+				
+				if(grobjSelected == null)
+					flagAzione = ACTION_MULTISELECT;
 			}
 			
 			repaint();
@@ -958,18 +1003,21 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		yEnd = me.getY();
 		
 		if(me.isPopupTrigger()) {
-			if(refObj != null) {
-				if(refObj instanceof GRTableList) {
-					GRTableList refTable = (GRTableList)refObj;
-					//GRTableListCell refCell = refTable.getCellSelected();
-					grcellSelected = refTable.getCellSelected();
-					
-					if(grcellSelected != null) {
+			if(grobjSelected != null) {
+				if(grobjSelected.size() == 1) {
+					if(grobjSelected.get(0) instanceof GRTableList) {
+						GRTableList refTable = (GRTableList)refObj;
+						grcellSelected = refTable.getCellSelected();
 						
-						menuCell.show(me.getComponent(),me.getX(),me.getY());
+						if(grcellSelected != null) {
+							
+							menuCell.show(me.getComponent(),me.getX(),me.getY());
+						}
+					} else if(grobjSelected.get(0) instanceof GRRectangle) {
+						menuRectangle.show(me.getComponent(),me.getX(),me.getY());
 					}
-				} else if(refObj instanceof GRRectangle) {
-					menuRectangle.show(me.getComponent(),me.getX(),me.getY());
+				} else if(grobjSelected.size() > 1) {
+					menuObjSelected.show(me.getComponent(),me.getX(),me.getY());
 				}
 			}
 		}
@@ -1035,6 +1083,27 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 					refLine.setOriginalYEnd(refLine.getYEnd());
 				}
 			}
+		} else if(flagAzione == ACTION_MULTISELECT) {
+			// Procede a selezionare tutti gli oggetti che rientrano nell'area
+				
+			Rectangle area = new Rectangle(xStart,yStart,xEnd-xStart,yEnd-yStart);
+			for(int i = (grobj.size()-1);i >= 0;i--) {
+							
+				if(grobj.get(i).isAreaIntersect(area)) {
+								
+					this.selectObj(grobj.get(i));
+								
+					if(grobjSelected == null)
+						grobjSelected = new Vector<GRObject>();
+								
+					grobjSelected.add(grobj.get(i));
+					
+				}
+			}
+			
+			flagAzione = ACTION_SELECT;
+			
+			repaint();
 		} else if(flagAzione == GRPage.ACTION_DRAWLINE) {
 			if(Math.abs(xEnd-xStart) < GRSetting.MIN_DIMENSION_OBJ &&
 					Math.abs(yEnd - yStart) < GRSetting.MIN_DIMENSION_OBJ)
@@ -1057,8 +1126,13 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			GRRectangle refRect = new GRRectangle(this,idObj,(int)(xStart / zoom),(int)(yStart / zoom),(int)(xEnd / zoom),(int)(yEnd / zoom),grtoolbarStrumenti.getColorStroke(),grtoolbarStrumenti.getColorFill());
 			refRect.setZoom(zoom);
 			
-			grobj.add(refRect);
-			idObj++;
+			GRGroup grgroup = isGroup(xStart, yStart);
+			if(grgroup != null)
+				grgroup.addObject(refRect);
+			else {
+				grobj.add(refRect);
+				idObj++;
+			}
 			
 			restoreToolBar();
 			repaint();
@@ -1128,9 +1202,26 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				return;
 			
 			new GRDialogCreateChart(this,xStart,yStart,xEnd,yEnd);
+		} else if(flagAzione == GRPage.ACTION_DRAWGROUP) {
+			if(Math.abs(yEnd - yStart) < GRSetting.MIN_DIMENSION_OBJ)
+				return;
 			
+			GRGroup refGroup = new GRGroup(this,idObj,yStart,yEnd);
+			
+			grobj.add(refGroup);
+			idObj++;
+			
+			restoreToolBar();
+			repaint();	
+		} else if(flagAzione == GRPage.ACTION_DRAWTEXTCONDITION) {
+			if(Math.abs(xEnd-xStart) < GRSetting.MIN_DIMENSION_OBJ)
+				return;
+			GRDialogTextCondition tc = new GRDialogTextCondition(this, new Rectangle(xStart, yStart, xEnd-xStart, yEnd-yStart));
+			
+			//et.setFont(grtoolbarStrumenti.getFontName(),grtoolbarStrumenti.getFontSize(),grtoolbarStrumenti.getFontStyle());
+			tc.showDialog(GRDialogTextCondition.NEWTEXT);
 		} else if(flagAzione == GRPage.ACTION_SELECT && refObj != null) {
-			this.selectObj(refObj,me.getX(),me.getY());	
+			this.selectObj(refObj);	
 		} else if(flagAzione == GRPage.ACTION_RESIZE_TSX ||
 				  flagAzione == GRPage.ACTION_RESIZE_TDX ||
 				  flagAzione == GRPage.ACTION_RESIZE_BSX ||
@@ -1170,12 +1261,24 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 					break;
 			}
 			
-			this.selectObj(refObj,me.getX(),me.getY());	
+			this.selectObj(refObj);	
 		}
 		requestFocusInWindow();
 	}
 	
-	
+	private void moveObjects(int x, int y) {
+		if(grobjSelected == null)
+			return;
+		
+		for(int i = 0;i < grobjSelected.size();i++) {
+			if(y == -1)
+				grobjSelected.get(i).translateX(x);
+			else if(x == -1)
+				grobjSelected.get(i).translateY(y);
+			else
+				grobjSelected.get(i).moveTo(x, y);
+		}
+	}
 	public void mouseMoved(MouseEvent me) {
 		if(refObj != null) {
 			int anchor = refObj.isAnchor(me.getX(),me.getY());
@@ -1209,7 +1312,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 	}
 	public void mouseDragged(MouseEvent me) {
 			
-		if(refObj != null) {
+		if(grobjSelected != null) {
 			if(flagAzione == GRPage.ACTION_RESIZE_TSX) {
 				xStart = me.getX();
 				yStart = me.getY();
@@ -1235,48 +1338,54 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				xEnd = refObj.getX()+refObj.getWidth();
 				yEnd = me.getY();
 			} else {
-				
+				// Movimento di oggetti
 				xEnd = me.getX();
 				yEnd = me.getY();
 			
 				if(activeGrid) {
+					// ASSE DELLE X
 					if((xEnd - xStart) >= GAPGRIDX) {
 						if((xEnd - xStart) % GAPGRIDX > GAPGRIDX / 2)
-							refObj.translateX((xEnd - xStart) + (GAPGRIDX - ((xEnd - xStart) % GAPGRIDX)));
+							this.moveObjects((xEnd - xStart) + (GAPGRIDX - ((xEnd - xStart) % GAPGRIDX)), -1);
 						else
-							refObj.translateX((xEnd - xStart) - ((xEnd - xStart) % GAPGRIDX));
+							this.moveObjects((xEnd - xStart) - ((xEnd - xStart) % GAPGRIDX), -1);
+						
 						xStart = xEnd;
 					} else if((xStart - xEnd) >= GAPGRIDX) {
 						if((xStart - xEnd) % GAPGRIDX > GAPGRIDX / 2)
-							refObj.translateX(((xStart - xEnd) + (GAPGRIDX - ((xStart - xEnd) % GAPGRIDX))) * -1);
+							this.moveObjects(((xStart - xEnd) + (GAPGRIDX - ((xStart - xEnd) % GAPGRIDX))) * -1, -1);
 						else
-							refObj.translateX(((xStart - xEnd) - ((xStart - xEnd) % GAPGRIDX)) * -1);
+							this.moveObjects(((xStart - xEnd) - ((xStart - xEnd) % GAPGRIDX)) * -1, -1);
 						
 						xStart = xEnd;
 					}
+					
+					// ASSE DELLE Y
 					if((yEnd - yStart) >= GAPGRIDY) {
 						if((yEnd - yStart) % GAPGRIDY > GAPGRIDY / 2)
-							refObj.translateY((yEnd - yStart) + (GAPGRIDY - ((yEnd - yStart) % GAPGRIDY)));
+							this.moveObjects(-1, (yEnd - yStart) + (GAPGRIDY - ((yEnd - yStart) % GAPGRIDY)));
 						else
-							refObj.translateY((yEnd - yStart) - ((yEnd - yStart) % GAPGRIDY));
+							this.moveObjects(-1, (yEnd - yStart) - ((yEnd - yStart) % GAPGRIDY));
+						
 						yStart = yEnd;
 					} else if((yStart - yEnd) >= GAPGRIDY) {
 						if((yStart - yEnd) % GAPGRIDY > GAPGRIDY / 2)
-							refObj.translateY(((yStart - yEnd) + (GAPGRIDY - ((yStart - yEnd) % GAPGRIDY))) * -1);
+							this.moveObjects(-1, ((yStart - yEnd) + (GAPGRIDY - ((yStart - yEnd) % GAPGRIDY))) * -1);
 						else
-							refObj.translateY(((yStart - yEnd) - ((yStart - yEnd) % GAPGRIDY)) * -1);
+							this.moveObjects(-1, ((yStart - yEnd) - ((yStart - yEnd) % GAPGRIDY)) * -1);
 						
 						yStart = yEnd;
 					}
 					
 				} else {
-					refObj.moveTo(xEnd,yEnd);
+					this.moveObjects(xEnd,yEnd);
 				}
 				
 			
 			}
 			repaint();
 		} else {
+			// Disegno di oggetti
 			xEnd = me.getX();
 			yEnd = me.getY();
 				
@@ -1293,25 +1402,8 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				}
 			}
 			
-			if(flagAzione == ACTION_SELECT) {
-				repaint();
-			} else if(flagAzione == ACTION_DRAWLINE) {
-				repaint();
-			} else if(flagAzione == ACTION_DRAWRECTANGLE) {
-				repaint();
-			} else if(flagAzione == ACTION_DRAWCIRCLE) {
-				repaint();
-			} else if(flagAzione == ACTION_DRAWTEXT) {
-				repaint();
-			} else if(flagAzione == ACTION_DRAWIMAGE) {
-				repaint();
-			} else if(flagAzione == ACTION_DRAWLIST) {
-				repaint();
-			} else if(flagAzione == ACTION_DRAWTABLELIST) {
-				repaint();
-			} else if(flagAzione == ACTION_DRAWCHART) {
-				repaint();
-			}
+			repaint();
+			
 		}
 	}
 	public void keyTyped(KeyEvent e) {}
@@ -1322,7 +1414,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			pasteObject();
 		}
 		
-		if(flagAzione == GRPage.ACTION_SELECT && refObj != null) {
+		if(flagAzione == GRPage.ACTION_SELECT && grobjSelected != null) {
 			
 			if(e.getKeyCode() == 127) {
 				this.clearObject();
@@ -1458,81 +1550,82 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			
 	}
 	public void copyObject() {
-		if(idObjSelected == -1)
+		if(grobjSelected == null)
 			return;
 		
-		refObjCopy = refObj;
+		grobjCopy = new Vector<GRObject>();
+		for(int i = 0;i < grobjSelected.size();i++)
+			grobjCopy.add(grobjSelected.get(i));
+		
+		//grdoc.grobjCopy = grobjCopy;
 	}
 	public void pasteObject() {
-		if(refObjCopy == null)
+		//System.out.println(grdoc.grobjCopy.size());
+		if(grobjCopy == null)
 			return;
 		
-		GRObject refCopy = refObjCopy.clone(idObj);
-		
-		if(refCopy == null) {
-			JOptionPane.showMessageDialog(null,"Il copia e incolla di oggetti è supportato solamente per: GRRectangle, GRLine, GRText","GRPage::pasteObject::copia di oggetti non supportata",JOptionPane.WARNING_MESSAGE);
-		} else {
-			grobj.add(refCopy);
-			idObj++;
-			repaint();
+		// Esegue la copia di ogni oggetto presente nel Vector
+		for(int i = 0;i < grobjCopy.size();i++) {
+			GRObject refCopy = grobjCopy.get(i).clone(idObj);
 			
-			clearSelected();
-			
-			this.selectObj(refCopy,refCopy.getX(), refCopy.getY());
-			idObjSelected = (int)idObj;
-			grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, true);
-			grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 3, true);
-			grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 4, true);
-			
-			
+			if(refCopy != null) {
+				grobj.add(refCopy);
+				idObj++;
+				
+				
+			}
 		}
+		repaint();
+		
 	}
 	public void clearObject() {
-		if(idObjSelected == -1)
+		if(grobjSelected == null)
 			return;
 		
-		GRObject refObj = grobj.get(idObjSelected);
-		
-		// Prima di cancellare l'oggetto riempie l'undo
-		grUndo = new GRUndo(grobj.get(idObjSelected),idObjSelected,GRUndo.ACTION_CLEAROBJ);
-		
-		if(grobj.get(idObjSelected) instanceof GRImage) {
-			GRImage refImage = (GRImage)grobj.get(idObjSelected);
+		// Cancella ogni oggetto selezionato
+		for(int i = grobjSelected.size()-1;i >= 0;i--) {
+			GRObject refObj = grobjSelected.get(i);
 			
-			grdoc.removeImgResources(refImage.getIdImage());
-		} else if(grobj.get(idObjSelected) instanceof GRList) {
-			String nameList = ((GRList)grobj.get(idObjSelected)).getNameXml();
+			// Prima di cancellare l'oggetto riempie l'undo
+			//grUndo = new GRUndo(grobj.get(idObjSelected),idObjSelected,GRUndo.ACTION_CLEAROBJ);
 			
-			/* Cancella tutti gli oggetti associati. Parte dall'ultimo */
-			for(int i = grobj.size()-1;i >= 0;i--) {
-				if(grobj.get(i).getListFather() != null) {
-					if(grobj.get(i).getListFather().getNameXml().equals(nameList)) {
-						
-						grobj.remove(i);
+			if(refObj instanceof GRImage) {
+				GRImage refImage = (GRImage)refObj;
+				
+				grdoc.removeImgResources(refImage.getIdImage());
+			} else if(refObj instanceof GRList) {
+				String nameList = ((GRList)refObj).getNameXml();
+				
+				// Cancella tutti gli oggetti associati. Parte dall'ultimo 
+				for(int index = grobj.size()-1;index >= 0;index--) {
+					if(grobj.get(index).getListFather() != null) {
+						if(grobj.get(index).getListFather().getNameXml().equals(nameList)) {
+							
+							grobj.remove(index);
+						}
 					}
 				}
+				
+				// Cancella il riferimento alla lista
+				panelProperty.removeListFather(nameList);
+				
 			}
 			
-			// Cancella il riferimento alla lista
-			panelProperty.removeListFather(nameList);
-								
+			grobj.remove(refObj);
 		}
 		
-		grobj.remove(refObj);
-		
-		grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, false);
-		grdoc.manageMenu(GREditor.MENUVOICE_ANNULLA, true, grUndo.getActionUndoToString());
 		flagAzione = GRPage.ACTION_SELECT;
 		
 		clearSelected();
 
 		repaint();
+		
 	}
 	
 	public void backwardObject() {
-		if(idObjSelected == -1)
+		if(grobjSelected == null)
 			return;
-		
+		/* DA RISCRIVERE
 		grUndo = new GRUndo(grobj.get(idObjSelected),idObjSelected,GRUndo.ACTION_BACKWARDOBJ);
 		
 		GRObject grtemp = refObj;
@@ -1544,11 +1637,12 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		grdoc.manageMenu(GREditor.MENUVOICE_ANNULLA, true, grUndo.getActionUndoToString());
 		
 		repaint();
+		*/
 	}
 	public void forwardObject() {
-		if(idObjSelected == -1)
+		if(grobjSelected == null)
 			return;
-		
+		/* DA RISCRIVERE
 		grUndo = new GRUndo(grobj.get(idObjSelected),idObjSelected,GRUndo.ACTION_FORWARDOBJ);
 		
 		grobj.remove(idObjSelected);
@@ -1558,6 +1652,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		grdoc.manageMenu(GREditor.MENUVOICE_ANNULLA, true, grUndo.getActionUndoToString());
 		
 		repaint();
+		*/
 	}
 	public void undo() {
 		if(grUndo == null)
@@ -1602,11 +1697,26 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 		repaint();
 	}
 	public void insertText(javax.swing.text.Document dc, String value, Rectangle r) {
+		/*
 		grobj.add(new GRText(this,this.getGraphics(),idObj,dc,grtoolbarStrumenti.getFontAlignment(),value,r));
 		idObj++;
 		
 		restoreToolBar();
 		repaint();
+		*/
+		GRText refText = new GRText(this,this.getGraphics(),idObj,dc,grtoolbarStrumenti.getFontAlignment(),value,r);
+		
+		GRGroup grgroup = isGroup(r.x, r.y);
+		if(grgroup != null)
+			grgroup.addObject(refText);
+		else {
+			grobj.add(refText);
+			idObj++;
+		}
+		
+		restoreToolBar();
+		repaint();
+		
 	}
 	public void modifyText(long id, javax.swing.text.Document dc, String value) {
 		for(int i = 0;i < grobj.size();i++) {
@@ -1636,8 +1746,7 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 3, false);
 			
 		} else {
-			this.selectObj(grobj,1,1);
-			idObjSelected = (int)grobj.getId();
+			this.selectObj(grobj);
 			
 			grdoc.manageMenu(GREditor.MENUVOICE_CANCELLA, true);
 			grdoc.setMenuVoiceEnabled(GREditor.MENUTYPE_MODIFICA, 3, true);
@@ -1720,21 +1829,84 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			new GRDialogPropertyTableList(grcellSelected.getFatherSection().getTableList());
 		} else if(e.getSource() == menuRectangleInsertText) {
 			int gapH = 0;
-			int gapV = ((refObj.getHeight() / grtoolbarStrumenti.getFontSize()) + ((refObj.getHeight() / 3) / grtoolbarStrumenti.getFontSize())) * 3;
-			int w = refObj.getWidth();
+			int gapV = ((grobjSelected.get(0).getHeight() / grtoolbarStrumenti.getFontSize()) + ((grobjSelected.get(0).getHeight() / 3) / grtoolbarStrumenti.getFontSize())) * 3;
+			int w = grobjSelected.get(0).getWidth();
 			// Se l'area è maggiore delle caratteristiche minime
 			// aggiusta di conseguenza l'area ove comparirà il testo
 			if(w >= 60)	{// Almeno 2 cm
 				gapH = 15;	// 5mm
 				w = w - 30;
 			}
-			Rectangle r = new Rectangle((refObj.getX() + gapH), (refObj.getY() + gapV), w, refObj.getHeight());
+			Rectangle r = new Rectangle((grobjSelected.get(0).getX() + gapH), (grobjSelected.get(0).getY() + gapV), w, grobjSelected.get(0).getHeight());
 			
 			GREditText et = new GREditText(this, r);
 			
 			et.setFont(grtoolbarStrumenti.getFontName(),grtoolbarStrumenti.getFontSize(),grtoolbarStrumenti.getFontStyle());
 			et.showDialog(GREditText.NEWTEXT);
+		} else if(e.getSource() == menuObjSelectedRaggruppa) {
+			raggruppaOggetti();
 		}
+	}
+	public void raggruppaOggetti() {
+		if(grobjSelected == null)
+			return;
+		
+		int yStart = 0;
+		int yEnd = 0;
+		int indexObjMin = 0;
+		
+		Vector<GRObject> grobjSorted = new Vector<GRObject>();
+		// Crea un Vector ordinato. Questo sarà quello che andrà collegato al gruppo
+		for(int i = 0;i < grobj.size();i++) {
+			if(grobjSelected.contains(grobj.get(i)))
+				grobjSorted.add(grobj.get(i));
+		}
+		for(int i = 0;i < grobjSelected.size();i++) {
+			
+			GRObject refObj = grobjSelected.get(i);
+			int indexTemp = grobj.indexOf(refObj);
+			
+			if(i == 0) {
+				yStart = refObj.getY();
+				yEnd = refObj.getY() + refObj.getHeight();
+				
+				indexObjMin = indexTemp;
+				// Se il primo oggetto è hposition=relative lo trasforma in absolute
+				
+			} else {
+				if(yStart > refObj.getY())
+					yStart = refObj.getY();
+				
+				// Aggiorna l'altezza
+				if(refObj.getHPosition()) {
+					// Relative
+				} else {
+					// Absolute
+					if(yEnd < refObj.getY() + refObj.getHeight())
+						yEnd = refObj.getY() + refObj.getHeight();
+				}
+			
+				if(indexObjMin > indexTemp)
+					indexObjMin = indexTemp;
+			}
+				
+		}
+		
+		GRGroup refGroup = new GRGroup(this,idObj,yStart,yEnd);
+		
+		// Aggiunge il gruppo prima del primo oggetto selezionato in ordine nello storybook
+		grobj.add(indexObjMin,refGroup);
+		idObj++;
+		
+		// Adesso aggiunge gli oggetti selezionati al gruppo, nell'ordine in cui
+		// si presentano nello storybook
+		for(int i = 0;i < grobjSorted.size();i++) {
+			refGroup.addObject(grobjSorted.get(i));	// Aggiunge l'oggetto al gruppo
+			grobj.remove(grobjSorted.get(i));	// e lo elimina dallo storybook
+		}
+		
+		restoreToolBar();
+		repaint();	
 	}
 	/* Lettura dati da xml - GRS */
 	public void loadHead(Element el) {
@@ -1745,46 +1917,45 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			Element element = (Element)iterator.next();
 			if(element.getName().equals("text")) {
 				if(((Element)element.getParent()).getName().equals("grheader")) {
-					refText = new GRText(this,this.getGraphics(),idObj);
-					idObj++;
+					GRText refText = readText(element);
+					refText.setSection(GRObject.SECTION_HEADER);
 					
-					readText(element);
 					grobj.add(refText);
-					
 				} 
 			} else if(element.getName().equals("shape")) {
 				if(((Element)element.getParent()).getName().equals("grheader")) {
 					if(element.getChild("type").getValue().equals("rectangle")) {
-						refRect = new GRRectangle(this,idObj);
+						GRRectangle refRect = readRectangle(element);
 						refRect.setSection(GRObject.SECTION_HEADER);
+						
 						grobj.add(refRect);
-						idObj++;
 						
-						readRectangle(element);
 					} else if(element.getChild("type").getValue().equals("line")) {
-						refLine = new GRLine(this,idObj);
+						GRLine refLine = readLine(element);
+						
 						refLine.setSection(GRObject.SECTION_HEADER);
-						
 						grobj.add(refLine);
-						idObj++;
 						
-						readLine(element);
+					} else if(element.getChild("type").getValue().equals("circle")) {
+						GRCircle refCircle = readCircle(element);
+						
+						refCircle.setSection(GRObject.SECTION_HEADER);
+						grobj.addElement(refCircle);
 					}
 					
 					
 				}
 			} else if(element.getName().equals("image")) {
 				if(((Element)element.getParent()).getName().equals("grheader")) {
+					GRImage refImage = readImage(element);
+					refImage.setSection(GRObject.SECTION_HEADER);
 					
-					refImage = new GRImage(this,idObj,grdoc.getImgResources());
-					idObj++;
-					
-					readImage(element);
 					grobj.add(refImage);
 				}
 			}
 		}
 	}
+
 	public void loadBody(Element el) {
 		List children = el.getChildren();
 		Iterator iterator = children.iterator();
@@ -1793,116 +1964,58 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			Element element = (Element)iterator.next();
 			
 			if(element.getName().equals("shape")) {
-				if(((Element)element.getParent()).getName().equals("grbody")) {
-					if(element.getChild("type").getValue().equals("rectangle")) {
-						refRect = new GRRectangle(this,idObj);
-						refRect.setSection(GRObject.SECTION_BODY);
-						grobj.add(refRect);
-						idObj++;
-							
-						readRectangle(element);
-					} else if(element.getChild("type").getValue().equals("line")) {
-						refLine = new GRLine(this,idObj);
-						refLine.setSection(GRObject.SECTION_BODY);
-						grobj.add(refLine);
-						idObj++;
-							
-						readLine(element);
-					}
-				}
+				if(element.getChild("type").getValue().equals("rectangle")) {
+					GRRectangle refRect = readRectangle(element);
+					
+					refRect.setSection(GRObject.SECTION_BODY);
+					grobj.add(refRect);
+				} else if(element.getChild("type").getValue().equals("line")) {
+					GRLine refLine = readLine(element);
+					
+					refLine.setSection(GRObject.SECTION_BODY);
+					grobj.add(refLine);
+				} else if(element.getChild("type").getValue().equals("circle")) {
+					GRCircle refCircle = readCircle(element);
+					
+					refCircle.setSection(GRObject.SECTION_BODY);
+					grobj.add(refCircle);
+				} 
 			} else if(element.getName().equals("text")) {
 				if(((Element)element.getParent()).getName().equals("grbody")) {
-					refText = new GRText(this,this.getGraphics(),idObj);
-					refText.setSection(GRObject.SECTION_BODY);
-					idObj++;
+					GRText refText = readText(element);
 					
-					readText(element);
+					refText.setSection(GRObject.SECTION_BODY);
 					grobj.add(refText);
 					
 				} 
 			} else if(element.getName().equals("image")) {
 				if(((Element)element.getParent()).getName().equals("grbody")) {
+					GRImage refImage = readImage(element);
 					
-					refImage = new GRImage(this,idObj,grdoc.getImgResources());
-					idObj++;
-					
-					readImage(element);
+					refImage.setSection(GRObject.SECTION_BODY);
 					grobj.add(refImage);
 				}
 			} else if(element.getName().equals("list")) {
 				if(((Element)element.getParent()).getName().equals("grbody")) {
-					refList = new GRList(this, idObj);
-					idObj++;
+					GRList refList = readList(element);
 					
-					readList(element);
-					grobj.addElement(refList);
+					refList.setSection(GRObject.SECTION_BODY);
+					
+				}
+			} else if(element.getName().equals("group")) {
+				if(((Element)element.getParent()).getName().equals("grbody")) {
+					GRGroup refGroup = readGroup(element);
+					
+					refGroup.setSection(GRObject.SECTION_BODY);
+					grobj.add(refGroup);
 				}
 			}
 		}
-		
-		
-		
-		
-		/*
-		List<Element> children = GRLibrary.castList(Element.class,element.getChildren());
-		Iterator<Element> iterator = children.iterator();
-		
-		if(element.getName().equals("text")) {
-			if(((Element)element.getParent()).getName().equals("grbody")) {
-				refText = new GRText(this,this.getGraphics(),idObj);
-				refText.setSection(GRObject.SECTION_BODY);
-				idObj++;
-				
-				readText(element);
-				grobj.add(refText);
-				
-			} 
-		} else if(element.getName().equals("shape")) {
-			if(((Element)element.getParent()).getName().equals("grbody")) {
-				if(element.getChild("type").getValue().equals("rectangle")) {
-					refRect = new GRRectangle(this,idObj);
-					refRect.setSection(GRObject.SECTION_BODY);
-					grobj.add(refRect);
-					idObj++;
-					
-					readRectangle(element);
-				} else if(element.getChild("type").getValue().equals("line")) {
-					refLine = new GRLine(this,idObj);
-					refLine.setSection(GRObject.SECTION_BODY);
-					grobj.add(refLine);
-					idObj++;
-					
-					readLine(element);
-				}
-				
-				
-			}
-		} else if(element.getName().equals("image")) {
-			if(((Element)element.getParent()).getName().equals("grbody")) {
-				
-				refImage = new GRImage(this,idObj,grdoc.getImgResources());
-				idObj++;
-				
-				readImage(element);
-				grobj.add(refImage);
-			}
-		} else if(element.getName().equals("list")) {
-			if(((Element)element.getParent()).getName().equals("grbody")) {
-				
-				refImage = new GRImage(this,idObj,grdoc.getImgResources());
-				idObj++;
-				
-				readImage(element);
-				grobj.add(refImage);
-			}
-		}
-		
-		while (iterator.hasNext()){
-			loadBody(iterator.next());
-		} 
-		*/
 	}
-	private void readText(Element el) {
+	private GRText readText(Element el) {
+		GRText refText = new GRText(this,this.getGraphics(),idObj);
+		idObj++;
+		
 		List children = el.getChildren();
 		Iterator iterator = children.iterator();
 		
@@ -1942,127 +2055,261 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				}
 			} 
 		}
-		
+	
+		return refText;
 	}
-	private void readRectangle(Element element) {
-		List<Element> children = GRLibrary.castList(Element.class,element.getChildren());
-		Iterator<Element> iterator = children.iterator();
+	private GRRectangle readRectangle(Element el) {
+		GRRectangle refRect = new GRRectangle(this, idObj);
+		idObj++;
 		
-		if(element.getName().equals("widthstroke")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refRect.setWidthStroke(Double.parseDouble(element.getValue()));
-			}
-		} else if(element.getName().equals("colorstroke")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				String[] cStroke = element.getValue().split(" ");
-				refRect.setColorStroke(Integer.parseInt(cStroke[0]),Integer.parseInt(cStroke[1]),Integer.parseInt(cStroke[2]));
-			}
-		} else if(element.getName().equals("colorfill")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refRect.setColorFill(element.getValue());
-			}
-		} else if(element.getName().equals("left")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refRect.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-			}
-		} else if(element.getName().equals("top")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				if(refRect.getSection() == GRObject.SECTION_HEADER)
-					refRect.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-				else if(refRect.getSection() == GRObject.SECTION_BODY)
-					refRect.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())) + heightHeader);
-			}
-		} else if(element.getName().equals("width")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refRect.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-			}
-		} else if(element.getName().equals("height")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refRect.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+		List children = el.getChildren();
+		Iterator iterator = children.iterator();
+		
+		while(iterator.hasNext()) {
+			Element element = (Element)iterator.next();
+			
+			if(element.getName().equals("widthstroke")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refRect.setWidthStroke(Double.parseDouble(element.getValue()));
+				}
+			} else if(element.getName().equals("colorstroke")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					String[] cStroke = element.getValue().split(" ");
+					refRect.setColorStroke(Integer.parseInt(cStroke[0]),Integer.parseInt(cStroke[1]),Integer.parseInt(cStroke[2]));
+				}
+			} else if(element.getName().equals("colorfill")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refRect.setColorFill(element.getValue());
+				}
+			} else if(element.getName().equals("left")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refRect.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("top")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					if(refRect.getSection() == GRObject.SECTION_HEADER)
+						refRect.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+					else if(refRect.getSection() == GRObject.SECTION_BODY)
+						refRect.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())) + heightHeader);
+				}
+			} else if(element.getName().equals("width")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refRect.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("height")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refRect.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
 			}
 		}
 		
-		while (iterator.hasNext()){
-			readRectangle(iterator.next());
-		} 
+		return refRect;
 	}
-	private void readLine(Element element) {
-		List<Element> children = GRLibrary.castList(Element.class,element.getChildren());
-		Iterator<Element> iterator = children.iterator();
+	private GRCircle readCircle(Element el) {
+		GRCircle refCircle = new GRCircle(this,idObj);
+		idObj++;
 		
-		if(element.getName().equals("widthstroke")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refLine.setWidthStroke(Double.parseDouble(element.getValue()));
-			}
-		} else if(element.getName().equals("colorstroke")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				String[] cStroke = element.getValue().split(" ");
-				refLine.setColorStroke(Integer.parseInt(cStroke[0]),Integer.parseInt(cStroke[1]),Integer.parseInt(cStroke[2]));
-			}
-		} else if(element.getName().equals("x1")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refLine.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-			}
-		} else if(element.getName().equals("y1")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refLine.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-			}
-		} else if(element.getName().equals("x2")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refLine.setXEnd(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-			}
-		} else if(element.getName().equals("y2")) {
-			if(((Element)element.getParent()).getName().equals("shape")) {
-				refLine.setYEnd(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+		List children = el.getChildren();
+		Iterator iterator = children.iterator();
+		
+		int x = 0;
+		int y = 0;
+		
+		while(iterator.hasNext()) {
+			Element element = (Element)iterator.next();
+			System.out.println(element.getName());
+			if(element.getName().equals("widthstroke")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refCircle.setWidthStroke(Double.parseDouble(element.getValue()));
+				}
+			} else if(element.getName().equals("x")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					x = GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue()));
+				}
+			} else if(element.getName().equals("y")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					y = GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue()));
+				}
+			} else if(element.getName().equals("radius")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refCircle.setRadius(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("colorstroke")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					String[] cStroke = element.getValue().split(" ");
+					refCircle.setColorStroke(Integer.parseInt(cStroke[0]),Integer.parseInt(cStroke[1]),Integer.parseInt(cStroke[2]));
+				}
+			} else if(element.getName().equals("colorfill")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refCircle.setColorFill(element.getValue());
+				}
 			}
 		}
 		
-		while (iterator.hasNext()){
-			readLine(iterator.next());
-		}
-	}
-	private void readImage(Element element) {
-		List<Element> children = GRLibrary.castList(Element.class,element.getChildren());
-		Iterator<Element> iterator = children.iterator();
+		// Imposta le coordinate del punto
+		refCircle.setXRadius(x);
+		refCircle.setYRadius(y);
 		
-		if(element.getName().equals("refid")) {
-			if(((Element)element.getParent()).getName().equals("image")) {
-				refImage.setIdImageFromGRS(element.getValue());
+		return refCircle;
+	}
+	private GRLine readLine(Element el) {
+		GRLine refLine = new GRLine(this, idObj);
+		idObj++;
+		
+		List children = el.getChildren();
+		Iterator iterator = children.iterator();
+		
+		while(iterator.hasNext()) {
+			Element element = (Element)iterator.next();
+			
+			if(element.getName().equals("widthstroke")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refLine.setWidthStroke(Double.parseDouble(element.getValue()));
+				}
+			} else if(element.getName().equals("colorstroke")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					String[] cStroke = element.getValue().split(" ");
+					refLine.setColorStroke(Integer.parseInt(cStroke[0]),Integer.parseInt(cStroke[1]),Integer.parseInt(cStroke[2]));
+				}
+			} else if(element.getName().equals("x1")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refLine.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("y1")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refLine.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("x2")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refLine.setXEnd(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("y2")) {
+				if(((Element)element.getParent()).getName().equals("shape")) {
+					refLine.setYEnd(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
 			}
-		} else if(element.getName().equals("left")) {
-			if(((Element)element.getParent()).getName().equals("image")) {
-				refImage.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-			}
-		} else if(element.getName().equals("top")) {
-			if(((Element)element.getParent()).getName().equals("image")) {
-				refImage.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-			}
-		} else if(element.getName().equals("width")) {
-			if(((Element)element.getParent()).getName().equals("image")) {
-				refImage.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-			}
-		} else if(element.getName().equals("height")) {
-			if(((Element)element.getParent()).getName().equals("image")) {
-				refImage.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
-			}
-		} else if(element.getName().equals("hposition")) {
-			if(((Element)element.getParent()).getName().equals("image")) {
-				refImage.setHPosition(element.getValue());
-			}
-			//if(((Element)element.getParent()).getName().equals("text")) {
-			//	refText.setHPosition(element.getValue());
-			//}
-		} else if(element.getName().equals("linespacing")) {
-			//if(((Element)element.getParent()).getName().equals("text")) {
-			//	refText.setLineSpacing(element.getValue());
-			//}
 		}
 		
-		while (iterator.hasNext()){
-			readImage(iterator.next());
-		} 
+		return refLine;
 	}
-	private void readList(Element el) {
+	private GRImage readImage(Element el) {
+		GRImage refImage = new GRImage(this,idObj,grdoc.getImgResources());
+		idObj++;
+		
+		List children = el.getChildren();
+		Iterator iterator = children.iterator();
+		
+		while(iterator.hasNext()) {
+			Element element = (Element)iterator.next();
+			
+			if(element.getName().equals("refid")) {
+				if(((Element)element.getParent()).getName().equals("image")) {
+					refImage.setIdImageFromGRS(element.getValue());
+				}
+			} else if(element.getName().equals("left")) {
+				if(((Element)element.getParent()).getName().equals("image")) {
+					refImage.setX(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("top")) {
+				if(((Element)element.getParent()).getName().equals("image")) {
+					refImage.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("width")) {
+				if(((Element)element.getParent()).getName().equals("image")) {
+					refImage.setWidth(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("height")) {
+				if(((Element)element.getParent()).getName().equals("image")) {
+					refImage.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("hposition")) {
+				if(((Element)element.getParent()).getName().equals("image")) {
+					refImage.setHPosition(element.getValue());
+				}
+			} 
+		}
+		
+		
+		return refImage;
+	}
+	private GRGroup readGroup(Element el) {
+		GRGroup refGroup = new GRGroup(this,idObj);
+		idObj++;
+		
+		List children = el.getChildren();
+		Iterator iterator = children.iterator();
+		
+		while(iterator.hasNext()) {
+			Element element = (Element)iterator.next();
+			
+			if(element.getName().equals("top")) {
+				if(((Element)element.getParent()).getName().equals("group")) {
+					refGroup.setY(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("height")) {
+				if(((Element)element.getParent()).getName().equals("group")) {
+					// DA DEPRECARE
+					refGroup.setHeight(GRLibrary.fromMillimetersToPixels(Double.parseDouble(element.getValue())));
+				}
+			} else if(element.getName().equals("hposition")) {
+				if(((Element)element.getParent()).getName().equals("group")) {
+					refGroup.setHPosition(element.getValue());
+				}
+			} else if(element.getName().equals("content")) {
+				if(((Element)element.getParent()).getName().equals("group")) {
+					readContentGroup(element, refGroup);
+				}
+			} 
+		}
+		
+		return refGroup;
+	}
+	private void readContentGroup(Element el, GRGroup refGroup) {
+		List children = el.getChildren();
+		Iterator iterator = children.iterator();
+		
+		while(iterator.hasNext()) {
+			Element element = (Element)iterator.next();
+			
+			if(element.getName().equals("shape")) {
+				if(element.getChild("type").getValue().equals("rectangle")) {
+					GRRectangle refRect = readRectangle(element);
+					
+					refGroup.addObjectFromGRS(refRect);
+				} else if(element.getChild("type").getValue().equals("line")) {
+					GRLine refLine = readLine(element);
+					
+					refGroup.addObject(refLine);
+				} else if(element.getChild("type").getValue().equals("circle")) {
+					GRCircle refCircle = readCircle(element);
+					
+					refGroup.addObject(refCircle);
+				} 
+			} else if(element.getName().equals("text")) {
+				GRText refText = readText(element);
+				
+				refGroup.addObjectFromGRS(refText);
+				 
+			} else if(element.getName().equals("image")) {
+				GRImage refImage = readImage(element);
+				refGroup.addObject(refImage);
+				
+			} else if(element.getName().equals("list")) {
+				GRList refList = readList(element);
+					
+			} else if(element.getName().equals("group")) {
+				// Per adesso freezo la ricorsione	
+			}
+		}
+		
+		
+	}
+	
+	private GRList readList(Element el) {
+		GRList refList = new GRList(this, idObj);
+		idObj++;
+		
+		grobj.add(refList);
 		List children = el.getChildren();
 		Iterator iterator = children.iterator();
 		
@@ -2085,12 +2332,14 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 				}	
 			} if(element.getName().equals("row")) {
 				if(((Element)element.getParent()).getName().equals("list")) {
-					readRowList(element, refList.getNameXml());
+					readRowList(element, refList);
 				}	
 			}
 		}
+		
+		return refList;
 	}
-	private void readRowList(Element el, String nameXml) {
+	private void readRowList(Element el, GRList refList) {
 		List children = el.getChildren();
 		Iterator iterator = children.iterator();
 		
@@ -2099,30 +2348,27 @@ public class GRPage extends JPanel implements ActionListener, MouseListener, Mou
 			
 			if(element.getName().equals("shape")) {
 				if(element.getChild("type").getValue().equals("rectangle")) {
-					refRect = new GRRectangle(this,idObj);
-					refRect.setSection(GRObject.SECTION_BODY);
+					GRRectangle refRect = readRectangle(element);
+					
+					refRect.setSection(refList.getSection());
 					grobj.add(refRect);
-					idObj++;
 							
-					readRectangle(element);
 					refRect.setListFather(refList);
 				} else if(element.getChild("type").getValue().equals("line")) {
-					refLine = new GRLine(this,idObj);
-					refLine.setSection(GRObject.SECTION_BODY);
+					GRLine refLine = readLine(element);
+					
+					refLine.setSection(refList.getSection());
 					grobj.add(refLine);
-					idObj++;
-							
-					readLine(element);
+					
+					refLine.setListFather(refList);
 				}
 			} else if(element.getName().equals("text")) {
-				refText = new GRText(this,this.getGraphics(),idObj);
-				refText.setSection(GRObject.SECTION_BODY);
-				idObj++;
+				GRText refText = readText(element);
 					
-				readText(element);
-				refText.setListFather(refList);
+				refText.setSection(refList.getSection());
 				grobj.add(refText);
-					 
+				
+				refText.setListFather(refList);
 			}
 		}
 	}

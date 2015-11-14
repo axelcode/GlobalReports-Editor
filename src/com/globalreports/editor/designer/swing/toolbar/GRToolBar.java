@@ -62,15 +62,17 @@ import com.globalreports.editor.tools.GRLibrary;
 
 @SuppressWarnings("serial")
 public class GRToolBar extends JToolBar implements ActionListener {
-	public static final int TYPEBUTTON_SELECTED		= 1;
-	public static final int TYPEBUTTON_TEXT			= 2;
-	public static final int TYPEBUTTON_LINE			= 3;
-	public static final int TYPEBUTTON_RECTANGLE	= 4;
-	public static final int TYPEBUTTON_IMAGE		= 5;
-	public static final int TYPEBUTTON_LIST			= 6;
-	public static final int TYPEBUTTON_TABLELIST	= 7;
-	public static final int TYPEBUTTON_CHART		= 8;
-	public static final int TYPEBUTTON_CIRCLE		= 9;
+	public static final int TYPEBUTTON_SELECTED			= 1;
+	public static final int TYPEBUTTON_TEXT				= 2;
+	public static final int TYPEBUTTON_LINE				= 3;
+	public static final int TYPEBUTTON_RECTANGLE		= 4;
+	public static final int TYPEBUTTON_IMAGE			= 5;
+	public static final int TYPEBUTTON_LIST				= 6;
+	public static final int TYPEBUTTON_TABLELIST		= 7;
+	public static final int TYPEBUTTON_CHART			= 8;
+	public static final int TYPEBUTTON_CIRCLE			= 9;
+	public static final int TYPEBUTTON_GROUP			= 10;
+	public static final int TYPEBUTTON_TEXTCONDITION	= 11;
 	
 	private GREditor greditor;
 	private JButton bNewDoc;

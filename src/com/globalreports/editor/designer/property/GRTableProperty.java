@@ -68,6 +68,7 @@ public class GRTableProperty  {
 	public static final int TYPEMODEL_TABLELIST			= 6;
 	public static final int TYPEMODEL_CHART				= 7;
 	public static final int TYPEMODEL_CIRCLE			= 8;
+	public static final int TYPEMODEL_GROUP				= 9;
 	
 	private JPanel panelProperty;
 	private GRTableModel grtable;
@@ -84,6 +85,7 @@ public class GRTableProperty  {
 	private GRTableModel grtableList;
 	private GRTableModel grtableTableList;
 	private GRTableModel grtableChart;
+	private GRTableModel grtableGroup;
 	
 	public GRTableProperty() {
 		String[] title = {"Proprietà","Valore"};
@@ -102,6 +104,7 @@ public class GRTableProperty  {
 		grtableList = new GRTableModelList(this,title);
 		grtableTableList = new GRTableModelTableList(this,title);
 		grtableChart = new GRTableModelChart(this,title);
+		grtableGroup = new GRTableModelGroup(this,title);
 		
 		panelProperty = new JPanel(new GridLayout(0,1));
 		panelProperty.setBackground(Color.white);
@@ -176,6 +179,12 @@ public class GRTableProperty  {
 				
 			case TYPEMODEL_CHART:
 				grtable = grtableChart;
+				panelProperty.removeAll();
+				
+				break;
+				
+			case TYPEMODEL_GROUP:
+				grtable = grtableGroup;
 				panelProperty.removeAll();
 				
 				break;

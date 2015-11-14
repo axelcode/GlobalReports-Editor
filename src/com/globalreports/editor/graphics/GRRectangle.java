@@ -59,9 +59,11 @@ import java.awt.Shape;
 import java.awt.Stroke;
 
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModel;
 import com.globalreports.editor.designer.property.GRTableModelRectangle;
+import com.globalreports.editor.designer.property.GRTableProperty;
 import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
 
@@ -108,6 +110,8 @@ public class GRRectangle extends GRShape {
 		cStroke = colorStroke;
 		cFill = colorFill;
 		
+		typeModel = GRTableProperty.TYPEMODEL_RECTANGLE;
+		
 		this.refreshReferenceSection();			
 	}
 	
@@ -127,6 +131,14 @@ public class GRRectangle extends GRShape {
 		}
 		
 		y1 = y1 + hGap;
+		
+		if(grgroup != null) {
+			y1 = y1 + grgroup.getY();
+			
+			if(grgroup.getHPosition()) {
+				y1 = y1 + grgroup.gapH;
+			} 
+		}
 		
 		/* Se è figlio di una lista imposta la clipArea */
 		if(grlistFather != null) {
@@ -297,5 +309,11 @@ public class GRRectangle extends GRShape {
 		
 		return buff.toString();
 	}
-	
+	@Override
+	public String getNameObject() {
+		return GRLanguageMessage.messages.getString("tlbgrrectangle");
+	}
+	public int getTypeModel() {
+		return typeModel;
+	}
 }

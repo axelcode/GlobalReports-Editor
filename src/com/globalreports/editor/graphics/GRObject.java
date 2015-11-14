@@ -51,10 +51,12 @@
  */
 package com.globalreports.editor.graphics;
 
+import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.swing.table.GRTable;
 
 public abstract class GRObject {
 	public static final int DIM_ANCHOR			= 4;
@@ -81,6 +83,7 @@ public abstract class GRObject {
 	public static final int SECTION_FOOTER		= 3;
 	
 	protected long id;
+	protected int typeModel;
 	
 	protected int x1Original;
 	protected int y1Original;
@@ -113,6 +116,9 @@ public abstract class GRObject {
 	
 	// La pagina ove è inserito l'oggetto
 	protected GRPage grpage;
+	
+	// Puntatore all'oggetto GRGroup
+	protected GRGroup grgroup;
 	
 	// Puntatore all'oggetto GRList
 	protected GRList grlistFather;
@@ -204,6 +210,7 @@ public abstract class GRObject {
 	}
 	public void setHPosition(boolean value) {
 		this.hPosition = value;
+		
 	}
 	public boolean getHPosition() {
 		return hPosition;
@@ -244,6 +251,13 @@ public abstract class GRObject {
 		
 		return true;
 	}
+	public void setGroup(GRGroup grgroup) {
+		this.grgroup = grgroup;
+		
+		//setY(y1 - grgroup.getY() - grgroup.gapH);
+		
+		
+	}
 	public void resize(int xStart, int yStart, int xEnd, int yEnd) {
 		x1 = xStart;
 		y1 = yStart;
@@ -282,7 +296,7 @@ public abstract class GRObject {
 	public void setSelected(boolean value) {
 		this.selected = value;
 	}
-	protected boolean getSelected() {
+	public boolean getSelected() {
 		return selected;
 	}
 	public boolean isIntersect(int coordX, int coordY) {
@@ -300,7 +314,12 @@ public abstract class GRObject {
 				
 		return false;
 	}
-	
+	public boolean isAreaIntersect(Rectangle r) {
+		boolean c = r.intersects(new Rectangle(this.x1,this.y1,this.width,this.height));
+		
+		return c;
+
+	}
 	public int isAnchor(int coordX, int coordY) {
 		if(tsx != null && tsx.contains(coordX,coordY))
 			return ANCHOR_TSX;
@@ -375,30 +394,15 @@ public abstract class GRObject {
 		height = (int)(heightOriginal * value);
 		
 	}
-	public String getNameObject() {
-		switch(type) {
-			case GRObject.TYPEOBJ_LINE:
-				return GRLanguageMessage.messages.getString("tlbgrline");
-			
-			case GRObject.TYPEOBJ_RECTANGLE:
-				return GRLanguageMessage.messages.getString("tlbgrrectangle");
-				
-			case GRObject.TYPEOBJ_CIRCLE:
-				return GRLanguageMessage.messages.getString("tlbgrcircle");
-				
-			case GRObject.TYPEOBJ_IMAGE:
-				return GRLanguageMessage.messages.getString("tlbgrimage");
-				
-			case GRObject.TYPEOBJ_TEXT:
-				return GRLanguageMessage.messages.getString("tlbgrtext");
-		}
-		
-		return null;
-	}
+	
 	/* Metodi astratti */
 	public void refreshProperty() {
 		//System.out.println("OBJECT::refreshProperty");
 	}
+	public abstract void setProperty(GRTable model);
+	public abstract int getTypeModel();
+	public abstract String getNameObject();
+	public abstract void draw(Graphics g);
 	public abstract GRObject clone(long id);
 	public abstract String createCodeGRS();
 	

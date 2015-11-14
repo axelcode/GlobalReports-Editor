@@ -61,9 +61,11 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.Vector;
 
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModelImage;
 import com.globalreports.editor.designer.property.GRTableModelList;
+import com.globalreports.editor.designer.property.GRTableProperty;
 import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
 
@@ -88,6 +90,8 @@ public class GRList extends GRObject {
 		heightOriginal = height;
 		
 		composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f);
+		
+		typeModel = GRTableProperty.TYPEMODEL_LIST;
 		this.refreshReferenceSection();		
 	}
 
@@ -110,6 +114,8 @@ public class GRList extends GRObject {
 		heightOriginal = height;
 		
 		composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f);
+		
+		typeModel = GRTableProperty.TYPEMODEL_LIST;
 		this.refreshReferenceSection();		
 		
 	}
@@ -217,5 +223,16 @@ public class GRList extends GRObject {
 	public int getTopPosition() {
 		
 		return yRelative;
+	}
+
+	@Override
+	public String getNameObject() {
+		return GRLanguageMessage.messages.getString("tlbgrlist");
+	}
+
+	@Override
+	public int getTypeModel() {
+		// TODO Auto-generated method stub
+		return typeModel;
 	}
 }

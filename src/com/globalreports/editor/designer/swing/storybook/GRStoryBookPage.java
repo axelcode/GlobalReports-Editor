@@ -51,7 +51,9 @@
  */
 package com.globalreports.editor.designer.swing.storybook;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -59,13 +61,16 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.MediaTracker;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 
 import javax.swing.JPanel;
 
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.graphics.GRCircle;
 import com.globalreports.editor.graphics.GRImage;
 import com.globalreports.editor.graphics.GRLine;
+import com.globalreports.editor.graphics.GRList;
 import com.globalreports.editor.graphics.GRObject;
 import com.globalreports.editor.graphics.GRRectangle;
 
@@ -183,6 +188,26 @@ public class GRStoryBookPage extends JPanel {
 				g2d.drawRect(20, 50, 100, 50);
 				
 				break;
+			
+			case GRObject.TYPEOBJ_CIRCLE:
+				GRCircle refCircle = (GRCircle)grobj;
+				
+				if(refCircle.getColorFill() != null) {
+					g2d.setColor(refCircle.getColorFill());
+					g2d.fillOval(20, 50, 50, 50);
+				}
+				
+				// Se il colore del bordo è bianco, lo rende grigio chiaro
+				if(refCircle.getColorStroke().getRed() >= 230 &&
+				   refCircle.getColorStroke().getGreen() >= 230 &&
+				   refCircle.getColorStroke().getBlue() >= 230)
+					g2d.setColor(Color.LIGHT_GRAY);
+				else
+					g2d.setColor(refCircle.getColorStroke());
+				
+				g2d.drawOval(20, 50, 50, 50);
+				
+				break;
 				
 			case GRObject.TYPEOBJ_TEXT:
 				String[] t = getContentText(grobj.toString());
@@ -202,6 +227,26 @@ public class GRStoryBookPage extends JPanel {
 			case GRObject.TYPEOBJ_IMAGE:
 				GRImage refImage = (GRImage)grobj;
 				g2d.drawImage(getImageScaled(refImage.getImage()),20,50,null);
+				
+				break;
+				
+			case GRObject.TYPEOBJ_LIST:
+				GRList refList = (GRList)grobj;
+				
+				Color oldC = g2d.getColor();
+				Composite compositeOld = g2d.getComposite();
+				AlphaComposite composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f);
+				
+				g2d.setColor(Color.BLUE);
+				
+				g2d.drawString(refList.getNameXml(), 20, 86);
+				g2d.drawRect(10,90,200,20);
+				g2d.setComposite(composite);
+				g2d.setPaint(Color.BLUE);
+				g2d.fill(new Rectangle(10,90,200,20));
+				
+				g2d.setComposite(compositeOld);
+				g2d.setColor(oldC);
 				
 				break;
 		}

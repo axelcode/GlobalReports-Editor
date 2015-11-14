@@ -61,9 +61,11 @@ import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.util.Vector;
 
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModelList;
 import com.globalreports.editor.designer.property.GRTableModelTableList;
+import com.globalreports.editor.designer.property.GRTableProperty;
 import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.graphics.tablelist.GRTableListBody;
 import com.globalreports.editor.graphics.tablelist.GRTableListCell;
@@ -126,6 +128,8 @@ public class GRTableList extends GRObject {
 		cBordoEsterno = new Color(57,105,138);
 		
 		this.setDimension();
+		
+		typeModel = GRTableProperty.TYPEMODEL_TABLELIST;
 		this.refreshReferenceSection();	
 	}
 	
@@ -532,5 +536,16 @@ public class GRTableList extends GRObject {
 		buff.append("</tablelist>");
 		
 		return buff.toString();
+	}
+
+	@Override
+	public String getNameObject() {
+		return GRLanguageMessage.messages.getString("tlbgrtablelist");
+	}
+
+	@Override
+	public int getTypeModel() {
+		// TODO Auto-generated method stub
+		return typeModel;
 	}
 }

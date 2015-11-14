@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.dialog.GRDialogStoryBook
+ * class name  : com.globalreports.editor.designer.dialog.GRDialogTextCondition
  * Begin       : 
  * Last Update : 
  *
@@ -53,11 +53,9 @@ package com.globalreports.editor.designer.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
@@ -65,46 +63,65 @@ import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.Document;
 
 import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.configuration.languages.GRLanguageMessage;
-import com.globalreports.editor.designer.GRDocument;
-import com.globalreports.editor.designer.swing.storybook.GRStoryBook;
-import com.globalreports.editor.designer.swing.table.GRTable;
-import com.globalreports.editor.graphics.GRObject;
-import com.globalreports.editor.graphics.GRText;
+import com.globalreports.editor.designer.GREditText;
+import com.globalreports.editor.designer.GRPage;
+import com.globalreports.editor.designer.swing.GRPanelCondition;
+import com.globalreports.editor.graphics.textcondition.GRDocumentTextCondition;
+import javax.swing.border.TitledBorder;
 
-@SuppressWarnings("serial")
-public class GRDialogStoryBook extends JDialog implements ActionListener {
-	private GRDocument doc;
-	private GRStoryBook sb;
-	private Vector<GRObject> grobj;
-		
-	private JButton upButton;
-	private JButton downButton;
+public class GRDialogTextCondition extends JDialog implements ActionListener {
+	public static final int 	NEWTEXT				= 1;
+	public static final int 	MODIFYTEXT			= 2;
+	
+	private JButton bAddText;
+	private JButton bAddCondition;
 	private JButton okButton;
 	private JButton cancelButton;
 	
-	public GRDialogStoryBook(GRDocument doc) {
-		setTitle(GRLanguageMessage.messages.getString("dlgstorybooktitle"));
+	private GRPage grpage;
+	private JPanel panelText;
+	
+	private int typeDialog;
+	private Rectangle areaText;
+	
+	private Vector<GRPanelCondition> listText;	// Paragrafi di testo condizionati
+	
+	public GRDialogTextCondition(GRPage page, Rectangle r) {
+		this.grpage = page;
+		this.areaText = r;
 		
-		this.doc = doc;
-		this.grobj = doc.getObjectInThePage();
+		listText = null;
 		
+		this.init();
+	}
+	private void init() {
 		Container c = getContentPane();
 		c.setLayout(new BorderLayout());
 		
-		sb = new GRStoryBook(this,grobj);
+		panelText = new JPanel();
+		panelText.setLayout(new GridLayout(0,1));
+		c.add(panelText, BorderLayout.NORTH);
 		
-		c.add(sb, BorderLayout.CENTER);
+		JPanel panelSouth = new JPanel();
+		panelSouth.setLayout(new GridLayout(1,0));
 		
-		/* Pannello bottoni */
-		JPanel southPanel = new JPanel(new GridLayout(1,2));
-        
+		JPanel panelLeft = new JPanel();
+		panelLeft.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		bAddText = new JButton(new ImageIcon(GRSetting.PATHIMAGE+"add.png"));
+		bAddText.addActionListener(this);
+		panelLeft.add(bAddText);
+		
+		bAddCondition = new JButton(new ImageIcon(GRSetting.PATHIMAGE+"condition.png"));
+		bAddCondition.addActionListener(this);
+		panelLeft.add(bAddCondition);
+		
 		JPanel buttonPane = new JPanel();
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		
@@ -117,73 +134,52 @@ public class GRDialogStoryBook extends JDialog implements ActionListener {
 		cancelButton.addActionListener(this);
 		buttonPane.add(cancelButton);
 		
-		JPanel arrowPanel = new JPanel();
-		arrowPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		panelSouth.add(panelLeft);
+		panelSouth.add(buttonPane);
 		
-		upButton = new JButton(new ImageIcon(GRSetting.PATHIMAGE+"up.png"));
-		upButton.addActionListener(this);
-		arrowPanel.add(upButton);
-		
-		downButton = new JButton(new ImageIcon(GRSetting.PATHIMAGE+"down.png"));
-		downButton.addActionListener(this);
-		arrowPanel.add(downButton);
-		
-		JLabel lblTotale = new JLabel(GRLanguageMessage.messages.getString("dlgstorybooktotalobject")+grobj.size());
-		arrowPanel.add(lblTotale);
-		
-		southPanel.add(arrowPanel);
-		southPanel.add(buttonPane);
-		
-		c.add(southPanel, BorderLayout.SOUTH);
-		
-		
+		c.add(panelSouth, BorderLayout.SOUTH);
 		setBounds(100, 100, 620, 500);
-		setAlwaysOnTop(true);
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		setVisible(true);	
+		setModal(true);
+		setVisible(false);
+	}
+
+	public void showDialog(int type) {
+		typeDialog = type;
 		
+		setVisible(true);
 		
 	}
-	public void selectObject(GRObject grobj) {
-		doc.selectObject(grobj);
-	}
-	private void spostaSu(GRObject refObj) {
-		GRObject objTemp;
+	public void insertText(Document dc, String value) {
+		if(listText == null) 
+			listText = new Vector<GRPanelCondition>();
 		
-		int index = grobj.indexOf(refObj);
-		if(index == 0)
-			return;
+		GRPanelCondition panel = new GRPanelCondition(new GRDocumentTextCondition(dc, value));
+		panelText.add(panel);
 		
-		grobj.removeElementAt(index);
+		listText.add(panel);
+		
+		
+		
+		this.setSize(this.getWidth(),this.getHeight()-1);
+		this.setSize(this.getWidth(),this.getHeight()+1);
 	
-		index--;
-		grobj.insertElementAt(refObj, index);
-		doc.refreshPage();
-		
 	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == okButton) {
 			
 		} else if(e.getSource() == cancelButton) {
 			this.dispose();
-		} else if(e.getSource() == upButton) {
-			sb.up();
+		} else if(e.getSource() == bAddText) {
+			GRDialogEditText et = new GRDialogEditText(this, areaText);
 			
-			this.setSize(new Dimension(this.getWidth(),this.getHeight()+1));
-			this.setSize(new Dimension(this.getWidth(),this.getHeight()-1));
-			
-			doc.refreshPage();
-		} else if(e.getSource() == downButton) {
-			sb.down();
-			
-			this.setSize(new Dimension(this.getWidth(),this.getHeight()+1));
-			this.setSize(new Dimension(this.getWidth(),this.getHeight()-1));
-			
-			doc.refreshPage();
+			//et.setFont(grtoolbarStrumenti.getFontName(),grtoolbarStrumenti.getFontSize(),grtoolbarStrumenti.getFontStyle());
+			et.showDialog(GRDialogEditText.NEWTEXT);
+		} else if(e.getSource() == bAddCondition) {
+			new GRDialogCreateCondition();
 		}
-			
+		
 	}
-	
-	
+
 }

@@ -316,6 +316,9 @@ public class GRDocument extends JInternalFrame implements ChangeListener, Intern
 	public void pasteObject() {
 		grpage.pasteObject();
 	}
+	public void raggruppaOggetti() {
+		grpage.raggruppaOggetti();
+	}
 	public void setZoom(float value) {
 		panelMaster.setPreferredSize(new Dimension((widthPage * (int)value) + GAP_WIDTH, (heightPage * (int)value) + GAP_HEIGHT));
 		panelPage.setZoom(value);

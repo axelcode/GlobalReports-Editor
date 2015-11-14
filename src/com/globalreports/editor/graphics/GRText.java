@@ -71,10 +71,12 @@ import com.globalreports.compiler.gr.tools.GRDimension;
 import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.configuration.font.GRFont;
 import com.globalreports.editor.configuration.font.GRFontProperty;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModel;
 import com.globalreports.editor.designer.property.GRTableModelRectangle;
 import com.globalreports.editor.designer.property.GRTableModelText;
+import com.globalreports.editor.designer.property.GRTableProperty;
 import com.globalreports.editor.designer.resources.GRResFonts;
 import com.globalreports.editor.designer.resources.GRFontResource;
 import com.globalreports.editor.designer.swing.table.GRTable;
@@ -145,6 +147,7 @@ public class GRText extends GRObject {
 		bsx = new Rectangle(x1-6,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		bdx = new Rectangle(x1+width+2,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 	
+		typeModel = GRTableProperty.TYPEMODEL_TEXT;
 		this.refreshReferenceSection();	
 	}
 	public GRText(GRPage grpage, Graphics g, long id, Document dc, int alignment, String value, Rectangle area) {
@@ -170,6 +173,7 @@ public class GRText extends GRObject {
 		
 		insertTextFormatted();
 		
+		typeModel = GRTableProperty.TYPEMODEL_TEXT;
 		this.refreshReferenceSection();	
 	}
 	
@@ -606,11 +610,28 @@ public class GRText extends GRObject {
 		if(hPosition) {
 			gapH = gapH + grpage.hPosition;
 		}
+		
+		if(grgroup != null) {
+			y1 = y1 + grgroup.getY();
+			
+			if(grgroup.getHPosition()) {
+				y1 = y1 + grgroup.gapH;
+			} 
+			
+		}
+		
 		if(grlistFather != null) {
 			y1 = y1 + grlistFather.getTopPosition();
 			g2.setClip(0,grlistFather.getTopPosition(),grpage.getWidth(),grlistFather.getHeight()+1);
 		} else {
-			//g2.setClip(x1,y1,width,height);
+			/*
+			Rectangle r = oldClip.getBounds();
+			
+			if(width > r.getWidth() - x1)
+				g2.setClip(x1,y1,(int)(r.getWidth()-x1),height);
+			else
+				g2.setClip(x1,y1,width,height);
+			*/
 		}
 		
 		for(int i = 0;i < gpar.getTotaleRow();i++) {
@@ -627,6 +648,12 @@ public class GRText extends GRObject {
 		}
 		
 		height = (int)(y - (y1+gapH));
+		
+		/* Allinea la dimensione verticale a quella del testo se questa eccede
+		if(grgroup != null)
+		if(grgroup.getHeight() < (this.getY() + this.getHeight()))
+			grgroup.setHeight(this.getY() + this.getHeight());
+		*/
 		
 		grpage.hPosition = (int)y;
 		
@@ -738,6 +765,15 @@ public class GRText extends GRObject {
 		buff.append("</text>");
 		
 		return buff.toString();
+	}
+	@Override
+	public String getNameObject() {
+		return GRLanguageMessage.messages.getString("tlbgrtext");
+	}
+	@Override
+	public int getTypeModel() {
+		// TODO Auto-generated method stub
+		return typeModel;
 	}
 	
 }

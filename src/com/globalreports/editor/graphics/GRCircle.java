@@ -59,10 +59,12 @@ import java.awt.Shape;
 import java.awt.Stroke;
 
 import com.globalreports.editor.GRSetting;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModel;
 import com.globalreports.editor.designer.property.GRTableModelCircle;
 import com.globalreports.editor.designer.property.GRTableModelRectangle;
+import com.globalreports.editor.designer.property.GRTableProperty;
 import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
 
@@ -143,6 +145,7 @@ public class GRCircle extends GRShape {
 		cStroke = colorStroke;
 		cFill = colorFill;
 		
+		typeModel = GRTableProperty.TYPEMODEL_CIRCLE;
 		this.refreshReferenceSection();			
 	}
 	
@@ -257,6 +260,12 @@ public class GRCircle extends GRShape {
 		}
 			
 	}
+	public void setXRadius(int value) {
+		super.setX(value - raggio);
+	}
+	public void setYRadius(int value) {
+		super.setY(value - raggio);
+	}
 	public void setRadius(int rad) {
 		this.raggio = rad;
 	}
@@ -329,6 +338,13 @@ public class GRCircle extends GRShape {
 		buff.append("</shape>");
 		
 		return buff.toString();
+	}
+	@Override
+	public String getNameObject() {
+		return GRLanguageMessage.messages.getString("tlbgrcircle");
+	}
+	public int getTypeModel() {
+		return typeModel;
 	}
 	
 }

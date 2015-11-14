@@ -1,7 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.GRAbout
- * interface
+ * class name  : com.globalreports.editor.designer.swing.GRPanelCondition
  * Begin       : 
  * Last Update : 
  *
@@ -50,22 +49,85 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor;
+package com.globalreports.editor.designer.swing;
 
-/**
- * 
- * 04/11/2015: 0.6.3
- * -Aggiunta selezione multipla di oggetti.
- * -Migliorata la gestione del menù salvataggi
- *
- * 06/11/2015: 0.6.4
- * -Aggiunta l'inserimento di variabili dalla maschera di editing text.
- *  Adesso è possibile specificare il nome e scegliere una delle funzioni censite
- *  
- */
-public interface GRAbout {
-	public final static int 	MAIOR_VERSION	= 0;
-	public final static int		MINOR_VERSION	= 7;
-	public final static int		RELEASE_VERSION	= 0;
-	public final static String	EDIT_NAME		= "GlobalReports Editor";
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+
+import javax.swing.JPanel;
+
+import com.globalreports.editor.graphics.textcondition.GRDocumentTextCondition;
+
+public class GRPanelCondition extends JPanel {
+	private GRDocumentTextCondition docText;
+	
+	Font fValue = new Font(Font.MONOSPACED,Font.PLAIN, 10);
+	Font fCondition = new Font(Font.MONOSPACED,Font.BOLD, 9);
+	
+	String[] testo;
+	
+	public GRPanelCondition(GRDocumentTextCondition docText) {
+		this.docText = docText;
+		
+		testo = getContentText(docText.getValue());
+		
+		setPreferredSize(new Dimension(0,60));
+		setBackground(Color.WHITE);
+		
+		System.out.println(this.getWidth());
+	}
+	public void paint(Graphics g) {
+		super.paint(g);
+		
+		Graphics2D g2d = (Graphics2D)g;
+		Font oldF = g2d.getFont();
+		
+		FontMetrics metrics = g2d.getFontMetrics(fValue);
+		
+		g2d.setFont(fValue);
+		
+		g2d.drawString(testo[0],10,10);
+		g2d.drawString(testo[1],10,20);
+		g2d.drawString(testo[2],10,30);
+		
+		g2d.setColor(Color.white);
+		g2d.drawLine(0,this.getHeight()-2,this.getWidth(),this.getHeight()-2);
+		
+		g2d.setColor(new Color(151,153,157));
+		g2d.drawLine(0,this.getHeight()-1,this.getWidth(),this.getHeight()-1);
+		
+		g2d.setFont(oldF);
+	}
+	
+	private String[] getContentText(String value) {
+		
+		int lenText = value.length();
+		String[] text = {"","",""};
+		
+		try {
+			text[0] = value.substring(0,97);
+			text[1] = value.substring(97,194);
+			text[2] = value.substring(194,291);
+			
+			if(value.length() > 291)
+				text[2] = value.substring(194,288)+"...";
+			
+		} catch(StringIndexOutOfBoundsException e) {
+			
+			if(text[0].equals(""))
+				text[0] = value;
+			else if(text[1].equals(""))
+				text[1] = value.substring(97);
+			else if(text[2].equals(""))
+				text[2] = value.substring(194);
+			
+						
+		}
+		return text;
+		
+	}
 }

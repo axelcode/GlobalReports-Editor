@@ -57,6 +57,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
+import java.util.Vector;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -71,6 +72,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import com.globalreports.editor.designer.dialog.GRDialogRenameDocument;
 import com.globalreports.editor.designer.swing.GRTreeNode;
+import com.globalreports.editor.graphics.GRObject;
 import com.globalreports.editor.graphics.GRTableList;
 
 @SuppressWarnings("serial")

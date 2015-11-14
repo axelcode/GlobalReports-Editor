@@ -76,7 +76,7 @@ public class GRToolBarDesigner extends JToolBar implements ActionListener {
 	private JToggleButton bChart;
 	private JToggleButton bList;
 	private JToggleButton bTableList;
-	private JToggleButton bGroup;
+	private JToggleButton bTextCondition;
 	
 	public GRToolBarDesigner(GREditor greditor) {
 		this.greditor = greditor;
@@ -90,7 +90,7 @@ public class GRToolBarDesigner extends JToolBar implements ActionListener {
 		ImageIcon ico_chart = new ImageIcon(GRSetting.PATHIMAGE+"ico_chart.png");
 		ImageIcon ico_list = new ImageIcon(GRSetting.PATHIMAGE+"ico_list.png");
 		ImageIcon ico_tablelist = new ImageIcon(GRSetting.PATHIMAGE+"ico_table.png");
-		ImageIcon ico_group = new ImageIcon(GRSetting.PATHIMAGE+"ico_header.png");
+		ImageIcon ico_textcondition = new ImageIcon(GRSetting.PATHIMAGE+"ico_textcondition.png");
 		
 		bSel = new JToggleButton(ico_selected);
 		bText = new JToggleButton(ico_text);
@@ -101,7 +101,7 @@ public class GRToolBarDesigner extends JToolBar implements ActionListener {
 		bChart = new JToggleButton(ico_chart);
 		bList = new JToggleButton(ico_list);
 		bTableList = new JToggleButton(ico_tablelist);
-		bGroup = new JToggleButton(ico_group);
+		bTextCondition = new JToggleButton(ico_textcondition);
 		
 		bSel.addActionListener(this);
 		add(bSel);
@@ -138,9 +138,9 @@ public class GRToolBarDesigner extends JToolBar implements ActionListener {
 		
 		addSeparator();
 		
-		bGroup.setToolTipText(GRLanguageMessage.messages.getString("tlbgrgroup"));
-		bGroup.addActionListener(this);
-		add(bGroup);
+		bTextCondition.setToolTipText(GRLanguageMessage.messages.getString("tlbgrtextcondition"));
+		bTextCondition.addActionListener(this);
+		add(bTextCondition);
 		
 		ButtonGroup groupButton = new ButtonGroup();
 		groupButton.add(bSel);
@@ -152,67 +152,37 @@ public class GRToolBarDesigner extends JToolBar implements ActionListener {
 		groupButton.add(bChart);
 		groupButton.add(bList);
 		groupButton.add(bTableList);
-		groupButton.add(bGroup);
+		groupButton.add(bTextCondition);
 		
 		setFloatable(false);
 	}
 	
-	private void clearButton(int type) {
-		/*
-		if(type != GRToolBar.TYPEBUTTON_SELECTED)
-			bSel.setSelected(false);
-		if(type != GRToolBar.TYPEBUTTON_TEXT)
-			bText.setSelected(false);
-		if(type != GRToolBar.TYPEBUTTON_LINE)
-			bLine.setSelected(false);
-		if(type != GRToolBar.TYPEBUTTON_RECTANGLE)
-			bRectangle.setSelected(false);
-		if(type != GRToolBar.TYPEBUTTON_CIRCLE)
-			bCircle.setSelected(false);
-		if(type != GRToolBar.TYPEBUTTON_IMAGE)
-			bImage.setSelected(false);
-		if(type != GRToolBar.TYPEBUTTON_LIST)
-			bList.setSelected(false);
-		if(type != GRToolBar.TYPEBUTTON_TABLELIST)
-			bTableList.setSelected(false);
-		if(type != GRToolBar.TYPEBUTTON_CHART)
-			bChart.setSelected(false);
-		*/
-	}
-	
 	public void restore() {
-		clearButton(GRToolBar.TYPEBUTTON_SELECTED);
 		bSel.setSelected(true);
+		greditor.actionToolBar(GRToolBar.TYPEBUTTON_SELECTED);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == bSel) {
-			//clearButton(GRToolBar.TYPEBUTTON_SELECTED);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_SELECTED);
 		} else if(e.getSource() == bText) {
-			//clearButton(GRToolBar.TYPEBUTTON_TEXT);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_TEXT);
 		} else if(e.getSource() == bLine) {
-			//clearButton(GRToolBar.TYPEBUTTON_LINE);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_LINE);
 		} else if(e.getSource() == bRectangle) {
-			//clearButton(GRToolBar.TYPEBUTTON_RECTANGLE);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_RECTANGLE);
 		} else if(e.getSource() == bCircle) {
-			//clearButton(GRToolBar.TYPEBUTTON_CIRCLE);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_CIRCLE);
 		} else if(e.getSource() == bImage) {
-			//clearButton(GRToolBar.TYPEBUTTON_IMAGE);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_IMAGE);
 		} else if(e.getSource() == bList) {
-			//clearButton(GRToolBar.TYPEBUTTON_LIST);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_LIST);
 		} else if(e.getSource() == bTableList) {
-			//clearButton(GRToolBar.TYPEBUTTON_TABLELIST);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_TABLELIST);
 		} else if(e.getSource() == bChart) {
-			//clearButton(GRToolBar.TYPEBUTTON_CHART);
 			greditor.actionToolBar(GRToolBar.TYPEBUTTON_CHART);
+		} else if(e.getSource() == bTextCondition) {
+			greditor.actionToolBar(GRToolBar.TYPEBUTTON_TEXTCONDITION);
 		}
 	}
 }

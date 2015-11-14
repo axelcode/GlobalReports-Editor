@@ -126,6 +126,18 @@ public class GRPanelFooter extends JPanel {
 				lblObject.setIcon(new ImageIcon(GRSetting.PATHIMAGE+"ico_table.png"));
 			
 				break;
+				
+			case GRToolBar.TYPEBUTTON_GROUP:
+				lblObject.setText(GRLanguageMessage.messages.getString("tlbgrgroup"));
+				lblObject.setIcon(new ImageIcon(GRSetting.PATHIMAGE+"ico_group.png"));
+			
+				break;
+				
+			case GRToolBar.TYPEBUTTON_TEXTCONDITION:
+				lblObject.setText(GRLanguageMessage.messages.getString("tlbgrtextcondition"));
+				lblObject.setIcon(new ImageIcon(GRSetting.PATHIMAGE+"ico_textcondition.png"));
+			
+				break;
 		}
 	}
 }

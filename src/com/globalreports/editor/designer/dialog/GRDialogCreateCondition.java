@@ -1,6 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.designer.dialog.GRDialogStoryBook
+ * class name  : com.globalreports.editor.designer.dialog.GRDialogCreateCondition
  * Begin       : 
  * Last Update : 
  *
@@ -53,58 +53,30 @@ package com.globalreports.editor.designer.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Vector;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
+import javax.swing.border.TitledBorder;
 
-import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.configuration.languages.GRLanguageMessage;
-import com.globalreports.editor.designer.GRDocument;
-import com.globalreports.editor.designer.swing.storybook.GRStoryBook;
-import com.globalreports.editor.designer.swing.table.GRTable;
-import com.globalreports.editor.graphics.GRObject;
-import com.globalreports.editor.graphics.GRText;
 
-@SuppressWarnings("serial")
-public class GRDialogStoryBook extends JDialog implements ActionListener {
-	private GRDocument doc;
-	private GRStoryBook sb;
-	private Vector<GRObject> grobj;
-		
-	private JButton upButton;
-	private JButton downButton;
+public class GRDialogCreateCondition extends JDialog implements ActionListener {
 	private JButton okButton;
 	private JButton cancelButton;
 	
-	public GRDialogStoryBook(GRDocument doc) {
-		setTitle(GRLanguageMessage.messages.getString("dlgstorybooktitle"));
-		
-		this.doc = doc;
-		this.grobj = doc.getObjectInThePage();
-		
+	public GRDialogCreateCondition() {
 		Container c = getContentPane();
-		c.setLayout(new BorderLayout());
+		c.setLayout(new BorderLayout(0,0));
 		
-		sb = new GRStoryBook(this,grobj);
+		JPanel panelArea = new JPanel();
+		panelArea.setBorder(new TitledBorder(null, "Seleziona le condizioni", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		c.add(panelArea, BorderLayout.CENTER);
 		
-		c.add(sb, BorderLayout.CENTER);
-		
-		/* Pannello bottoni */
-		JPanel southPanel = new JPanel(new GridLayout(1,2));
-        
 		JPanel buttonPane = new JPanel();
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		
@@ -117,73 +89,21 @@ public class GRDialogStoryBook extends JDialog implements ActionListener {
 		cancelButton.addActionListener(this);
 		buttonPane.add(cancelButton);
 		
-		JPanel arrowPanel = new JPanel();
-		arrowPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-		
-		upButton = new JButton(new ImageIcon(GRSetting.PATHIMAGE+"up.png"));
-		upButton.addActionListener(this);
-		arrowPanel.add(upButton);
-		
-		downButton = new JButton(new ImageIcon(GRSetting.PATHIMAGE+"down.png"));
-		downButton.addActionListener(this);
-		arrowPanel.add(downButton);
-		
-		JLabel lblTotale = new JLabel(GRLanguageMessage.messages.getString("dlgstorybooktotalobject")+grobj.size());
-		arrowPanel.add(lblTotale);
-		
-		southPanel.add(arrowPanel);
-		southPanel.add(buttonPane);
-		
-		c.add(southPanel, BorderLayout.SOUTH);
-		
+		c.add(buttonPane, BorderLayout.SOUTH);
 		
 		setBounds(100, 100, 620, 500);
-		setAlwaysOnTop(true);
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		setVisible(true);	
-		
+		setModal(true);
+		setVisible(true);
 		
 	}
-	public void selectObject(GRObject grobj) {
-		doc.selectObject(grobj);
-	}
-	private void spostaSu(GRObject refObj) {
-		GRObject objTemp;
-		
-		int index = grobj.indexOf(refObj);
-		if(index == 0)
-			return;
-		
-		grobj.removeElementAt(index);
 	
-		index--;
-		grobj.insertElementAt(refObj, index);
-		doc.refreshPage();
+	private void init() {
 		
 	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == okButton) {
-			
-		} else if(e.getSource() == cancelButton) {
-			this.dispose();
-		} else if(e.getSource() == upButton) {
-			sb.up();
-			
-			this.setSize(new Dimension(this.getWidth(),this.getHeight()+1));
-			this.setSize(new Dimension(this.getWidth(),this.getHeight()-1));
-			
-			doc.refreshPage();
-		} else if(e.getSource() == downButton) {
-			sb.down();
-			
-			this.setSize(new Dimension(this.getWidth(),this.getHeight()+1));
-			this.setSize(new Dimension(this.getWidth(),this.getHeight()-1));
-			
-			doc.refreshPage();
-		}
-			
+		// TODO Auto-generated method stub
+		
 	}
-	
-	
 }

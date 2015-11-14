@@ -57,9 +57,11 @@ import java.awt.MediaTracker;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModelImage;
 import com.globalreports.editor.designer.property.GRTableModelRectangle;
+import com.globalreports.editor.designer.property.GRTableProperty;
 import com.globalreports.editor.designer.resources.GRResImages;
 import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
@@ -104,6 +106,7 @@ public class GRImage extends GRObject {
 		bsx = new Rectangle(x1-4,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		bdx = new Rectangle(x1+width,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 	
+		typeModel = GRTableProperty.TYPEMODEL_IMAGE;
 		this.refreshReferenceSection();	
 	}
 	
@@ -151,6 +154,7 @@ public class GRImage extends GRObject {
 		bsx = new Rectangle(x1-4,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		bdx = new Rectangle(x1+width,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 	
+		typeModel = GRTableProperty.TYPEMODEL_IMAGE;
 		this.refreshReferenceSection();	
 	}
 	
@@ -288,5 +292,13 @@ public class GRImage extends GRObject {
 		buff.append("</image>");
 		
 		return buff.toString();
+	}
+
+	@Override
+	public String getNameObject() {
+		return GRLanguageMessage.messages.getString("tlbgrimage");
+	}
+	public int getTypeModel() {
+		return typeModel;
 	}
 }

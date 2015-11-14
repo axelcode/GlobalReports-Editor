@@ -72,8 +72,33 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 	
 	public static final int		CONTEXT_PAGE		= 1;
 	public static final int		CONTEXT_TABLELIST	= 2;
+	
+	private static final int	FUNCTIONVALIDATE_NOTEMPTY			= 1;
+	private static final int	FUNCTIONVALIDATE_DATE				= 2;
+	private static final int	FUNCTIONVALIDATE_NUMBER				= 3;
+	private static final int	FUNCTIONVALIDATE_EMAIL				= 4;
+	private static final int	FUNCTIONVALIDATE_CODICEFISCALE		= 5;
+	
+	private static final int	FUNCTIONFORMATTED_LOWERCASE			= 1;
+	private static final int	FUNCTIONFORMATTED_UPPERCASE			= 2;
+	private static final int 	FUNCTIONFORMATTED_FIRSTUPPERCASE	= 3;
+	private static final int	FUNCTIONFORMATTED_FORMATNUMBER		= 4;
+	
+	String functionValidate[] = {"--Funzioni di validazione--",
+								 "Campo obbligatorio",
+								 "Campo data",
+								 "Campo numerico",
+								 "Campo e-mail",
+		 						 "Campo codice fiscale"};
+
+	String functionFormatted[] = {"--Funzioni di formattazione--",
+								  "Campo in minuscolo",
+								  "Campo in maiuscolo",
+								  "Prima lettera in maiuscolo",
+		  						  "Numero e decimali"};
+
 	private int typeDialog;
-	private GRPage grpage;		// Pagina in cui andr� inserito il testo
+	private GRPage grpage;		// Pagina in cui andrà inserito il testo
 	
 	private JToolBar toolbar;
 	@SuppressWarnings("rawtypes")
@@ -83,6 +108,7 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 	private JToggleButton bFontBold;
 	private JToggleButton bFontItalic;
 	private JButton bFontColor;
+	private JToggleButton bVariable;
 	
 	private JTextPane textArea;
 	private JPanel panelButton;
@@ -98,10 +124,21 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 	private int alignment;
 	
 	boolean flagButtonChanged;
-	private Rectangle areaClip;	// l'area ove comparir� il testo
+	private Rectangle areaClip;	// l'area ove comparirà il testo
 	
 	private int pointerCaret;
 	private int context;
+	
+	// Sezione variabili
+	private JButton bInsertVariabile;
+	private JTextField txtNomeVariabile;
+	private JComboBox comboFunctionValidate;
+	private JComboBox comboFunctionFormatted;
+	private JLabel lblNumDecimali;
+	private JTextField txtNumDecimali;
+	
+	private Container c;
+	private JPanel panelVariable;
 	
 	public GREditText(GRPage page, Rectangle r) {
 		this(page, r, GREditText.CONTEXT_PAGE);
@@ -117,7 +154,7 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 		
 		flagButtonChanged = false;
 		
-		Container c = getContentPane();
+		c = getContentPane();
 		c.setLayout(new BorderLayout());
 		
 		this.defaultValue();
@@ -145,6 +182,10 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 		panelButton.add(bExit);
 		
 		c.add(panelButton,BorderLayout.SOUTH);
+		
+		// Pannello delle variabili
+		panelVariable = getPanelVariables();
+		//c.add(getPanelVariables(), BorderLayout.EAST);
 		
 		setTitle("Edit Text");
 		setSize(600,400);
@@ -198,11 +239,94 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 		bFontColor.addActionListener(this);
 		tb.add(bFontColor);
 		
+		tb.addSeparator();
+		
+		ImageIcon ico_variable = new ImageIcon(GRSetting.PATHIMAGE+"ico_variable.png");
+		bVariable = new JToggleButton(ico_variable);
+		bVariable.addActionListener(this);
+		tb.add(bVariable);
+		
 		tb.setFloatable(false);
 		
 		return tb;
 	}
 	
+	private JPanel getPanelVariables() {
+		JLabel lblNomeVariabile;
+		
+		JPanel panel = new JPanel();
+		
+		GridBagLayout layout = new GridBagLayout();
+		GridBagConstraints gbc = new GridBagConstraints();
+		
+		layout.columnWidths = new int[]{100, 0};
+		layout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
+		layout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		panel.setLayout(layout);
+				
+		lblNomeVariabile = new JLabel("Nome Variabile");
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(5,2,5,2);
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 2;
+		panel.add(lblNomeVariabile,gbc);
+		
+		txtNomeVariabile = new JTextField(20);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0,2,5,2);
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 2;
+		panel.add(txtNomeVariabile,gbc);
+		
+		comboFunctionValidate = new JComboBox(functionValidate);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(0,2,5,2);
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridwidth = 2;
+		panel.add(comboFunctionValidate,gbc);
+		
+		comboFunctionFormatted = new JComboBox(functionFormatted);
+		comboFunctionFormatted.addItemListener(this);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(0,2,5,2);
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		gbc.gridwidth = 2;
+		panel.add(comboFunctionFormatted,gbc);
+		
+		lblNumDecimali = new JLabel("Decimali");
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0,2,5,2);
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		panel.add(lblNumDecimali,gbc);
+		
+		txtNumDecimali = new JTextField(2);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(0,2,5,2);
+		gbc.gridx = 1;
+		gbc.gridy = 4;
+		panel.add(txtNumDecimali,gbc);
+		
+		lblNumDecimali.setVisible(false);
+		txtNumDecimali.setVisible(false);
+		
+		bInsertVariabile = new JButton("Inserisci");
+		bInsertVariabile.addActionListener(this);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(10,2,5,2);
+		gbc.gridx = 1;
+		gbc.gridy = 5;
+		panel.add(bInsertVariabile,gbc);
+		
+		return panel;
+	}
 	private void defaultValue() {
 		fontName = GRSetting.FONTNAME;
 		fontSize = GRSetting.FONTSIZE;
@@ -239,6 +363,76 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 			textArea.setCharacterAttributes(attributi,false);
 		}
 		
+	}
+	
+	private String getVariable(String name, int valValidate, int valFormatted) {
+		String value = "";
+		int numDec = 0;
+		
+		if(name == null || name.equals(""))
+			return "";
+		
+		value = "{" + name.trim();
+		
+		if(valValidate > 0) {
+			value = value + ":";
+			
+			switch(valValidate) {
+				case FUNCTIONVALIDATE_NOTEMPTY:
+					value = value + "$NOTEMPTY";
+					break;
+					
+				case FUNCTIONVALIDATE_DATE:
+					value = value + "$DATE";
+					break;
+					
+				case FUNCTIONVALIDATE_NUMBER:
+					value = value + "$NUMBER";
+					break;
+				
+				case FUNCTIONVALIDATE_EMAIL:
+					value = value + "$EMAIL";
+					break;
+					
+				case FUNCTIONVALIDATE_CODICEFISCALE:
+					value = value + "$CODICEFISCALE";
+					break;
+			}
+		}
+		
+		if(valFormatted > 0) {
+			if(valValidate > 0)
+				value = value + ";";
+			else
+				value = value + ":";
+			
+			switch(valFormatted) {
+				case FUNCTIONFORMATTED_LOWERCASE:
+					value = value + "FUNCTION(LOWERCASE)";
+					break;
+					
+				case FUNCTIONFORMATTED_UPPERCASE:
+					value = value + "FUNCTION(UPPERCASE)";
+					break;
+					
+				case FUNCTIONFORMATTED_FIRSTUPPERCASE:
+					value = value + "FUNCTION(FIRSTUPPERCASE)";
+					break;
+					
+				case FUNCTIONFORMATTED_FORMATNUMBER:
+					value = value + "FUNCTION(FORMATNUMBER(";
+					if(!txtNumDecimali.getText().trim().equals("")) {
+						numDec = Integer.parseInt(txtNumDecimali.getText());
+					}
+					value = value + numDec+"))";
+					
+					break;
+			}
+		}
+		
+		value = value + "}";
+		
+		return value;
 	}
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == bConfirm) {
@@ -298,6 +492,30 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 			//StyleConstants.setForeground(attributi,true);
 			textArea.setCharacterAttributes(attributi,false);
 			//panelColor.setColorStroke(c);
+		} else if(e.getSource() == bInsertVariabile) {
+			AttributeSet a = textArea.getCharacterAttributes();
+			Document d = textArea.getDocument();
+			
+			String var = getVariable(txtNomeVariabile.getText(),comboFunctionValidate.getSelectedIndex(),comboFunctionFormatted.getSelectedIndex());
+			
+			try {
+				d.insertString(textArea.getCaretPosition(), var,a);
+			} catch(Exception exc) {
+				System.out.println("GREditText::actionPerformed::Exception: "+exc.getMessage());
+			}
+			//textArea.setText(txtNomeVariabile.getText());
+		} else if(e.getSource() == bVariable) {
+			
+			if(bVariable.isSelected()) {
+				c.add(panelVariable, BorderLayout.EAST);
+				
+				this.setSize(new Dimension(this.getWidth()+200,this.getHeight()));
+			} else {
+				c.remove(panelVariable);
+				
+				this.setSize(new Dimension(this.getWidth()-200,this.getHeight()));
+			}
+			
 		}
 		
 		textArea.requestFocusInWindow();
@@ -315,6 +533,18 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 				
 				StyleConstants.setFontSize(attributi,fontSize);
 				textArea.setCharacterAttributes(attributi,false);
+			} else if(e.getSource() == comboFunctionFormatted) {
+				if(comboFunctionFormatted.getSelectedIndex() == FUNCTIONFORMATTED_FORMATNUMBER) {
+					lblNumDecimali.setVisible(true);
+					txtNumDecimali.setVisible(true);	
+				} else {
+					lblNumDecimali.setVisible(false);
+					txtNumDecimali.setVisible(false);
+				}
+				
+				this.setSize(new Dimension(this.getWidth()+1,this.getHeight()));
+				this.setSize(new Dimension(this.getWidth()-1,this.getHeight()));
+				
 			}
 		}
 		
@@ -386,8 +616,7 @@ public class GREditText extends JDialog implements ActionListener, ItemListener,
 			textArea.setFont(new Font(fontName,Font.PLAIN,fontSize));
 		}
 		
-		
-		
+				
 	}
 	public void setData(long idObj,String fName,int fSize,int fStyle,String value) {
 		id = idObj;

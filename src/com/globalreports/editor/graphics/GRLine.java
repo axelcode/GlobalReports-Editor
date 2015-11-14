@@ -57,10 +57,12 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModel;
 import com.globalreports.editor.designer.property.GRTableModelLine;
 import com.globalreports.editor.designer.property.GRTableModelRectangle;
+import com.globalreports.editor.designer.property.GRTableProperty;
 import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.tools.GRLibrary;
 
@@ -98,6 +100,7 @@ public class GRLine extends GRShape {
 		
 		cStroke = colorStroke;
 		
+		typeModel = GRTableProperty.TYPEMODEL_LINE;
 		this.refreshReferenceSection();	
 	}
 	public void refreshReferenceSection() {
@@ -242,6 +245,15 @@ public class GRLine extends GRShape {
 		buff.append("</shape>");
 		
 		return buff.toString();
+	}
+	@Override
+	public String getNameObject() {
+		return GRLanguageMessage.messages.getString("tlbgrline");
+	}
+	@Override
+	public int getTypeModel() {
+		// TODO Auto-generated method stub
+		return typeModel;
 	}
 	
 }

@@ -1,7 +1,6 @@
 /*
  * ==========================================================================
- * class name  : com.globalreports.editor.GRAbout
- * interface
+ * class name  : com.globalreports.editor.graphics.textcondition.GRDocumentTextCondition
  * Begin       : 
  * Last Update : 
  *
@@ -50,22 +49,24 @@
  * which carries forward this exception.
  * 
  */
-package com.globalreports.editor;
+package com.globalreports.editor.graphics.textcondition;
 
-/**
- * 
- * 04/11/2015: 0.6.3
- * -Aggiunta selezione multipla di oggetti.
- * -Migliorata la gestione del menù salvataggi
- *
- * 06/11/2015: 0.6.4
- * -Aggiunta l'inserimento di variabili dalla maschera di editing text.
- *  Adesso è possibile specificare il nome e scegliere una delle funzioni censite
- *  
- */
-public interface GRAbout {
-	public final static int 	MAIOR_VERSION	= 0;
-	public final static int		MINOR_VERSION	= 7;
-	public final static int		RELEASE_VERSION	= 0;
-	public final static String	EDIT_NAME		= "GlobalReports Editor";
+import javax.swing.text.Document;
+
+public class GRDocumentTextCondition {
+	private int idDocument;
+	private Document docText;
+	private String text;
+	
+	public GRDocumentTextCondition(Document docText, String value) {
+		this.docText = docText;
+		this.text = value;
+	}
+	
+	public Document getDocument() {
+		return docText;
+	}
+	public String getValue() {
+		return text;
+	}
 }

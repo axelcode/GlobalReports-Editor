@@ -56,8 +56,10 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.Vector;
 
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
 import com.globalreports.editor.designer.GRPage;
 import com.globalreports.editor.designer.property.GRTableModelChart;
+import com.globalreports.editor.designer.property.GRTableProperty;
 import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.graphics.chart.GRChartData;
 import com.globalreports.editor.graphics.chart.GRChartLegend;
@@ -121,6 +123,8 @@ public class GRChart extends GRObject {
 		bdx = new Rectangle(x1+width,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		
 		this.setTypeChart(TYPECHART_NOTDEFINED);
+		
+		typeModel = GRTableProperty.TYPEMODEL_CHART;
 		this.refreshReferenceSection();	
 	}
 
@@ -216,6 +220,9 @@ public class GRChart extends GRObject {
 		modelTable.setHeight(this.getOriginalHeight());
 		
 	}
+	public String getNameObject() {
+		return GRLanguageMessage.messages.getString("tlbgrchart");
+	}
 	@Override
 	public GRObject clone(long id) {
 		// TODO Auto-generated method stub
@@ -285,5 +292,11 @@ public class GRChart extends GRObject {
 		buff.append("</chart>");
 		
 		return buff.toString();
+	}
+
+	@Override
+	public int getTypeModel() {
+		// TODO Auto-generated method stub
+		return typeModel;
 	}
 }

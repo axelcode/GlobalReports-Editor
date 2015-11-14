@@ -69,8 +69,12 @@ import javax.swing.text.Element;
 import com.globalreports.editor.GRSetting;
 import com.globalreports.editor.configuration.font.GRFont;
 import com.globalreports.editor.configuration.font.GRFontProperty;
+import com.globalreports.editor.configuration.languages.GRLanguageMessage;
+import com.globalreports.editor.designer.property.GRTableModelRectangle;
+import com.globalreports.editor.designer.property.GRTableProperty;
 import com.globalreports.editor.designer.resources.GRResFonts;
 import com.globalreports.editor.designer.resources.GRFontResource;
+import com.globalreports.editor.designer.swing.table.GRTable;
 import com.globalreports.editor.graphics.GRObject;
 import com.globalreports.editor.graphics.GRTableList;
 import com.globalreports.editor.graphics.GRText;
@@ -139,6 +143,8 @@ public class GRTableListText extends GRObject {
 		tdx = new Rectangle(x1+width+2,y1-4,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		bsx = new Rectangle(x1-6,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
 		bdx = new Rectangle(x1+width+2,y1+height,GRObject.DIM_ANCHOR,GRObject.DIM_ANCHOR);
+		
+		typeModel = GRTableProperty.TYPEMODEL_TABLELIST;
 	}
 	public GRTableListText(GRTableList grfather, Graphics g, long id, Document dc, int alignment, String value, Rectangle area) {
 		super(GRObject.TYPEOBJ_TEXT, id);
@@ -160,6 +166,8 @@ public class GRTableListText extends GRObject {
 		this.alignment = alignment;
 		
 		insertTextFormatted();
+		
+		typeModel = GRTableProperty.TYPEMODEL_TABLELIST;
 	}
 	
 	public void setCellFather(GRTableListCell grcell) {
@@ -641,5 +649,16 @@ public class GRTableListText extends GRObject {
 		
 		return buff.toString();
 	}
-	
+	@Override
+	public String getNameObject() {
+		return GRLanguageMessage.messages.getString("tlbgrtablelist");
+	}
+	@Override
+	public int getTypeModel() {
+		// TODO Auto-generated method stub
+		return typeModel;
+	}
+	public void setProperty(GRTable model) {
+		// Non fa nulla
+	}
 }
