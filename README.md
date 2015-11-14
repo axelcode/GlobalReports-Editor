@@ -8,11 +8,11 @@ Elenco dei rilasci
 
 **V.0.6.0 - 29/10/2015**
 
--Rilasciato il nuovo compilatore e la nuova release dell'engine
--Aggiunta la gestione multilingua, anche se l'unico file relativo ai messaggi, attualmente è in italiano
--Aggiunto l'oggetto grafico GRCIRCLE
--Iniziata la gestione dell'oggetto grafico GRCHART (work in progress)
--Aggiunto lo story book. Adesso è possibile prendere visione di come gli oggetti sono inseriti nella lista di memorizzazione di GlobalReports e, di conseguenza, è possibile modificarne la priorità.
+- Rilasciato il nuovo compilatore e la nuova release dell'engine
+- Aggiunta la gestione multilingua, anche se l'unico file relativo ai messaggi, attualmente è in italiano
+- Aggiunto l'oggetto grafico GRCIRCLE
+- Iniziata la gestione dell'oggetto grafico GRCHART (work in progress)
+- Aggiunto lo story book. Adesso è possibile prendere visione di come gli oggetti sono inseriti nella lista di memorizzazione di GlobalReports e, di conseguenza, è possibile modificarne la priorità.
 
 **V.0.5.3 - 10/10/2015**
 
